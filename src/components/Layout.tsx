@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,8 +9,9 @@ export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="bg-primary text-primary-foreground py-4 shadow-md">
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold hover:opacity-80 transition-opacity">
+        <div className="container mx-auto px-4 flex justify-center items-center">
+          <Link href="/" className="flex items-center text-2xl font-bold hover:opacity-80 transition-opacity">
+            
             Exhausted Rocket
           </Link>
           <nav>

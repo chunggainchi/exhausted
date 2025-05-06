@@ -1,6 +1,7 @@
-// import Link from 'next/link';
-// import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-// import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { getSortedPostsData } from "@/lib/posts"; // Import the function to get posts
 
 // // Dummy data for now - replace with actual post fetching logic
 // const DUMMY_POSTS = [
@@ -19,7 +20,7 @@
 // ];
 
 export default function BlogIndexPage() {
-  // const posts = DUMMY_POSTS;
+  const posts = getSortedPostsData(); // Fetch sorted post metadata
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -32,7 +33,7 @@ export default function BlogIndexPage() {
 
       {/* {posts.length === 0 ? ( */}
         <p className="text-center text-muted-foreground">
-          Blog posts coming soon. Stay tuned!
+          No posts yet. Stay tuned!
         </p>
       {/* ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -58,6 +59,41 @@ export default function BlogIndexPage() {
           ))}
         </div>
       )} */}
+
+      {posts.length === 0 ? (
+        <p className="text-center text-muted-foreground">
+          No posts yet. Stay tuned!
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {posts.map((post) => (
+            <Card key={post.slug} className="flex flex-col hover:shadow-lg transition-shadow duration-300">
+              {/* Optional: Add cover image here if available */}
+              {/* {post.coverImage && (
+                <div className="aspect-video overflow-hidden"> 
+                  <img src={post.coverImage} alt={`Cover image for ${post.title}`} className="object-cover w-full h-full"/>
+                </div>
+              )} */}
+              <CardHeader>
+                <CardTitle className="text-2xl hover:text-primary transition-colors">
+                  <Link href={`/blog/${post.slug}`}>{post.title}</Link>
+                </CardTitle>
+                <CardDescription>
+                  By {post.author} on {new Date(post.date).toLocaleDateString()}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex-grow">
+                <p>{post.description}</p>
+              </CardContent>
+              <div className="p-6 pt-0">
+                <Button asChild variant="outline">
+                  <Link href={`/blog/${post.slug}`}>Read More</Link>
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 } 
