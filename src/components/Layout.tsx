@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Instagram, Youtube } from "lucide-react";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -7,9 +8,9 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="bg-primary text-primary-foreground py-4 shadow-md">
+      <header className="bg-gradient-to-r from-[#FFD310] to-[#FF5900] text-primary-foreground py-4 shadow-md">
         <div className="container mx-auto px-4 flex justify-center items-center">
-          <Link href="/" className="flex items-center text-2xl font-bold hover:opacity-80 transition-opacity">
+          <Link href="/" className="flex items-center text-2xl font-bold font-sans hover:opacity-80 transition-opacity">
             
             Exhausted Rocket
           </Link>
@@ -26,7 +27,21 @@ export default function Layout({ children }: LayoutProps) {
       </main>
 
       <footer className="bg-muted text-muted-foreground py-6 text-center">
-        <p>&copy; {new Date().getFullYear()} Exhausted Rocket. All rights reserved.</p>
+        <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center">
+          <p>&copy; {new Date().getFullYear()} Exhausted Rocket. All rights reserved.</p>
+          <div className="mt-4 sm:mt-0 flex items-center space-x-4">
+            <Link href="https://www.instagram.com/exhaustedrocket/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-primary transition-colors">
+              <Instagram size={24} />
+            </Link>
+            <Link href="https://www.tiktok.com/@exhaustedrocket" target="_blank" rel="noopener noreferrer" aria-label="TikTok" className="hover:opacity-75 transition-opacity">
+              <img src="/images/icons/tiktok.svg" alt="TikTok" className="w-6 h-6" />
+            </Link>
+            <Link href="https://www.youtube.com/@ExhaustedRocket" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="hover:text-primary transition-colors">
+              <Youtube size={24} />
+            </Link>
+            <Link href="/impressum" className="text-sm hover:text-primary transition-colors">Impressum</Link>
+          </div>
+        </div>
         {/* <p className="mt-1">
           <Link href="/privacy" className="hover:underline">Privacy Policy</Link> | 
           <Link href="/terms" className="hover:underline">Terms of Service</Link>
