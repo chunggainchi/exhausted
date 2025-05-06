@@ -10,8 +10,8 @@ export default function Layout({ children }: LayoutProps) {
     <div className="min-h-screen flex flex-col">
       <header className="bg-gradient-to-r from-[#FFD310] to-[#FF5900] text-primary-foreground py-4 shadow-md">
         <div className="container mx-auto px-4 flex justify-center items-center">
-          <Link href="/" className="flex items-center text-2xl font-bold hover:opacity-80 transition-opacity">
-            
+          <Link href="/" className="flex items-center text-2xl font-bold hover:opacity-80 transition-opacity" 
+                style={{ fontFamily: "var(--font-jost-header)" }}>
             Exhausted Rocket
           </Link>
           <nav>

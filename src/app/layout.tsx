@@ -1,20 +1,30 @@
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+import { Jost } from 'next/font/google';
 import "./globals.css";
 import Layout from "@/components/Layout";
+
 // import { GoogleAnalytics } from '@next/third-parties/google'; // Removed
 
 const GA_TRACKING_ID = "G-42KN1MJ4MT"; // Keep for reference, used in script below
 
+const jostHeader = Jost({
+  weight: '800',
+  style: 'italic',
+  subsets: ['latin'],
+  variable: '--font-jost-header',
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
   title: "Exhausted Rocket - Play Idea Hacks & More",
-  description: "Blog of a tired mom documenting her attempts to exhaust her toddlers energy.",
+  description: "Blog of a tired mom documenting her attempts to expel her toddler's energy.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: React.ReactNode })                       {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${jostHeader.variable}`}>
       <head>
         {/* Google tag (gtag.js) */}
         <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}></script>
