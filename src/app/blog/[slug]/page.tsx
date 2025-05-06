@@ -32,10 +32,10 @@ async function getPostBySlug(slug: string) {
 export default async function BlogPostPage({
   params,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _searchParams,
+  searchParams,
 }: {
   params: { slug: string };
-  _searchParams?: { [key: string]: string | string[] | undefined }; // Renamed here as well
+  searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   const post = await getPostBySlug(params.slug);
 
