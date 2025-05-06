@@ -1,41 +1,11 @@
 import Link from 'next/link';
 import Image from 'next/image'; // Use Next.js Image for optimization
 import { ArrowRight } from 'lucide-react'; // Import the arrow icon
+import { categories } from '@/lib/categories'; // Import the centralized list
 
-interface Category {
-  title: string;
-  imageUrl: string; // Path relative to /public
-  href: string;
-}
-
-// Placeholder data - Updated to .webp extension and added fifth category
-const categories: Category[] = [
-  {
-    title: 'Computer',
-    imageUrl: '/images/categories/computer routing.webp', // Changed extension
-    href: '/blog/category/computer', // Example route
-  },
-  {
-    title: 'Crafts',
-    imageUrl: '/images/categories/crafts routing.webp', // Changed extension
-    href: '/blog/category/crafts',
-  },
-  {
-    title: 'Anatomy',
-    imageUrl: '/images/categories/anatomy routing.webp', // Changed extension
-    href: '/blog/category/anatomy',
-  },
-  {
-    title: 'AI',
-    imageUrl: '/images/categories/ai routing.webp', // Changed extension
-    href: '/blog/category/ai',
-  },
-  {
-    title: 'Puzzle', // Add your fifth category title
-    imageUrl: '/images/categories/puzzle routing.webp', // Add your fifth image path
-    href: '/blog/category/puzzle', // Add your fifth category route
-  },
-];
+// Remove the local categories constant definition
+// interface Category { ... }
+// const categories: Category[] = [ ... ];
 
 export default function CategoryTiles() {
   return (
