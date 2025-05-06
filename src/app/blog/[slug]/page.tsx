@@ -28,13 +28,13 @@ async function getPostBySlug(slug: string) {
   }
 }
 
-// Add searchParams to the props definition
+// Add _searchParams to the props definition to indicate it's unused
 export default async function BlogPostPage({
   params,
-  searchParams,
+  _searchParams,
 }: {
   params: { slug: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
+  _searchParams?: { [key: string]: string | string[] | undefined }; // Renamed here as well
 }) {
   const post = await getPostBySlug(params.slug);
 
