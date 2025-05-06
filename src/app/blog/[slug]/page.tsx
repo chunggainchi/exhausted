@@ -4,21 +4,25 @@ import { MDXRemote } from 'next-mdx-remote/rsc'; // Import MDXRemote for server 
 import { getAllPostSlugs, getPostData } from '@/lib/posts';
 import { mdxComponents } from '@/mdx-components'; // Import the components object or the getter function directly
 
-// Define the expected props structure, same as before
-type PageProps = {
-  params: { slug: string };
-  searchParams: { [key: string]: string | string[] | undefined };
-};
+// Remove or comment out the potentially conflicting shared PageProps type
+// type PageProps = {
+//   params: { slug: string };
+//   searchParams: { [key: string]: string | string[] | undefined };
+// };
 
 // Generate static paths for all posts at build time
-export async function generateStaticParams() {
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
   const slugs = getAllPostSlugs(); // Get all slugs [{ slug: '...' }, ...]
   // Important: Make sure the slugs array isn't empty if you expect pages
   return slugs;
 }
 
-// Generate metadata for the page
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+// Generate metadata for the page - Use inline prop type
+export async function generateMetadata({ 
+  params 
+}: { 
+  params: { slug: string } 
+}): Promise<Metadata> {
   const post = getPostData(params.slug);
   if (!post) {
     return {
@@ -32,8 +36,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-// The Page component to render the post
-export default async function PostPage({ params }: PageProps) {
+// The Page component to render the post - Use inline prop type
+export default async function PostPage({ 
+  params 
+}: { 
+  params: { slug: string } 
+}) {
   const post = getPostData(params.slug);
 
   if (!post) {
