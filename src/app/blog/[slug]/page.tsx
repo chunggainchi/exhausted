@@ -6,6 +6,19 @@ type PageProps = {
   searchParams: { [key: string]: string | string[] | undefined };
 };
 
+// generateStaticParams is REQUIRED for dynamic routes with "output: export"
+export async function generateStaticParams() {
+  // In a real app, you would fetch all your blog post slugs here
+  // For example, from a CMS or by reading markdown files
+  // const posts = await getAllPostSlugs(); 
+  // return posts.map((post) => ({ slug: post.slug }));
+
+  // For now, let's return an empty array or a dummy slug for testing
+  // If you have DUMMY_POSTS in your blog index page, you can use those slugs:
+  // return [{ slug: 'example-post-1' }, { slug: 'another-cool-topic' }];
+  return []; // Start with empty if no posts are ready yet
+}
+
 // generateMetadata function (optional but good practice)
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   // In a real app, you might fetch metadata based on the slug
