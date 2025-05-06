@@ -1,0 +1,95 @@
+import { Metadata } from 'next';
+import Link from 'next/link';
+import Image from 'next/image';
+import { ChevronRight } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Castle (Château de Chambord-inspired) | Puzzle | Exhausted Rocket',
+  description: 'How to build a mini Château de Chambord-inspired castle out of puzzle mats.',
+};
+
+export default function CastlePostPage() {
+  const categoryName = "Puzzle";
+  const categoryHref = "/blog/category/puzzle";
+  const postTitle = "Castle";
+  const postSubtitle = "(think mini Château de Chambord—big blocky keep, two pointy roofs, a little gatehouse off the side)";
+
+  // Placeholder - replace with actual image path
+  const imageUrl = "/images/blog/castle.webp"; // <<< PLEASE PROVIDE ACTUAL IMAGE PATH
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      {/* Breadcrumbs */}
+      <nav aria-label="Breadcrumb" className="mb-6 text-sm text-muted-foreground flex items-center">
+        <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+        <ChevronRight size={16} className="mx-1" />
+        <Link href="/blog" className="hover:text-primary transition-colors">Blog</Link>
+        <ChevronRight size={16} className="mx-1" />
+        <Link href={categoryHref} className="hover:text-primary transition-colors">{categoryName}</Link>
+        <ChevronRight size={16} className="mx-1" />
+        <span className="font-medium text-foreground">{postTitle}</span>
+      </nav>
+
+      <article>
+        <header className="mb-8">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-2">{postTitle}</h1>
+          {postSubtitle && <p className="text-xl sm:text-2xl text-muted-foreground">{postSubtitle}</p>}
+        </header>
+
+        <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+          {/* Content Section */}
+          <div className="prose dark:prose-invert max-w-none md:col-span-1">
+            <p className="lead">
+              Two linked cubes form a chunky "keep"; snap two mats on top at right angles for the twin pitched roofs, then hinge one extra mat to the side as a gate-ramp. Toddlers crawl in, pop up under a roof, duck out the gate, repeat—non-stop squat-crawl-stand cardio that burns energy fast.
+            </p>
+            <h3 className="text-xl font-semibold mt-6 mb-2">Specs:</h3>
+            <ul>
+              <li><strong>Mats:</strong> ≈48 pcs</li>
+              <li><strong>Build time:</strong> ≈15 min (ten if snacks are involved)</li>
+              <li><strong>Difficulty:</strong> Advanced</li>
+            </ul>
+            <p className="mt-6">
+              That's the gist—castle vibes, instant toddler workout, zero overthinking. 📸 Tag me if you try it!
+            </p>
+          </div>
+
+          {/* Image Section */}
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg md:col-span-1">
+            <Image
+              src={imageUrl} // <<< UPDATE THIS WITH ACTUAL PATH
+              alt={`Image for ${postTitle}`}
+              fill
+              className="object-cover"
+            />
+          </div>
+        </div>
+
+        {/* Additional Images Gallery */}
+        <section className="mt-12 pt-8 border-t">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">More Angles</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <Link href="/images/blog/castle-back.webp" target="_blank" rel="noopener noreferrer" className="block relative aspect-video w-full overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow">
+              <Image
+                src="/images/blog/castle-back.webp"
+                alt="Castle build - view from the back (click to enlarge)"
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 100vw, 50vw"
+              />
+            </Link>
+            <Link href="/images/blog/castle-top.webp" target="_blank" rel="noopener noreferrer" className="block relative aspect-video w-full overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow">
+              <Image
+                src="/images/blog/castle-top.webp"
+                alt="Castle build - view from the top (click to enlarge)"
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 100vw, 50vw"
+              />
+            </Link>
+          </div>
+        </section>
+
+      </article>
+    </div>
+  );
+} 

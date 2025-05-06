@@ -6,8 +6,8 @@ export default function HomePage() {
     <div className="container mx-auto px-4 py-8 flex flex-col items-center">
       <section className="my-8 w-full flex justify-center">
         <Image
-          src="/images/hero/er.png"
-          alt="Tired person with coffee"
+          src="/images/hero/er.webp"
+          alt="Tired mom with coffee"
           width={300}
           height={300}
           className="mx-auto max-w-xs sm:max-w-sm md:max-w-md"

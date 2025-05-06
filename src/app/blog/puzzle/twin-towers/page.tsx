@@ -46,6 +46,7 @@ export default function TwinTowersPostPage() {
             <ul>
               <li><strong>Estimated build time:</strong> ≈10-15 mins</li>
               <li><strong>Mats needed:</strong> ≈30 pcs</li>
+              <li><strong>Difficulty:</strong> Medium</li>
             </ul>
           </div>
 

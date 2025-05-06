@@ -26,6 +26,46 @@ const puzzlePosts: BlogPostCardProps[] = [
     href: "/blog/puzzle/twin-towers",
     imageAlt: "Twin Towers made of colorful puzzle mats"
   },
+  {
+    title: "Castle",
+    subtitle: "(think mini Château de Chambord—big blocky keep, two pointy roofs, a little gatehouse off the side)",
+    description: "Two linked cubes form a chunky 'keep'; snap two mats on top at right angles for the twin pitched roofs, then hinge one extra mat to the side as a gate-ramp. Toddlers crawl in, pop up under a roof, duck out the gate, repeat—non-stop squat-crawl-stand cardio that burns energy fast.",
+    imageUrl: "/images/blog/castle.webp", // <<< PLEASE PROVIDE ACTUAL IMAGE PATH for Castle
+    href: "/blog/puzzle/castle",
+    imageAlt: "Castle made of colorful puzzle mats"
+  },
+  {
+    title: "Doghouse Hideout",
+    subtitle: "(Snoopy-style, but rainbow)",
+    description: "One tall, hollow cube topped with a simple pitched roof. A single doorway at floor level lets kids crawl in, stand up, peek out, squat, and crawl back—a cozy hide-and-seek spot that sneaks in a bit of squatting.",
+    imageUrl: "/images/blog/doghouse.webp", // <<< PLEASE PROVIDE ACTUAL IMAGE PATH
+    href: "/blog/puzzle/doghouse-hideout",
+    imageAlt: "Doghouse Hideout made of colorful puzzle mats"
+  },
+  {
+    title: "Great Wall Crawl",
+    subtitle: "(watch-tower edition)",
+    description: "A long, low tunnel ('the wall') leads to a central cube tower where kids can stand up, peek out, then duck back down and keep crawling. Add or remove layers on the tower to dial the squat-workout up or down—instant leg-day for toddlers.",
+    imageUrl: "/images/blog/greatwall.webp",
+    href: "/blog/puzzle/great-wall-crawl",
+    imageAlt: "Great Wall Crawl made of colorful puzzle mats"
+  },
+  {
+    title: "Sunshine Cube",
+    subtitle: "(tiny-house vibes)",
+    description: "A single tall box with a sun-window cut-out turns plain foam mats into a cozy micro-home. Toddlers can crawl in, sit upright, wave through the window, and chill—minimal effort for you, maximum \"I have my own place\" pride for them.",
+    imageUrl: "/images/blog/Cube.webp",
+    href: "/blog/puzzle/sunshine-cube",
+    imageAlt: "Sunshine Cube made of colorful puzzle mats"
+  },
+  {
+    title: "Bowling Lane",
+    subtitle: "(kid-proof, gutter-proof)",
+    description: "A low rectangular \"alley\" with 3-tile-high bumpers keeps the ball on track while six recycled bottles wait to be knocked down in the middle. Roll, crash, reset—repeat for endless giggles and hand-eye workout.",
+    imageUrl: "/images/blog/bowling.webp",
+    href: "/blog/puzzle/bowling-lane",
+    imageAlt: "Bowling Lane made of colorful puzzle mats"
+  },
   // ... add more posts here as they are created
 ];
 
@@ -65,6 +105,9 @@ export default function PuzzleCategoryPage() {
 
       <header className="text-center mb-8 md:mb-12">
         <h1 className="text-4xl sm:text-5xl font-bold">{categoryName} Posts</h1>
+        <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+        I grew up building playhouses and structures with my two little sisters using puzzle mats, and I absolutely loved it! These simple toys are so versatile and timeless, sparking imaginative play that's physically engaging, even indoors. I can only imagine the epic creations we could make with a garden, combining them with cardboard structures!
+        </p>
       </header>
 
       {/* Blog Post Grid */}
