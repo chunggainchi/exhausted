@@ -19,6 +19,12 @@ export const categories: Category[] = [
     slug: 'crafts',
   },
   {
+    title: 'Puzzle',
+    imageUrl: '/images/categories/puzzle routing.webp',
+    href: '/blog/category/puzzle',
+    slug: 'puzzle',
+  },
+  {
     title: 'Anatomy',
     imageUrl: '/images/categories/anatomy routing.webp',
     href: '/blog/category/anatomy',
@@ -29,11 +35,5 @@ export const categories: Category[] = [
     imageUrl: '/images/categories/ai routing.webp',
     href: '/blog/category/ai',
     slug: 'ai',
-  },
-  {
-    title: 'Puzzle',
-    imageUrl: '/images/categories/puzzle routing.webp',
-    href: '/blog/category/puzzle',
-    slug: 'puzzle',
   },
 ]; 

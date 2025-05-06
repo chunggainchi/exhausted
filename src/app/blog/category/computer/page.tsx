@@ -23,12 +23,12 @@ const computerPosts: BlogPostCardProps[] = [
     subtitle: "(my one-evening tribute to Numberblocks)",
     description: "A one-evening project to create an interactive number playground for a three-year-old, inspired by Numberblocks.",
     imageUrl: "/images/blog/numbers.webp",
-    href: "/blog/computer/number-buddies-playground",
-    imageAlt: "Number Buddies Playground"
+    href: "/blog/computer/number-playground",
+    imageAlt: "Number Playground"
   },
   {
     title: "Anna Types!",
-    subtitle: "(a super-chill first typing trainer)",
+    subtitle: "(a super-chill first typing game)",
     description: "A simple, no-pressure typing game for young children, built with plain HTML/CSS/JS to practice letter and number recognition.",
     imageUrl: "/images/blog/typing.webp",
     href: "/blog/computer/anna-types",

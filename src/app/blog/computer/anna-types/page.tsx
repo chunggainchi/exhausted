@@ -82,7 +82,7 @@ export default function AnnaTypesPostPage() {
               <li><strong>Design goal:</strong> one finger, one key, one win—no timers, no lives, just gentle FUN</li>
             </ul>
             <p className="mt-6">She loves &quot;catching&quot; the letters, I love the non-twerky quietness, and the dings keep her motivated without any flashing alarms.</p>
-            <p className="mt-4 mb-4">👉 Play the prototype here: <a href="/games/anna-types.html" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Anna Types! Game</a> {/* Updated Link Placeholder */}</p>
+            <p className="mt-4 mb-4">👉 Play the prototype here: <a href="/games/anna-types.html" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-500hover:underline">Anna Types! Game</a> {/* Updated Link Placeholder */}</p>
             <p>Feedback welcome!</p>
           </div>
 

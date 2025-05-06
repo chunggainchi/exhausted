@@ -54,9 +54,8 @@ export default function AnatomyCategoryPage() {
       </header>
 
       <div className="text-center text-muted-foreground">
-        <p>No posts yet in {categoryName}.</p>
-        <p>Check back soon!</p>
-        {/* Placeholder for future post grid */}
+        <p>New posts coming tomorrow!</p>
+       {/* Placeholder for future post grid */}
       </div>
     </div>
   );

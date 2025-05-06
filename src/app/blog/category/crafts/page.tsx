@@ -9,14 +9,27 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import BlogPostCard, { BlogPostCardProps } from '@/components/BlogPostCard';
 
 export const metadata: Metadata = {
   title: 'Crafts | Exhausted Rocket',
   description: 'Posts related to Craft projects on Exhausted Rocket.',
 };
 
+const craftsPosts: BlogPostCardProps[] = [
+  {
+    title: "DIY Chibi Keychain",
+    subtitle: "(bringing AI art off-screen and onto zippers)",
+    description: "A quick guide to turning AI-generated illustrations into tangible chibi charms using shrink plastic and UV resin.",
+    imageUrl: "/images/blog/keychainmock.webp",
+    href: "/blog/crafts/diy-chibi-keychain",
+    imageAlt: "DIY Chibi Keychain made from AI art"
+  },
+  // ... add more posts here as they are created
+];
+
 export default function CraftsCategoryPage() {
-  const currentSlug = "crafts"; // Update slug
+  const currentSlug = "crafts";
   const categoryName = "Crafts";
   const otherCategories = categories.filter(cat => cat.slug !== currentSlug);
 
@@ -49,15 +62,23 @@ export default function CraftsCategoryPage() {
         </DropdownMenu>
       </div>
 
-      <header className="text-center mb-12">
-        <h1 className="text-4xl font-bold">{categoryName}</h1>
+      <header className="text-center mb-8 md:mb-12">
+        <h1 className="text-4xl sm:text-5xl font-bold">{categoryName} Posts</h1>
       </header>
 
-      <div className="text-center text-muted-foreground">
-        <p>No posts yet in {categoryName}.</p>
-        <p>Check back soon!</p>
-        {/* Placeholder for future post grid */}
-      </div>
+      {/* Blog Post Grid */}
+      {craftsPosts.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {craftsPosts.map((post) => (
+            <BlogPostCard key={post.href} {...post} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center text-muted-foreground py-12">
+          <p className="text-xl mb-2">No posts yet in {categoryName}.</p>
+          <p>Please check back soon!</p>
+        </div>
+      )}
     </div>
   );
 } 

@@ -98,7 +98,7 @@ export default function NumberPlaygroundPostPage() {
             </ul>
             
             <p>She&apos;s already pushing towers through the wall, shrieking when the confetti pops, and—bonus for me—practising addition without even realising it. If your little one loves Numberblocks, let them drive the blocks themselves:</p>
-            <p className= "mt-4 mb-4">👉 Play the prototype here: <a href="https://vps.heidekrueger.com/projects/numbers/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Number Playground</a></p>
+            <p className= "mt-4 mb-4">👉 Play the prototype here: <a href="https://vps.heidekrueger.com/projects/numbers/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-500 hover:underline">Number Playground</a></p>
             <p>Hit me with feedback; bedtime coding sessions are officially a thing now!</p>
           </div>
 
