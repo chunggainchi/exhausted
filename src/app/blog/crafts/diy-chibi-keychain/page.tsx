@@ -91,10 +91,10 @@ export default function DIYChibiKeychainPostPage() {
 
             <h3 className="text-2xl font-semibold mt-8 mb-4">Result</h3>
             <p>
-              A one-of-a-kind chibi charm that now dangles proudly from her yellow rain jacket - ready for playground show-and-tell. The best part? Every time she spots it, she says, &quot;Look, it's me!&quot; and grins exactly like the drawing.
+              A one-of-a-kind chibi charm that now dangles proudly from her yellow rain jacket - ready for playground show-and-tell. The best part? Every time she spots it, she says, &quot;Look, it&apos;s me!&quot; and grins exactly like the drawing.
             </p>
             <p className="mt-4">
-              Have AI art you love? Print, shrink, resin, repeat - your keys (or your kid's zipper) will never look the same.
+              Have AI art you love? Print, shrink, resin, repeat - your keys (or your kid&apos;s zipper) will never look the same.
             </p>
           </div>
 
