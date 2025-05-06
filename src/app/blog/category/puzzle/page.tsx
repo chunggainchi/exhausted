@@ -9,11 +9,25 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import BlogPostCard, { BlogPostCardProps } from '@/components/BlogPostCard';
 
 export const metadata: Metadata = {
   title: 'Puzzle | Exhausted Rocket',
   description: 'Posts related to Puzzle challenges on Exhausted Rocket.',
 };
+
+// Temporary hardcoded post data - this would eventually come from a CMS or local files
+const puzzlePosts: BlogPostCardProps[] = [
+  {
+    title: "Twin Towers",
+    subtitle: "(Petronas-inspired)",
+    description: "Two tall, hollow cubes connected by one row of mats create a crawl-through tunnel between them. Kids can crawl in one tower, stand up, duck under the link, and pop out the other side - a mini cardio workout that burns off serious energy 🥳",
+    imageUrl: "/images/blog/twin-towers.webp", // Ensure this path is correct
+    href: "/blog/puzzle/twin-towers",
+    imageAlt: "Twin Towers made of colorful puzzle mats"
+  },
+  // ... add more posts here as they are created
+];
 
 export default function PuzzleCategoryPage() {
   const currentSlug = "puzzle";
@@ -49,15 +63,23 @@ export default function PuzzleCategoryPage() {
         </DropdownMenu>
       </div>
 
-      <header className="text-center mb-12">
-        <h1 className="text-4xl font-bold">{categoryName}</h1>
+      <header className="text-center mb-8 md:mb-12">
+        <h1 className="text-4xl sm:text-5xl font-bold">{categoryName} Posts</h1>
       </header>
 
-      <div className="text-center text-muted-foreground">
-        <p>No posts yet in {categoryName}.</p>
-        <p>Check back soon!</p>
-        {/* Placeholder for future post grid */}
-      </div>
+      {/* Blog Post Grid */}
+      {puzzlePosts.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {puzzlePosts.map((post) => (
+            <BlogPostCard key={post.href} {...post} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center text-muted-foreground py-12">
+          <p className="text-xl mb-2">No posts yet in {categoryName}.</p>
+          <p>Please check back soon!</p>
+        </div>
+      )}
     </div>
   );
 } 
