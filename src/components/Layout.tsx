@@ -10,7 +10,7 @@ export default function Layout({ children }: LayoutProps) {
     <div className="min-h-screen flex flex-col">
       <header className="bg-gradient-to-r from-[#FFD310] to-[#FF5900] text-primary-foreground py-4 shadow-md">
         <div className="container mx-auto px-4 flex justify-center items-center">
-          <Link href="/" className="flex items-center text-2xl font-bold font-sans hover:opacity-80 transition-opacity">
+          <Link href="/" className="flex items-center text-2xl font-bold hover:opacity-80 transition-opacity">
             
             Exhausted Rocket
           </Link>
@@ -34,6 +34,8 @@ export default function Layout({ children }: LayoutProps) {
               <Instagram size={24} />
             </Link>
             <Link href="https://www.tiktok.com/@exhaustedrocket" target="_blank" rel="noopener noreferrer" aria-label="TikTok" className="hover:opacity-75 transition-opacity">
+              {/* Using img tag directly for the SVG */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/images/icons/tiktok.svg" alt="TikTok" className="w-6 h-6" />
             </Link>
             <Link href="https://www.youtube.com/@ExhaustedRocket" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="hover:text-primary transition-colors">

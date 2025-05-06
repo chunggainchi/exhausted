@@ -54,7 +54,7 @@ export default function ImpressumPage() {
         <h2 className="text-2xl font-semibold mt-6">Limitation of Liability for External Links</h2>
         <p>
           Our website contains links to external websites of third parties. We have no influence on the content of these directly or indirectly linked websites. 
-          Therefore, we cannot guarantee the accuracy of the content of the "external links". 
+          Therefore, we cannot guarantee the accuracy of the content of the &quot;external links&quot;. 
           The respective providers or operators (creators) of the pages are responsible for the content of the external links.
         </p>
         <p>
