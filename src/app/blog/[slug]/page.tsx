@@ -31,6 +31,7 @@ async function getPostBySlug(slug: string) {
 // Add _searchParams to the props definition to indicate it's unused
 export default async function BlogPostPage({
   params,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _searchParams,
 }: {
   params: { slug: string };
