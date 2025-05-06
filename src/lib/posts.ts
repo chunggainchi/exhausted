@@ -66,6 +66,7 @@ export function getAllPostSlugs() {
   let fileNames: string[] = [];
   try {
     fileNames = fs.readdirSync(postsDirectory);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (_err) { 
     return [];
   }
