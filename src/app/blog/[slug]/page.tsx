@@ -1,10 +1,11 @@
 import { notFound } from 'next/navigation';
 
-interface BlogPostPageProps {
-  params: {
-    slug: string;
-  };
-}
+// Remove the separate BlogPostPageProps interface
+// interface BlogPostPageProps {
+//   params: {
+//     slug: string;
+//   };
+// }
 
 // Dummy function to simulate fetching post data
 // Replace this with actual data fetching logic later
@@ -27,7 +28,8 @@ async function getPostBySlug(slug: string) {
   }
 }
 
-export default async function BlogPostPage({ params }: BlogPostPageProps) {
+// Use inline type for props
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
   const post = await getPostBySlug(params.slug);
 
   if (!post) {
