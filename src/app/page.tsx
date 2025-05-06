@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import CategoryTiles from "@/components/CategoryTiles";
 import Image from "next/image";
 

@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { MDXRemote } from 'next-mdx-remote/rsc'; // Import MDXRemote for server components
 import { getAllPostSlugs, getPostData } from '@/lib/posts';
-import { useMDXComponents } from '@/mdx-components'; // Import custom components config
+import { mdxComponents } from '@/mdx-components'; // Import the components object or the getter function directly
 
 // Define the expected props structure, same as before
 type PageProps = {
@@ -40,7 +40,11 @@ export default async function PostPage({ params }: PageProps) {
     notFound(); // Trigger 404 if post doesn't exist
   }
 
-  const components = useMDXComponents({}); // Get custom components
+  // Directly use the imported components
+  // If you defined getMDXComponents and need to pass specific components:
+  // const components = getMDXComponents({}); 
+  // For now, assuming mdxComponents has all you need:
+  const componentsToUse = mdxComponents;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -63,7 +67,7 @@ export default async function PostPage({ params }: PageProps) {
         {/* Render the MDX content */}
         <MDXRemote 
           source={post.content} 
-          components={components} 
+          components={componentsToUse} 
         />
 
       </article>
