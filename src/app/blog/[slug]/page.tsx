@@ -28,8 +28,14 @@ async function getPostBySlug(slug: string) {
   }
 }
 
-// Use inline type for props
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+// Add searchParams to the props definition
+export default async function BlogPostPage({
+  params,
+  searchParams,
+}: {
+  params: { slug: string };
+  searchParams?: { [key: string]: string | string[] | undefined };
+}) {
   const post = await getPostBySlug(params.slug);
 
   if (!post) {
