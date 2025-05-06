@@ -5,11 +5,11 @@ import "./globals.css";
 import Layout from "@/components/Layout";
 // import { GoogleAnalytics } from '@next/third-parties/google'; // Removed
 
-const GA_TRACKING_ID = "G-CS5K6LLQFH"; // Keep for reference, used in script below
+const GA_TRACKING_ID = "G-42KN1MJ4MT"; // Keep for reference, used in script below
 
 export const metadata: Metadata = {
   title: "Exhausted Rocket - Play Idea Hacks & More",
-  description: "Detailed content on how play idea hacks work. Mobile-first blog.",
+  description: "Blog of a tired mom documenting her attempts to exhaust her toddlers energy.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
