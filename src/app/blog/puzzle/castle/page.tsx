@@ -40,7 +40,7 @@ export default function CastlePostPage() {
           {/* Content Section */}
           <div className="prose dark:prose-invert max-w-none md:col-span-1">
             <p className="lead">
-              Two linked cubes form a chunky "keep"; snap two mats on top at right angles for the twin pitched roofs, then hinge one extra mat to the side as a gate-ramp. Toddlers crawl in, pop up under a roof, duck out the gate, repeat—non-stop squat-crawl-stand cardio that burns energy fast.
+              Two linked cubes form a chunky &quot;keep&quot;; snap two mats on top at right angles for the twin pitched roofs, then hinge one extra mat to the side as a gate-ramp. Toddlers crawl in, pop up under a roof, duck out the gate, repeat—non-stop squat-crawl-stand cardio that burns energy fast.
             </p>
             <h3 className="text-xl font-semibold mt-6 mb-2">Specs:</h3>
             <ul>
@@ -49,7 +49,7 @@ export default function CastlePostPage() {
               <li><strong>Difficulty:</strong> Advanced</li>
             </ul>
             <p className="mt-6">
-              That's the gist—castle vibes, instant toddler workout, zero overthinking. 📸 Tag me if you try it!
+              That&apos;s the gist—castle vibes, instant toddler workout, zero overthinking. 📸 Tag me if you try it!
             </p>
           </div>
 

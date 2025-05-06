@@ -44,7 +44,7 @@ export default function GreatWallCrawlPostPage() {
           {/* Content Section */}
           <div className="prose dark:prose-invert max-w-none md:col-span-1">
             <p className="lead">
-              A long, low tunnel ("the wall") leads to a central cube tower where kids can stand up, peek out, then duck back down and keep crawling. Add or remove layers on the tower to dial the squat-workout up or down—instant leg-day for toddlers.
+              A long, low tunnel (&quot;the wall&quot;) leads to a central cube tower where kids can stand up, peek out, then duck back down and keep crawling. Add or remove layers on the tower to dial the squat-workout up or down—instant leg-day for toddlers.
             </p>
             <h3 className="text-xl font-semibold mt-6 mb-2">Details:</h3>
             <ul>

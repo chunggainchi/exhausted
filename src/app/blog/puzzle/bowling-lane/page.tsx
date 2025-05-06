@@ -42,7 +42,7 @@ export default function BowlingLanePostPage() {
           {/* Content Section */}
           <div className="prose dark:prose-invert max-w-none md:col-span-1">
             <p className="lead">
-              A low rectangular "alley" with 3-tile-high bumpers keeps the ball on track while six (or more) recycled bottles wait to be knocked down in the middle. Roll, crash, reset—repeat for endless giggles and hand-eye workout.
+              A low rectangular &quot;alley&quot; with 3-tile-high bumpers keeps the ball on track while six (or more) recycled bottles wait to be knocked down in the middle. Roll, crash, reset—repeat for endless giggles and hand-eye workout.
             </p>
             <h3 className="text-xl font-semibold mt-6 mb-2">Details:</h3>
             <ul>
@@ -58,7 +58,7 @@ export default function BowlingLanePostPage() {
               <li><strong>Pin zone:</strong> line up bottles at the far end.</li>
             </ol>
             <p>
-              That's it—DIY bowling without the sticky rental shoes. Keep spare pins nearby for rapid resets (make dad do it) and let the strikes begin!
+              That&apos;s it—DIY bowling without the sticky rental shoes. Keep spare pins nearby for rapid resets (make dad do it) and let the strikes begin!
             </p>
           </div>
 

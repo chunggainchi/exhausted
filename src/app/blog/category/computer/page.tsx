@@ -9,11 +9,33 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import BlogPostCard, { BlogPostCardProps } from '@/components/BlogPostCard';
 
 export const metadata: Metadata = {
   title: 'Computer | Exhausted Rocket',
   description: 'Posts related to Computer topics on Exhausted Rocket.',
 };
+
+// Placeholder for posts in this category
+const computerPosts: BlogPostCardProps[] = [
+  {
+    title: "Number Playground",
+    subtitle: "(my one-evening tribute to Numberblocks)",
+    description: "A one-evening project to create an interactive number playground for a three-year-old, inspired by Numberblocks.",
+    imageUrl: "/images/blog/numbers.webp",
+    href: "/blog/computer/number-buddies-playground",
+    imageAlt: "Number Buddies Playground"
+  },
+  {
+    title: "Anna Types!",
+    subtitle: "(a super-chill first typing trainer)",
+    description: "A simple, no-pressure typing game for young children, built with plain HTML/CSS/JS to practice letter and number recognition.",
+    imageUrl: "/images/blog/typing.webp",
+    href: "/blog/computer/anna-types",
+    imageAlt: "Anna Types! game interface"
+  },
+  // Add more computer posts here
+];
 
 export default function ComputerCategoryPage() {
   const currentSlug = "computer";
@@ -48,15 +70,27 @@ export default function ComputerCategoryPage() {
         </DropdownMenu>
       </div>
 
-      <header className="text-center mb-12">
-        <h1 className="text-4xl font-bold">{categoryName}</h1>
+      <header className="text-center mb-8 md:mb-12">
+        <h1 className="text-4xl sm:text-5xl font-bold">{categoryName} Posts</h1>
+        <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+        I&apos;ve never been a true gamer (I tried, but one of my guilty pleasures is buying tons of games and finishing none). Out of nowhere, my daughter started asking me to build her games (who even told her that was a thing?!). The clueless part of me just said, &apos;Sure!&apos; and that&apos;s how this journey began. Somehow, creating these simple games for her is way more fulfilling than playing games myself.
+        </p>
       </header>
+      
 
-      <div className="text-center text-muted-foreground">
-        <p>No posts yet in {categoryName}.</p>
-        <p>Check back soon!</p>
-        {/* Placeholder for future post grid */}
-      </div>
+      {/* Blog Post Grid */}
+      {computerPosts.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {computerPosts.map((post) => (
+            <BlogPostCard key={post.href} {...post} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center text-muted-foreground py-12">
+          <p className="text-xl mb-2">No posts yet in {categoryName}.</p>
+          <p>Please check back soon!</p>
+        </div>
+      )}
     </div>
   );
 } 

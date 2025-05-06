@@ -42,7 +42,7 @@ export default function SunshineCubePostPage() {
           {/* Content Section */}
           <div className="prose dark:prose-invert max-w-none md:col-span-1">
             <p className="lead">
-              A single tall box with a sun-window cut-out turns plain foam mats into a cozy micro-home. Toddlers can crawl in, sit upright, wave through the window, and chill—minimal effort for you, maximum "I have my own place" pride for them.
+              A single tall box with a sun-window cut-out turns plain foam mats into a cozy micro-home. Toddlers can crawl in, sit upright, wave through the window, and chill—minimal effort for you, maximum &quot;I have my own place&quot; pride for them.
             </p>
             <h3 className="text-xl font-semibold mt-6 mb-2">Details:</h3>
             <ul>
