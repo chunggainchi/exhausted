@@ -85,6 +85,26 @@ export default function DoghouseHideoutPostPage() {
             </div>
           </section>
         )}
+
+        {/* Affiliate Links Section */}
+        <section className="mt-12 pt-8 border-t">
+          <h3 className="text-2xl font-semibold mb-4">Gear We Used (Affiliate Links)</h3>
+          <ul className="list-disc list-inside space-y-2">
+            <li>
+              <a 
+                href="https://amzn.to/4d91cez" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                Puzzle Play Mats
+              </a>
+              <span className="text-sm text-muted-foreground ml-1">
+                (I started with 4 packs which has been enough for all the builds shown here. Of course, more mats = more building possibilities!)
+              </span>
+            </li>
+          </ul>
+        </section>
       </article>
     </div>
   );
