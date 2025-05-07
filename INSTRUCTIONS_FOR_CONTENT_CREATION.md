@@ -200,7 +200,7 @@ If you plan to include affiliate links in your blog posts, here's a recommended 
           {
             href: "#YOUR_ACTUAL_AFFILIATE_LINK_1_HERE",
             text: "Product Name 1",
-            description: "(Short, helpful context about the product, e.g., why you recommend it)"
+            description: "(Short, helpful context, e.g., It&apos;s great for...)"
           },
           {
             href: "#YOUR_ACTUAL_AFFILIATE_LINK_2_HERE",
@@ -248,10 +248,10 @@ If you plan to include affiliate links in your blog posts, here's a recommended 
 4.  **Include a Disclosure Statement:**
     *   It is crucial for transparency and often a requirement by affiliate programs (like Amazon Associates) to disclose that you are using affiliate links and may earn a commission.
     *   Place this disclosure clearly within or directly below the affiliate links section.
-    *   **Example Disclosure Text:**
+    *   **Example Disclosure Text (ensure any special characters here are also escaped if needed):**
         ```html
         <p className="text-xs text-muted-foreground mt-4">
-          (As an Amazon Associate, I earn from qualifying purchases. This helps support the blog at no extra cost to you!)
+          (This is not the reason why I started this blog, but since readers are already asking might as well.)
         </p>
         ```
 

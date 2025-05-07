@@ -61,7 +61,7 @@ export default function DIYChibiKeychainPostPage() {
                 <tbody className="divide-y divide-border">
                   <tr>
                     <td className="px-4 py-3 align-top font-medium">1. Generate the art</td>
-                    <td className="px-4 py-3 align-top">Prompted ChatGPT-4o&apos;s image tool:<br />&quot;Create a clean product-shot of a single chibi-style rubber charm keychain, isolated on a transparent (alpha) background with no hand, chain, or clasp; the charm shows the little girl in the attached photo. The keychain has a simple built-in hanging loop centered at the top, uses bold black outlines and flat colors (no shading or drop shadows), and sits centered in the frame with plenty of empty space around it.&quot;</td>
+                    <td className="px-4 py-3 align-top">Prompted ChatGPT-4o&apos;s image tool:<br />&ldquo;Create a clean product-shot of a single chibi-style rubber charm keychain, isolated on a transparent (alpha) background with no hand, chain, or clasp; the charm shows the little girl in the attached photo. The keychain has a simple built-in hanging loop centered at the top, uses bold black outlines and flat colors (no shading or drop shadows), and sits centered in the frame with plenty of empty space around it.&rdquo;</td>
                     <td className="px-4 py-3 align-top">Upload a photo of your child to get an instant PNG of him/her cartoonized, already sized like a charm.</td>
                   </tr>
                   <tr>
@@ -91,7 +91,7 @@ export default function DIYChibiKeychainPostPage() {
 
             <h3 className="text-2xl font-semibold mt-8 mb-4">Result</h3>
             <p>
-              A one-of-a-kind chibi charm that now dangles proudly from her yellow rain jacket - ready for playground show-and-tell. The best part? Every time she spots it, she says, &quot;Look, it&apos;s me!&quot; and grins exactly like the drawing.
+              A one-of-a-kind chibi charm that now dangles proudly from her yellow rain jacket - ready for playground show-and-tell. The best part? Every time she spots it, she says, &ldquo;Look, it&apos;s me!&rdquo; and grins exactly like the drawing.
             </p>
             <p className="mt-4">
               Have AI art you love? Print, shrink, resin, repeat - your keys (or your kid&apos;s zipper) will never look the same.

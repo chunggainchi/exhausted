@@ -39,7 +39,7 @@ export default function StairTowerPostPage() {
           {/* Content Section */}
           <div className="prose dark:prose-invert max-w-none md:col-span-1 order-2 md:order-1">
             <p className="lead">
-              Three colourful cube &ldquo;steps&rdquo; rise to a slim peek-out tower. Little ones crawl through the bottom tunnel, shuffle up the snug middle box, and pop their heads out the top for a wave. Every inch is a squat or twist—perfect for burning babyfat - but remember: it&apos;s meant for stepping AROUND, not climbing up. There is literally only air supporting it.
+              Three colourful cube &ldquo;steps&rdquo; rise to a slim peek-out tower. Little ones crawl through the bottom tunnel, shuffle up the snug middle box, and pop their heads out the top for a wave. Every inch is a squat or twist—perfect for burning babyfat &mdash; but remember: it&apos;s meant for stepping AROUND, not climbing up. There is literally only air supporting it.
             </p>
             <h3 className="text-xl font-semibold mt-6 mb-2">Details:</h3>
             <ul>

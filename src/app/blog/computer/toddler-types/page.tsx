@@ -61,7 +61,7 @@ export default function ToddlerTypesPostPage() {
                     <td className="px-4 py-3">Builds finger-to-symbol match</td>
                   </tr>
                   <tr>
-                    <td className="px-4 py-3">Soft &quot;ding&quot; + point added</td>
+                    <td className="px-4 py-3">Soft &ldquo;ding&rdquo; + point added</td>
                     <td className="px-4 py-3">Smile and keep going</td>
                     <td className="px-4 py-3">Instant feedback, zero stress</td>
                   </tr>
@@ -81,7 +81,7 @@ export default function ToddlerTypesPostPage() {
               <li><strong>Stack:</strong> plain HTML/CSS/JS (no frameworks), coded in Cursor with Claude 3.5 suggestions</li>
               <li><strong>Design goal:</strong> one finger, one key, one win—no timers, no lives, just gentle FUN</li>
             </ul>
-            <p className="mt-6">My toddler loves &quot;catching&quot; the letters, I love the non-twerky quietness, and the dings keep them motivated without any flashing alarms.</p>
+            <p className="mt-6">My toddler loves &ldquo;catching&rdquo; the letters, I love the non-twerky quietness, and the dings keep them motivated without any flashing alarms.</p>
             <p className="mt-4 mb-4">👉 Play the prototype here: <a href="/games/toddler-types.html" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-500hover:underline">Toddler Types! Game</a></p>
             <p>Feedback welcome!</p>
           </div>

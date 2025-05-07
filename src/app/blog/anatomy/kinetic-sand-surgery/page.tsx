@@ -42,7 +42,7 @@ export default function KineticSandSurgeryPostPage() {
     {
       href: "https://amzn.to/3YxIGGM",
       text: "Kid-Size Garden Gloves",
-      description: "(Couldn't find tiny surgical gloves, but these work for little hands!)"
+      description: "(Couldn&apos;t find surgical gloves for children lol I wonder why, but these work well enough and she can use them for other stuff too!)"
     },
     {
       href: "https://amzn.to/4m0nbZr",
@@ -53,11 +53,11 @@ export default function KineticSandSurgeryPostPage() {
       href: "https://amzn.to/4jLnIwI",
       text: "The Body Book (in German)",
       description: "This is an amazing book i found on the streets, it has a lot of foldouts and is super informative 🔥"
-    }, 
+    },
     {
       href: "https://amzn.to/3Sp07Wp",
       text: "Neck Reading Light",
-      description: "(I used this normally to read, but it's also great for the kids)"
+      description: "(I used this normally to read, but it&apos;s also great for the kids)"
     }
   ];
 
@@ -86,7 +86,7 @@ export default function KineticSandSurgeryPostPage() {
           {/* Content Section */}
           <div className="prose dark:prose-invert max-w-none md:col-span-1 order-2 md:order-1">
             <p className="lead">
-              We fill a rimmed tray with kinetic sand, bury a full set of plastic organs, and - poof - our squishy "patient" is ready for the OR. Gloves snap, masks tie, headlamps click - honestly everyone&apos;s favourite moment - and out comes the Play-Doh scalpel. We slice the sand, hunt for each organ with a kids&apos; anatomy book as our map, chat about what it does, give the unlucky liver or lung a pretend syringe "treatment," then tuck the sand back in and finish with a stethoscope check: "Yep, still alive!"
+              We fill a rimmed tray with kinetic sand, bury a full set of plastic organs, and - poof - our squishy &ldquo;patient&rdquo; is ready for the OR. Gloves snap, masks tie, headlamps click - honestly everyone&apos;s favourite moment - and out comes the Play-Doh scalpel. We slice the sand, hunt for each organ with a kids&apos; anatomy book as our map, chat about what it does, give the unlucky liver or lung a pretend &ldquo;treatment,&rdquo; then tuck the sand back in and finish with a stethoscope check: &ldquo;Yep, still alive!&rdquo;
             </p>
             <p className="mt-4">
               She begs for this routine daily, and I totally get it. I always wanted to star in a doctor show when I was little. Bonus: she can already spot the large versus small intestine at a glance - when I first learned it I was today years old!
@@ -103,7 +103,7 @@ export default function KineticSandSurgeryPostPage() {
             <h3 className="text-xl font-semibold mt-6 mb-2">Tips & tricks for fellow surgeon-parents</h3>
             <ul>
               <li><strong>Pick the right organ set.</strong> I&apos;m still searching for the perfect Amazon kit - aim for all the majors (heart, lungs, brain, stomach, liver, kidneys, intestines) in one consistent scale and big enough for little hands.</li>
-              <li><strong>Keep the goal light.</strong> This isn&apos;t med school; it&apos;s curiosity fuel. She may forget the fine details later, but every "Why does the heart pump?" right now is gold.</li>
+              <li><strong>Keep the goal light.</strong> This isn&apos;t med school; it&apos;s curiosity fuel. She may forget the fine details later, but every &ldquo;Why does the heart pump?&rdquo; right now is gold.</li>
               <li><strong>Gloves & masks matter.</strong> Suiting up makes the role-play feel authentic (and contains some mess).</li>
               <li><strong>Use the book as a treasure map.</strong> Let your child flip pages and match drawings to their sandy finds - built-in reading practice.</li>
               <li><strong>Control the mess zone.</strong> A baking tray or old sheet keeps the OR contained.</li>
@@ -165,7 +165,7 @@ export default function KineticSandSurgeryPostPage() {
               ))}
             </ul>
             <p className="text-xs text-muted-foreground mt-4">
-              (This is not the reason why i started this blog, but since readers are already asking might as well.)
+              (This is not the reason why I started this blog, but since readers are already asking might as well.)
             </p>
           </section>
         )}
