@@ -100,7 +100,7 @@ export default function DIYChibiKeychainPostPage() {
 
           {/* Image Section */}
           <div className="md:col-span-1 order-1 md:order-2">
-            <div className="sticky top-24"> {/* Added sticky positioning */}
+            <div className="sticky top-24">
               <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg shadow-lg">
                 <Image
                   src={imageUrl}
@@ -114,25 +114,82 @@ export default function DIYChibiKeychainPostPage() {
           </div>
         </div>
 
-        {/* Additional Images Gallery (conditionally rendered) */}
-        {additionalImages.length > 0 && (
-          <section className="mt-12 pt-8 border-t">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">Turn photo into cute charm</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              {additionalImages.map((img) => (
-                <Link key={img.src} href={img.src} target="_blank" rel="noopener noreferrer" className="block relative aspect-video w-full overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow">
-                  <Image
-                    src={img.src}
-                    alt={img.alt}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 640px) 100vw, 50vw"
-                  />
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
+        {/* Additional Images Gallery */}
+        <div className="mt-12">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">Turn photo into cute charm on happy babé</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {additionalImages.map((img) => (
+              <Link key={img.src} href={img.src} target="_blank" rel="noopener noreferrer" className="block relative aspect-video w-full overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                <Image
+                  src={img.src}
+                  alt={img.alt}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 100vw, 50vw"
+                />
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Affiliate Links Section */}
+        <section className="mt-12 pt-8 border-t">
+          <h3 className="text-2xl font-semibold mb-4">Gear We Used (Affiliate Links)</h3>
+          <ul className="list-disc list-inside space-y-2">
+            <li>
+              <a 
+                href="https://amzn.to/4jJVCSk" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                Reusable Respirator Mask
+              </a>
+              <span className="text-sm text-muted-foreground ml-1">
+                (Better safe than sorry - plus resin doesn&apos;t smell great before it&apos;s cured!)
+              </span>
+            </li>
+            <li>
+              <a 
+                href="https://amzn.to/44VETa7" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                Silicone Work Mat
+              </a>
+              <span className="text-sm text-muted-foreground ml-1">
+                (Great size, high quality, and super easy to clean after use)
+              </span>
+            </li>
+            <li>
+              <a 
+                href="https://amzn.to/3EV6qOA" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                UV Resin Kit
+              </a>
+              <span className="text-sm text-muted-foreground ml-1">
+                (Complete set with resin, UV lamp, mat, and silicone mixing tools - no mixing needed, super easy to use!)
+              </span>
+            </li>
+            <li>
+              <a 
+                href="https://amzn.to/3Z1eUu3" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                Printable Shrink Plastic
+              </a>
+              <span className="text-sm text-muted-foreground ml-1">
+                (Found this gem through a craft guru on YouTube - it&apos;s amazing because you can print directly on it with an inkjet printer, unlike most shrink plastic that requires hand drawing)
+              </span>
+            </li>
+          </ul>
+        </section>
       </article>
     </div>
   );
