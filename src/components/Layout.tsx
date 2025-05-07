@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Instagram, Youtube } from "lucide-react";
 
 interface LayoutProps {
@@ -10,9 +11,15 @@ export default function Layout({ children }: LayoutProps) {
     <div className="min-h-screen flex flex-col">
       <header className="bg-gradient-to-r from-[#FFD310] to-[#FF5900] text-primary-foreground py-4 shadow-md">
         <div className="container mx-auto px-4 flex justify-center items-center">
-          <Link href="/" className="flex items-center text-2xl font-bold hover:opacity-80 transition-opacity" 
-                style={{ fontFamily: "var(--font-jost-header)" }}>
-            Exhausted Rocket
+          <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
+            <Image
+              src="/images/logo.svg"
+              alt="Exhausted Rocket"
+              width={105}
+              height={48}
+              className="h-12 w-auto"
+              priority
+            />
           </Link>
           <nav>
             {/* <Link href="/blog" className="mr-4 hover:underline">Blog</Link> */}
