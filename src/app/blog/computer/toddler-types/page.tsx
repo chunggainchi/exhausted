@@ -41,8 +41,8 @@ export default function ToddlerTypesPostPage() {
         <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12">
           {/* Content Section */}
           <div className="prose dark:prose-invert max-w-none md:col-span-1 order-2 md:order-1">
-            <p>My three-year-old has been sneaking phonics lessons from Numberblocks and road signs— suddenly she can spot half the alphabet on her own. She&apos;s also fascinated whenever we&apos;re clacking away on our keyboards, so I went hunting for a slow, no-pressure typing game. Everything online was either lightning-fast, buzzer-loud, or graded like a college exam.</p>
-            <p>So—same drill as last time—I opened Cursor, vibe-coded with Claude for three hours, and out popped this tiny HTML page.</p>
+            <p>My three-year-old has been sneaking phonics lessons who knows where, suddenly she can spot half the alphabet on her own. She&apos;s also fascinated whenever we&apos;re clacking away on our keyboards, so I went hunting for a slow, no-pressure typing game. Everything online was either lightning-fast, buzzer-loud, or graded like a college exam.</p>
+            <p>So - same drill as last time - I opened Cursor, vibe-coded with Claude for an hour or so, and out popped this tiny HTML page.</p>
             
             <h3 className="text-xl font-semibold mt-8 mb-4">How it works</h3>
             <div className="overflow-x-auto">
@@ -78,8 +78,8 @@ export default function ToddlerTypesPostPage() {
             <h3 className="text-xl font-semibold mt-8 mb-4">Dev notes</h3>
             <ul>
               <li><strong>Time spent:</strong> ~1 focused hour</li>
-              <li><strong>Stack:</strong> plain HTML/CSS/JS (no frameworks), coded in Cursor with Claude 3.5 suggestions</li>
-              <li><strong>Design goal:</strong> one finger, one key, one win—no timers, no lives, just gentle FUN</li>
+              <li><strong>Stack:</strong> vanilla HTML, coded in Cursor with Claude 3.5</li>
+              <li><strong>Design goal:</strong> one finger, one key, one win - no timers, only up counting score, some digs to give positive feedback, gentle FUN</li>
             </ul>
             <p className="mt-6">My toddler loves &ldquo;catching&rdquo; the letters, I love the non-twerky quietness, and the dings keep them motivated without any flashing alarms.</p>
             <p className="mt-4 mb-4">👉 Play the prototype here: <a href="/games/toddler-types.html" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-500hover:underline">Toddler Types! Game</a></p>
