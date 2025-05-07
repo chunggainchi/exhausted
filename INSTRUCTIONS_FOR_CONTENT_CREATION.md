@@ -177,4 +177,88 @@ When using an LLM like the one in Cursor to help write blog posts:
             *   For double quotes: use `&quot;` for a general double quote, or `&ldquo;` (left) and `&rdquo;` (right) for more typographic control (e.g., `&ldquo;Quote&rdquo;`).
         *   **Hyphens vs. Em-dashes:** Decide on a consistent style for using hyphens (-) for compound words or ranges, and em-dashes (—) for breaks in thought or parenthetical statements (or use hyphens for both if preferred, but be consistent). If replacing em-dashes pasted from other sources, ensure they are all updated. Note that these usually do not need to be escaped unless they conflict with JSX syntax or cause other linting issues.
 
+## 7. Adding Affiliate Links (e.g., Amazon Associates)
+
+If you plan to include affiliate links in your blog posts, here's a recommended approach to integrate them in a non-intrusive way:
+
+1.  **Placement:**
+    *   Consider placing affiliate links in a dedicated section towards the end of your blog post, for example, after the main content, additional image galleries, or a "What's next?" section. This makes them feel like a supplementary resource rather than the primary focus.
+    *   Alternatively, you can weave them contextually into the main body text where a product is naturally mentioned, but ensure it doesn't disrupt the reading flow.
+
+2.  **Structure in the Page Component (`page.tsx`):**
+    *   **Define an Interface (Optional but Recommended):** For better code organization and type safety, define an interface for your affiliate links:
+        ```typescript
+        interface AffiliateLink {
+          href: string;        // The actual affiliate URL
+          text: string;        // The clickable link text
+          description?: string; // Optional short description or context
+        }
+        ```
+    *   **Create an Array of Links:** Inside your page component, define an array to hold your affiliate link objects:
+        ```typescript
+        const affiliateLinks: AffiliateLink[] = [
+          {
+            href: "#YOUR_ACTUAL_AFFILIATE_LINK_1_HERE",
+            text: "Product Name 1",
+            description: "(Short, helpful context about the product, e.g., why you recommend it)"
+          },
+          {
+            href: "#YOUR_ACTUAL_AFFILIATE_LINK_2_HERE",
+            text: "Product Name 2",
+            description: "(Another short description)"
+          }
+          // Add more links as needed
+        ];
+        ```
+        **Important:** Replace `#YOUR_ACTUAL_AFFILIATE_LINK_X_HERE` with the real affiliate URLs you generate from the affiliate program (e.g., Amazon Associates SiteStripe).
+
+3.  **JSX for Rendering the Section:**
+    *   Conditionally render the section so it only appears if there are links defined.
+    *   Use a clear heading for the section, e.g., "Gear We Used (Affiliate Links)" or "Recommended Products."
+    *   Display the links as an unordered list (`<ul>`).
+    *   Ensure each link opens in a new tab using `target="_blank"` and `rel="noopener noreferrer"` for security and user experience.
+    *   Style as needed using Tailwind CSS classes.
+
+    **Example JSX Structure:**
+    ```typescript jsx
+    {/* Affiliate Links Section */}
+    {affiliateLinks.length > 0 && (
+      <section className="mt-12 pt-8 border-t"> {/* Adjust margins/padding as needed */}
+        <h3 className="text-2xl font-semibold mb-4">Gear We Used (Affiliate Links)</h3>
+        <ul className="list-disc list-inside space-y-2"> {/* `list-inside` for left alignment of bullets */}
+          {affiliateLinks.map((link) => (
+            <li key={link.text}>
+              <a 
+                href={link.href} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline" // Example styling
+              >
+                {link.text}
+              </a>
+              {link.description && <span className="text-sm text-muted-foreground ml-1">{link.description}</span>}
+            </li>
+          ))}
+        </ul>
+        {/* Disclosure Statement - See point 4 */}
+      </section>
+    )}
+    ```
+
+4.  **Include a Disclosure Statement:**
+    *   It is crucial for transparency and often a requirement by affiliate programs (like Amazon Associates) to disclose that you are using affiliate links and may earn a commission.
+    *   Place this disclosure clearly within or directly below the affiliate links section.
+    *   **Example Disclosure Text:**
+        ```html
+        <p className="text-xs text-muted-foreground mt-4">
+          (As an Amazon Associate, I earn from qualifying purchases. This helps support the blog at no extra cost to you!)
+        </p>
+        ```
+
+5.  **Styling:**
+    *   Ensure the section is styled to be readable and visually distinct but not overly aggressive. The example above uses basic Tailwind classes. Adjust these to fit your site's design.
+    *   For left alignment of the entire section (heading, list, disclosure), ensure no centering classes like `text-center` or `mx-auto` are applied to the main `<section>` container or its direct children unless intended for specific elements within.
+
+By following these guidelines, you can provide helpful product recommendations to your readers while maintaining transparency and a good user experience.
+
 This hardcoding approach gives direct control over the component structure and styling for each post. Remember to be consistent with paths and naming conventions, and to apply the responsive ordering for optimal mobile viewing. 
