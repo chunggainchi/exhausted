@@ -38,9 +38,9 @@ export default function BowlingLanePostPage() {
           {postSubtitle && <p className="text-xl sm:text-2xl text-muted-foreground">{postSubtitle}</p>}
         </header>
 
-        <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+        <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12">
           {/* Content Section */}
-          <div className="prose dark:prose-invert max-w-none md:col-span-1">
+          <div className="prose dark:prose-invert max-w-none md:col-span-1 order-2 md:order-1">
             <p className="lead">
               A low rectangular &quot;alley&quot; with 3-tile-high bumpers keeps the ball on track while six (or more) recycled bottles wait to be knocked down in the middle. Roll, crash, reset—repeat for endless giggles and hand-eye workout.
             </p>
@@ -63,7 +63,7 @@ export default function BowlingLanePostPage() {
           </div>
 
           {/* Image Section - Portrait handling */}
-          <div className="w-full overflow-hidden rounded-lg shadow-lg md:col-span-1">
+          <div className="w-full overflow-hidden rounded-lg shadow-lg md:col-span-1 order-1 md:order-2">
             <Image
               src={imageUrl}
               alt={`Image for ${postTitle}`}

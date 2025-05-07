@@ -40,9 +40,9 @@ export default function GreatWallCrawlPostPage() {
           {postSubtitle && <p className="text-xl sm:text-2xl text-muted-foreground">{postSubtitle}</p>}
         </header>
 
-        <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+        <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12">
           {/* Content Section */}
-          <div className="prose dark:prose-invert max-w-none md:col-span-1">
+          <div className="prose dark:prose-invert max-w-none md:col-span-1 order-2 md:order-1">
             <p className="lead">
               A long, low tunnel (&quot;the wall&quot;) leads to a central cube tower where kids can stand up, peek out, then duck back down and keep crawling. Add or remove layers on the tower to dial the squat-workout up or down—instant leg-day for toddlers.
             </p>
@@ -55,7 +55,7 @@ export default function GreatWallCrawlPostPage() {
           </div>
 
           {/* Image Section */}
-          <div className="w-full overflow-hidden rounded-lg shadow-lg md:col-span-1">
+          <div className="w-full overflow-hidden rounded-lg shadow-lg md:col-span-1 order-1 md:order-2">
             <Image
               src={imageUrl}
               alt={`Image for ${postTitle}`}

@@ -41,9 +41,9 @@ export default function DoghouseHideoutPostPage() {
           {postSubtitle && <p className="text-xl sm:text-2xl text-muted-foreground">{postSubtitle}</p>}
         </header>
 
-        <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+        <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12">
           {/* Content Section */}
-          <div className="prose dark:prose-invert max-w-none md:col-span-1">
+          <div className="prose dark:prose-invert max-w-none md:col-span-1 order-2 md:order-1">
             <p className="lead">
               One tall, hollow cube topped with a simple pitched roof. A single doorway at floor level lets kids crawl in, stand up, peek out, squat, and crawl back—a cozy hide-and-seek spot that sneaks in a bit of squatting.
             </p>
@@ -56,7 +56,7 @@ export default function DoghouseHideoutPostPage() {
           </div>
 
           {/* Image Section */}
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg md:col-span-1">
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg md:col-span-1 order-1 md:order-2">
             <Image
               src={imageUrl}
               alt={`Image for ${postTitle}`}

@@ -4,14 +4,14 @@ import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Anna Types! (a super-chill first typing trainer) | Computer | Exhausted Rocket',
+  title: 'Toddler Types! (a super-chill first typing trainer) | Computer | Exhausted Rocket',
   description: 'A simple, no-pressure typing game for young children, built with plain HTML/CSS/JS.',
 };
 
-export default function AnnaTypesPostPage() {
+export default function ToddlerTypesPostPage() {
   const categoryName = "Computer";
   const categoryHref = "/blog/category/computer";
-  const postTitle = "Anna Types!";
+  const postTitle = "Toddler Types!";
   const postSubtitle = "(a super-chill first typing trainer)";
 
   const imageUrl = "/images/blog/typing.webp"; // Main image for this post
@@ -38,9 +38,9 @@ export default function AnnaTypesPostPage() {
           {postSubtitle && <p className="text-xl sm:text-2xl text-muted-foreground">{postSubtitle}</p>}
         </header>
 
-        <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+        <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12">
           {/* Content Section */}
-          <div className="prose dark:prose-invert max-w-none md:col-span-1">
+          <div className="prose dark:prose-invert max-w-none md:col-span-1 order-2 md:order-1">
             <p>My three-year-old has been sneaking phonics lessons from Numberblocks and road signs— suddenly she can spot half the alphabet on her own. She&apos;s also fascinated whenever we&apos;re clacking away on our keyboards, so I went hunting for a slow, no-pressure typing game. Everything online was either lightning-fast, buzzer-loud, or graded like a college exam.</p>
             <p>So—same drill as last time—I opened Cursor, vibe-coded with Claude for three hours, and out popped this tiny HTML page.</p>
             
@@ -73,7 +73,7 @@ export default function AnnaTypesPostPage() {
                 </tbody>
               </table>
             </div>
-            <p className="mt-4 italic">Speed is turtle-paced by default; tweak one variable in script.js if your kiddo wants a faster challenge.</p>
+            <p className="mt-4 italic">Speed is turtle-paced by default; tweak one variable in the script if your kiddo wants a faster challenge.</p>
 
             <h3 className="text-xl font-semibold mt-8 mb-4">Dev notes</h3>
             <ul>
@@ -81,13 +81,13 @@ export default function AnnaTypesPostPage() {
               <li><strong>Stack:</strong> plain HTML/CSS/JS (no frameworks), coded in Cursor with Claude 3.5 suggestions</li>
               <li><strong>Design goal:</strong> one finger, one key, one win—no timers, no lives, just gentle FUN</li>
             </ul>
-            <p className="mt-6">She loves &quot;catching&quot; the letters, I love the non-twerky quietness, and the dings keep her motivated without any flashing alarms.</p>
-            <p className="mt-4 mb-4">👉 Play the prototype here: <a href="/games/anna-types.html" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-500hover:underline">Anna Types! Game</a> {/* Updated Link Placeholder */}</p>
+            <p className="mt-6">My toddler loves &quot;catching&quot; the letters, I love the non-twerky quietness, and the dings keep them motivated without any flashing alarms.</p>
+            <p className="mt-4 mb-4">👉 Play the prototype here: <a href="/games/toddler-types.html" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-500hover:underline">Toddler Types! Game</a></p>
             <p>Feedback welcome!</p>
           </div>
 
           {/* Image Section */}
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg md:col-span-1">
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg md:col-span-1 order-1 md:order-2">
             <Image
               src={imageUrl}
               alt={`Image for ${postTitle}`}

@@ -19,6 +19,14 @@ export const metadata: Metadata = {
 // Temporary hardcoded post data - this would eventually come from a CMS or local files
 const puzzlePosts: BlogPostCardProps[] = [
   {
+    title: "Stair-Tower",
+    subtitle: "(looks like steps, not for stepping)",
+    description: "A colourful cube 'stair-tower' puzzle mat castle, perfect for little ones to explore. Learn how to build this easy fort.",
+    imageUrl: "/images/blog/stairtower.webp",
+    href: "/blog/puzzle/stair-tower",
+    imageAlt: "Stair-Tower puzzle mat castle"
+  },
+  {
     title: "Twin Towers",
     subtitle: "(Petronas-inspired)",
     description: "Two tall, hollow cubes connected by one row of mats create a crawl-through tunnel between them. Kids can crawl in one tower, stand up, duck under the link, and pop out the other side - a mini cardio workout that burns off serious energy 🥳",

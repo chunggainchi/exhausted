@@ -36,9 +36,9 @@ export default function CastlePostPage() {
           {postSubtitle && <p className="text-xl sm:text-2xl text-muted-foreground">{postSubtitle}</p>}
         </header>
 
-        <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+        <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12">
           {/* Content Section */}
-          <div className="prose dark:prose-invert max-w-none md:col-span-1">
+          <div className="prose dark:prose-invert max-w-none md:col-span-1 order-2 md:order-1">
             <p className="lead">
               Two linked cubes form a chunky &quot;keep&quot;; snap two mats on top at right angles for the twin pitched roofs, then hinge one extra mat to the side as a gate-ramp. Toddlers crawl in, pop up under a roof, duck out the gate, repeat—non-stop squat-crawl-stand cardio that burns energy fast.
             </p>
@@ -54,7 +54,7 @@ export default function CastlePostPage() {
           </div>
 
           {/* Image Section */}
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg md:col-span-1">
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg md:col-span-1 order-1 md:order-2">
             <Image
               src={imageUrl} // <<< UPDATE THIS WITH ACTUAL PATH
               alt={`Image for ${postTitle}`}
@@ -72,6 +72,24 @@ export default function CastlePostPage() {
               <Image
                 src="/images/blog/castle-back.webp"
                 alt="Castle build - view from the back (click to enlarge)"
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 100vw, 50vw"
+              />
+            </Link>
+            <Link href="/images/blog/castle-front.webp" target="_blank" rel="noopener noreferrer" className="block relative aspect-video w-full overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow">
+              <Image
+                src="/images/blog/castle-front.webp"
+                alt="Castle build - view from the front (click to enlarge)"
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 100vw, 50vw"
+              />
+            </Link>
+            <Link href="/images/blog/castle-inside.webp" target="_blank" rel="noopener noreferrer" className="block relative aspect-video w-full overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow">
+              <Image
+                src="/images/blog/castle-inside.webp"
+                alt="Castle build - view from the inside (click to enlarge)"
                 fill
                 className="object-cover"
                 sizes="(max-width: 640px) 100vw, 50vw"

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toddler Types</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    #start-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    #start-screen h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    #start-screen p {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+    }
+    #start-screen button {
+      font-size: 1.8rem;
+      padding: 20px 40px;
+      margin: 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #007BFF;
+      color: #fff;
+      transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+    #start-screen button:hover {
+      background-color: #0056b3;
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+    }
+    #game-screen {
+      display: none;
+      text-align: center;
+      width: 100%;
+      max-width: 800px;
+    }
+    #game-screen h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    #game {
+      height: 60vh;
+      min-height: 400px;
+      position: relative;
+      overflow: hidden;
+      border: 3px solid #007BFF;
+      border-radius: 10px;
+      margin: 20px auto;
+      width: 100%;
+      background-color: #1e1e1e;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .letter {
+      font-size: 5rem;
+      position: absolute;
+      color: hsl(calc(360 * var(--hue)), 80%, 70%);
+      user-select: none;
+      transition: transform 0.1s ease-out;
+    }
+    .letter.hit {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+    #score-container {
+        margin-top: 20px;
+        font-size: 1.8rem;
+        color: #00E676;
+    }
+    .firework {
+      width: 20px;
+      height: 20px;
+      position: absolute;
+      border-radius: 50%;
+      animation: explode 0.5s ease-out;
+      pointer-events: none;
+    }
+    @keyframes explode {
+      0% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(3);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="start-screen">
+    <h1>Toddler Types</h1>
+    <p>Select a mode to start:</p>
+    <div>
+      <button id="letters-mode">Letters</button>
+      <button id="numbers-mode">Numbers</button>
+    </div>
+  </div>
+
+  <div id="game-screen">
+    <h1>Toddler Types</h1>
+    <div id="game"></div>
+    <div id="score-container">Score: <span id="score">0</span></div>
+  </div>
+
+  <script>
+    const startScreen = document.getElementById('start-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const lettersModeBtn = document.getElementById('letters-mode');
+    const numbersModeBtn = document.getElementById('numbers-mode');
+    const game = document.getElementById('game');
+    const scoreElement = document.getElementById('score');
+    let score = 0;
+    const activeCharacters = new Map();
+    const maxCharacters = 5;
+    let mode = 'letters';
+
+    const CHARACTER_BOX_SIZE = 100; 
+
+    function startGame(selectedMode) {
+      mode = selectedMode;
+      startScreen.style.display = 'none';
+      gameScreen.style.display = 'block';
+      score = 0;
+      scoreElement.textContent = score;
+      activeCharacters.clear();
+      while (game.firstChild) {
+        game.removeChild(game.firstChild);
+      }
+      setInterval(trySpawnCharacter, 1500);
+    }
+
+    function playBeep() {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (!audioCtx) return;
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.15);
+    }
+
+    function trySpawnCharacter() {
+        if (activeCharacters.size < maxCharacters) {
+            spawnCharacter();
+        }
+    }
+
+    function spawnCharacter() {
+      const characterElement = document.createElement('div');
+      characterElement.className = 'letter';
+      let charCode;
+      if (mode === 'letters') {
+        charCode = Math.floor(Math.random() * 26) + 65;
+      } else if (mode === 'numbers') {
+        charCode = Math.floor(Math.random() * 10) + 48;
+      }
+      const characterValue = String.fromCharCode(charCode);
+      
+      if (Array.from(activeCharacters.values()).includes(characterValue)) {
+          return; 
+      }
+
+      characterElement.textContent = characterValue;
+      characterElement.style.setProperty('--hue', Math.random());
+      
+      const gameRect = game.getBoundingClientRect();
+      const gamePadding = parseFloat(getComputedStyle(game).paddingLeft) || 0;
+
+      const maxX = gameRect.width - (2 * gamePadding) - CHARACTER_BOX_SIZE;
+      const maxY = gameRect.height - (2 * gamePadding) - CHARACTER_BOX_SIZE;
+      
+      const spawnX = Math.max(0, Math.random() * Math.max(0, maxX));
+      const spawnY = Math.max(0, Math.random() * Math.max(0, maxY));
+
+      characterElement.style.left = (gamePadding + spawnX) + 'px';
+      characterElement.style.top = (gamePadding + spawnY) + 'px';
+      
+      game.appendChild(characterElement);
+      activeCharacters.set(characterElement, characterValue);
+
+      const handleKeyPress = (e) => {
+        if (e.key.toUpperCase() === characterValue) {
+          playBeep();
+          createFirework(characterElement.offsetLeft, characterElement.offsetTop);
+          
+          characterElement.classList.add('hit');
+          setTimeout(() => {
+            if (game.contains(characterElement)) {
+                game.removeChild(characterElement);
+            }
+          }, 100);
+
+          activeCharacters.delete(characterElement);
+          document.removeEventListener('keydown', handleKeyPress);
+          score++;
+          scoreElement.textContent = score;
+        }
+      };
+      document.addEventListener('keydown', handleKeyPress);
+    }
+
+    function createFirework(x, y) {
+      for (let i = 0; i < 10; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'firework';
+        particle.style.background = `hsl(${Math.random() * 360}, 80%, 60%)`;
+        particle.style.left = `${x + CHARACTER_BOX_SIZE / 2 - 10 + Math.random() * 20 - 10}px`;
+        particle.style.top = `${y + CHARACTER_BOX_SIZE / 2 - 10 + Math.random() * 20 - 10}px`;
+        game.appendChild(particle);
+
+        setTimeout(() => {
+          if (game.contains(particle)) {
+            game.removeChild(particle);
+          }
+        }, 500);
+      }
+    }
+
+    lettersModeBtn.addEventListener('click', () => startGame('letters'));
+    numbersModeBtn.addEventListener('click', () => startGame('numbers'));
+  </script>
+</body>
+</html> 

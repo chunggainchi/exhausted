@@ -9,11 +9,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import BlogPostCard, { BlogPostCardProps } from '@/components/BlogPostCard';
 
 export const metadata: Metadata = {
   title: 'Anatomy | Exhausted Rocket',
   description: 'Posts related to Anatomy on Exhausted Rocket.',
 };
+
+const anatomyPosts: BlogPostCardProps[] = [
+  {
+    title: "Kinetic-Sand Surgery",
+    subtitle: "(tiny scrub suits, real-body wow factor)",
+    description: "A fun and educational sensory activity where kids perform \"surgery\" on kinetic sand to find plastic organs, learning about anatomy in a hands-on way.",
+    imageUrl: "/images/blog/surgery.webp",
+    href: "/blog/anatomy/kinetic-sand-surgery",
+  },
+];
 
 export default function AnatomyCategoryPage() {
   const currentSlug = "anatomy"; // Update slug
@@ -53,10 +64,17 @@ export default function AnatomyCategoryPage() {
         <h1 className="text-4xl font-bold">{categoryName}</h1>
       </header>
 
-      <div className="text-center text-muted-foreground">
-        <p>New posts coming tomorrow!</p>
-       {/* Placeholder for future post grid */}
-      </div>
+      {anatomyPosts.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {anatomyPosts.map((post) => (
+            <BlogPostCard key={post.href} {...post} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center text-muted-foreground">
+          <p>No posts in this category yet. Check back soon!</p>
+        </div>
+      )}
     </div>
   );
 } 

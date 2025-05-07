@@ -4,18 +4,17 @@ import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Twin Towers (Petronas-inspired) | Puzzle | Exhausted Rocket', // Updated category in title
-  description: 'How to build Twin Towers out of puzzle mats - a fun activity for kids.',
+  title: 'Stair-Tower | Puzzle | Exhausted Rocket',
+  description: 'A colourful cube \'stair-tower\' puzzle mat castle, perfect for little ones to explore. Learn how to build this easy fort.',
 };
 
-export default function TwinTowersPostPage() {
-  const categoryName = "Puzzle"; // Updated category name
-  const categoryHref = "/blog/category/puzzle"; // Updated category href
-  const postTitle = "Twin Towers";
-  const postSubtitle = "(Petronas-inspired)";
+export default function StairTowerPostPage() {
+  const categoryName = "Puzzle";
+  const categoryHref = "/blog/category/puzzle";
+  const postTitle = "Stair-Tower";
+  const postSubtitle = "(looks like steps, not for stepping)";
 
-  // Placeholder - replace with actual image path
-  const imageUrl = "/images/blog/twin-towers.webp"; // <<< PLEASE PROVIDE ACTUAL IMAGE PATH
+  const imageUrl = "/images/blog/stairtower.webp";
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -40,24 +39,25 @@ export default function TwinTowersPostPage() {
           {/* Content Section */}
           <div className="prose dark:prose-invert max-w-none md:col-span-1 order-2 md:order-1">
             <p className="lead">
-              Two tall, hollow cubes connected by one row of mats create a crawl-through tunnel between them. Kids can crawl in one tower, stand up, duck under the link, and pop out the other side - a mini cardio workout that burns off serious energy 🥳
+              Three colourful cube &ldquo;steps&rdquo; rise to a slim peek-out tower. Little ones crawl through the bottom tunnel, shuffle up the snug middle box, and pop their heads out the top for a wave. Every inch is a squat or twist—perfect for burning babyfat - but remember: it&apos;s meant for stepping AROUND, not climbing up. There is literally only air supporting it.
             </p>
             <h3 className="text-xl font-semibold mt-6 mb-2">Details:</h3>
             <ul>
-              <li><strong>Estimated build time:</strong> ≈10-15 mins</li>
-              <li><strong>Mats needed:</strong> ≈30 pcs</li>
-              <li><strong>Difficulty:</strong> Medium</li>
+              <li><strong>Estimated build time:</strong> ≈ 8 mins</li>
+              <li><strong>Mats needed:</strong> ≈ 22 pcs</li>
+              <li><strong>Difficulty:</strong> Easy</li>
             </ul>
           </div>
 
           {/* Image Section */}
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg md:col-span-1 order-1 md:order-2">
+          <div className="w-full overflow-hidden rounded-lg shadow-lg md:col-span-1 order-1 md:order-2">
             <Image
-              src={imageUrl} // <<< UPDATE THIS WITH ACTUAL PATH
+              src={imageUrl}
               alt={`Image for ${postTitle}`}
-              fill
-              className="object-cover"
-              // If using external images or need unoptimized, add: unoptimized
+              width={900}
+              height={1200}
+              className="w-full h-auto object-contain"
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
           </div>
         </div>

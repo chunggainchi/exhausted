@@ -41,9 +41,9 @@ export default function DIYChibiKeychainPostPage() {
           {postSubtitle && <p className="text-xl sm:text-2xl text-muted-foreground">{postSubtitle}</p>}
         </header>
 
-        <div className="grid md:grid-cols-3 gap-8 md:gap-12">
+        <div className="flex flex-col md:grid md:grid-cols-3 gap-8 md:gap-12">
           {/* Content Section */}
-          <div className="prose dark:prose-invert max-w-none md:col-span-2">
+          <div className="prose dark:prose-invert max-w-none md:col-span-2 order-2 md:order-1">
             <p className="lead">
               I&apos;ve been playing with <a href="https://eigenmodel.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-500 hover:underline">a web-app I built</a> that turns selfies into hyper-realistic AI pictures. The pictures are cool, but they were stuck in the screen - until I spotted people on Twitter showing off chibi rubber charms of themselves. 💡 Light bulb on, hands dirty.
             </p>
@@ -99,7 +99,7 @@ export default function DIYChibiKeychainPostPage() {
           </div>
 
           {/* Image Section */}
-          <div className="md:col-span-1">
+          <div className="md:col-span-1 order-1 md:order-2">
             <div className="sticky top-24"> {/* Added sticky positioning */}
               <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg shadow-lg">
                 <Image

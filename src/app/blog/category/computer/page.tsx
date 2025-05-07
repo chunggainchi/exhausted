@@ -27,12 +27,12 @@ const computerPosts: BlogPostCardProps[] = [
     imageAlt: "Number Playground"
   },
   {
-    title: "Anna Types!",
+    title: "Toddler Types!",
     subtitle: "(a super-chill first typing game)",
     description: "A simple, no-pressure typing game for young children, built with plain HTML/CSS/JS to practice letter and number recognition.",
     imageUrl: "/images/blog/typing.webp",
-    href: "/blog/computer/anna-types",
-    imageAlt: "Anna Types! game interface"
+    href: "/blog/computer/toddler-types",
+    imageAlt: "Toddler Types! game interface"
   },
   // Add more computer posts here
 ];

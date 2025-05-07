@@ -1,79 +1,145 @@
 # Instructions for Creating New Blog Content
 
-This document outlines how to create and structure new blog posts for the exhaustedrocket.com website. The content is primarily managed using Markdown (or MDX for more complex components) files.
+This document outlines how to create and structure new blog posts for the exhaustedrocket.com website. The current approach involves hardcoding each blog post as a Next.js page component and manually updating the relevant category overview page.
 
-## 1. File Location and Naming
+## 1. File Location and Naming for Blog Post Pages
 
-*   All blog post files should be placed in the `src/content/blog/` directory.
-*   File names should be URL-friendly (lowercase, hyphenated for spaces) and end with the `.md` or `.mdx` extension. This filename (without the extension) will become the "slug" for the blog post URL.
-    *   Example: A post titled "My Awesome New Idea" could have a filename `my-awesome-new-idea.mdx`. The URL would then be `exhaustedrocket.com/blog/my-awesome-new-idea`.
+*   Blog post pages are React components located within subdirectories of `src/app/blog/`.
+*   Organize posts by category: `src/app/blog/[categoryName]/[post-slug]/page.tsx`
+    *   `[categoryName]` should be the lowercase name of the category (e.g., `puzzle`, `crafts`).
+    *   `[post-slug]` should be URL-friendly (lowercase, hyphenated for spaces). This slug will be part of the URL.
+    *   The file **must** be named `page.tsx`.
+*   Example: A post titled "My Awesome New Puzzle" in the "puzzle" category would be at `src/app/blog/puzzle/my-awesome-new-puzzle/page.tsx`. The URL would then be `exhaustedrocket.com/blog/puzzle/my-awesome-new-puzzle`.
 
-## 2. Frontmatter
+## 2. Structure of a Blog Post Page (`page.tsx`)
 
-Each blog post file **must** begin with a YAML frontmatter block. This block contains metadata for the post.
+Each blog post page component should generally follow this structure:
 
-```yaml
----
-title: "Your Blog Post Title Here"
-date: "YYYY-MM-DD" # e.g., 2024-07-29
-description: "A short, compelling summary of your blog post (1-2 sentences). This is often used for SEO and preview snippets."
-author: "Your Name" # Or a consistent author name
-tags: ["tag1", "relevant-tag", "another-one"] # Optional: A list of relevant tags/keywords
-# Optional: Specify an image for social media previews, post listings, etc.
-# coverImage: "/images/blog/[slug]/cover.jpg" # Path relative to the /public directory
-# draft: true # Optional: Set to true if the post is not ready to be published
----
+```typescript jsx
+import { Metadata } from 'next';
+import Link from 'next/link';
+import Image from 'next/image';
+import { ChevronRight } from 'lucide-react'; // Or other icons as needed
+
+// 1. Metadata Export
+export const metadata: Metadata = {
+  title: 'Your Post Title | Category Name | Exhausted Rocket',
+  description: 'A concise and compelling summary of your blog post (1-2 sentences for SEO).',
+};
+
+// 2. Page Component
+export default function YourPostNamePage() {
+  // 3. Constants for easy management
+  const categoryName = "Category Name"; // e.g., "Puzzle"
+  const categoryHref = "/blog/category/category-name"; // e.g., "/blog/category/puzzle"
+  const postTitle = "Your Post Title";
+  const postSubtitle = "(Optional Subtitle)"; // Optional
+  const imageUrl = "/images/blog/your-post-image.webp"; // Path relative to /public directory
+  const imageAlt = "Alt text for your post image";
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      {/* 4. Breadcrumbs (consistent navigation) */}
+      <nav aria-label="Breadcrumb" className="mb-6 text-sm text-muted-foreground flex items-center">
+        <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+        <ChevronRight size={16} className="mx-1" />
+        <Link href="/blog" className="hover:text-primary transition-colors">Blog</Link>
+        <ChevronRight size={16} className="mx-1" />
+        <Link href={categoryHref} className="hover:text-primary transition-colors">{categoryName}</Link>
+        <ChevronRight size={16} className="mx-1" />
+        <span className="font-medium text-foreground">{postTitle}</span>
+      </nav>
+
+      <article>
+        {/* 5. Post Header */}
+        <header className="mb-8">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-2">{postTitle}</h1>
+          {postSubtitle && <p className="text-xl sm:text-2xl text-muted-foreground">{postSubtitle}</p>}
+        </header>
+
+        {/* Main Content & Image Wrapper */}
+        <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12"> {/* MODIFIED for mobile-first image */}
+          {/* 6. Content Section */}
+          <div className="prose dark:prose-invert max-w-none md:col-span-1 order-2 md:order-1"> {/* order-2 md:order-1 */}
+            <p className="lead">
+              Your main introductory paragraph or leading content.
+            </p>
+            {/* Add more paragraphs, lists, etc. using standard HTML/JSX elements */}
+            <h3 className="text-xl font-semibold mt-6 mb-2">Details:</h3>
+            <ul>
+              <li><strong>Estimated build time:</strong> ≈ X mins</li>
+              <li><strong>Mats needed:</strong> ≈ Y pcs</li>
+              <li><strong>Difficulty:</strong> Easy/Medium/Hard</li>
+            </ul>
+            {/* More content here */}
+          </div>
+
+          {/* 7. Image Section */}
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg md:col-span-1 order-1 md:order-2"> {/* order-1 md:order-2 */}
+            <Image
+              src={imageUrl}
+              alt={imageAlt}
+              fill
+              className="object-cover"
+            />
+          </div>
+        </div>
+      </article>
+    </div>
+  );
+}
 ```
 
-**Mandatory Fields:**
+**Key Parts:**
+*   **Metadata:** Essential for SEO. Ensure `title` and `description` are unique and descriptive.
+*   **Constants:** Define `categoryName`, `categoryHref`, `postTitle`, `postSubtitle` (if any), `imageUrl`, and `imageAlt` at the top of your component for easy updates.
+*   **Breadcrumbs:** Maintain consistent navigation.
+*   **Content & Image Layout:** 
+    *   The wrapper `div` uses `flex flex-col md:grid md:grid-cols-2` to stack on mobile and use a grid on medium screens and up.
+    *   The **Content Section** `div` uses `order-2 md:order-1` to appear second on mobile and first on larger screens.
+    *   The **Image Section** `div` uses `order-1 md:order-2` to appear first on mobile and second on larger screens.
+    *   Adjust `md:col-span-X` as needed if your desktop layout is different (e.g., `md:grid-cols-3` with content taking `md:col-span-2`).
+*   **Content:** Use the `prose` classes for Tailwind Typography styling of your main text content.
+*   **Image:** Use the Next.js `Image` component for optimized image handling. Adjust `fill`, `width`/`height`, `className`, and `sizes` props as needed. For portrait images that should not be cropped by `aspect-[4/3]` and `object-cover`, you might need to adjust the surrounding div's classes or use `object-contain` and specific dimensions.
 
-*   `title`: The main title of your blog post.
-*   `date`: The publication date in `YYYY-MM-DD` format.
-*   `description`: A brief summary for SEO and previews.
-*   `author`: The author of the post.
+## 3. Adding the Post to its Category Overview Page
 
-**Optional Fields (but recommended):**
+After creating the individual blog post page, you **must** add it to the list of posts on its corresponding category overview page.
 
-*   `tags`: Helps categorize and find posts.
-*   `coverImage`: Path to a representative image for the post (see Image Handling section). Stored in `public/images/blog/[slug]/your-image.jpg`.
-*   `draft`: If `true`, the post might be excluded from production builds or lists (we'll need to implement logic for this if desired). Defaults to `false` if omitted.
+*   Locate the category page, e.g., `src/app/blog/category/puzzle/page.tsx`.
+*   Find the array that holds the posts for that category (e.g., `const puzzlePosts: BlogPostCardProps[] = [...]`).
+*   Add a new object to this array for your new post. This object should match the `BlogPostCardProps` interface (defined in `src/components/BlogPostCard.tsx`).
 
-## 3. Content (Markdown/MDX)
+**Example entry for `puzzlePosts` array:**
+```typescript
+  {
+    title: "Stair-Tower", // Matches postTitle from the post page
+    subtitle: "(looks like steps, not for stepping)", // Optional, matches postSubtitle
+    description: "A colourful cube \'stair-tower\' puzzle mat castle, perfect for little ones to explore. Learn how to build this easy fort.", // SEO description
+    imageUrl: "/images/blog/stairtower.webp", // Matches imageUrl
+    href: "/blog/puzzle/stair-tower", // Path to the new post page
+    imageAlt: "Stair-Tower puzzle mat castle" // Matches imageAlt
+    // If you add new props to BlogPostCardProps (e.g., for image_portrait), ensure they are defined in the interface
+  },
+  // ... other posts
+```
+*   Place the new entry appropriately (e.g., at the beginning for newest first).
 
-Below the frontmatter, write your blog post content using standard Markdown. If you need to use React components directly within your content (e.g., custom interactive elements), you should use the `.mdx` extension for the file.
-
-### Text Formatting:
-
-*   Headings: `# H1`, `## H2`, `### H3`, etc.
-*   Bold: `**bold text**` or `__bold text__`
-*   Italic: `*italic text*` or `_italic text_`
-*   Links: `[link text](https://example.com)`
-*   Lists:
-    *   Unordered: `- item 1`, `* item 1`
-    *   Ordered: `1. item 1`, `2. item 2`
-*   Blockquotes: `> This is a blockquote.`
-*   Code blocks:
-    ```python
-    # This is a Python code block
-    print("Hello, world!")
-    ```
-
-### Image Handling:
+## 4. Image Handling
 
 1.  **Storage:**
-    *   Create a subdirectory within `public/images/blog/` named after your post's slug.
-    *   Example: For a post `my-awesome-new-idea.mdx`, images would go into `public/images/blog/my-awesome-new-idea/`.
-2.  **Naming:** Use descriptive, lowercase, hyphenated filenames for images (e.g., `main-diagram.png`, `step-1-screenshot.jpg`).
-3.  **Referencing in Markdown/MDX:**
-    *   Use standard Markdown image syntax: `![alt text](/images/blog/[slug]/your-image-name.jpg)`
-    *   The path **must** start with `/` to be relative to the `public` directory.
-    *   Example: `![My Awesome Diagram](/images/blog/my-awesome-new-idea/main-diagram.png)`
-4.  **Optimization:** Before adding images, try to optimize them for the web (e.g., compress JPEGs, use WebP where appropriate) to keep page load times fast.
+    *   Store all blog images in the `public/images/blog/` directory.
+    *   You can create subdirectories for organization if desired (e.g., `public/images/blog/puzzle/your-image.webp`), but ensure the `imageUrl` constant in your page component reflects the correct path.
+2.  **Naming:** Use descriptive, lowercase, hyphenated filenames (e.g., `stair-tower-main.webp`).
+3.  **Referencing:**
+    *   In the post page component (e.g., `stair-tower/page.tsx`), set the `imageUrl` constant: `const imageUrl = "/images/blog/stairtower.webp";`.
+    *   In the category overview page (e.g., `puzzle/page.tsx`), set the `imageUrl` in the post object: `imageUrl: "/images/blog/stairtower.webp"`.
+4.  **Optimization:** Before adding images, optimize them for the web (e.g., compress JPEGs, use WebP) to improve page load times.
 
-### Video Embedding (e.g., YouTube):
+## 5. Video Embedding (e.g., YouTube)
 
-*   For services like YouTube or Vimeo, it's usually best to use their provided `iframe` embed code.
-*   You can directly paste this HTML into your `.md` or `.mdx` file.
+*   For services like YouTube or Vimeo, use their provided `iframe` embed code.
+*   You can directly paste this HTML into your page component's JSX.
     ```html
     <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
       <iframe
@@ -85,28 +151,30 @@ Below the frontmatter, write your blog post content using standard Markdown. If 
     </div>
     ```
     *   Replace `YOUR_VIDEO_ID` with the actual ID of the YouTube video.
-    *   The surrounding `div` helps make the video responsive.
+    *   The surrounding `div` helps make the video responsive. Place this structure within your content section.
 
-## 4. Workflow for AI-Assisted Content Creation (Cursor)
+## 6. Workflow for AI-Assisted Content Creation (Cursor)
 
-When using an LLM like the one in Cursor to help generate blog posts:
+When using an LLM like the one in Cursor to help write blog posts:
 
-1.  **Provide Context:**
-    *   Clearly state the desired `title`.
-    *   Provide the `date` (or ask for the current date).
-    *   Give a clear prompt for the `description`.
-    *   Specify the `author`.
-    *   List any `tags`.
-2.  **Specify Image Requirements:**
-    *   If you want the LLM to suggest image placements, tell it where.
-    *   Indicate the `alt text` it should use.
-    *   Remind it of the path structure: `/images/blog/[slug]/filename.ext`. You will need to manually create the slug directory and add the images there.
-3.  **Content Generation:**
-    *   Ask the LLM to generate the main content in Markdown format.
-    *   If you need MDX for specific components, specify that.
-4.  **Structure Request:**
-    *   You can ask the LLM to generate the full file content, including the frontmatter block and the Markdown body.
-    *   Example prompt: "Generate a blog post file for `src/content/blog/my-new-post.mdx` with the title 'My New Post', date '2024-08-01', description 'A post about something new.', author 'Me', tags ['new', 'exciting']. The content should be about X, Y, and Z. Include a placeholder for an image named 'feature.png' with alt text 'Feature Image'."
-5.  **Review and Refine:** Always review the generated content for accuracy, tone, and completeness. Manually add images to the correct `public/images/blog/[slug]/` directory.
+1.  **Setup the File:**
+    *   Manually create the directory structure and the `page.tsx` file (e.g., `src/app/blog/puzzle/your-new-post/page.tsx`).
+    *   Copy the general structure from an existing post page or the template provided in section 2 of this document.
+2.  **Prompting for Content:**
+    *   **Metadata:** Ask the AI to generate the `title` and `description` for the `metadata` object.
+    *   **Page Constants:** Request content for `postTitle`, `postSubtitle` (if applicable), and `imageAlt`. You will need to determine the `imageUrl`, `categoryName`, and `categoryHref` yourself.
+    *   **Main Content:** Provide a detailed prompt for the article's body. Ask for the content in plain text or simple HTML/JSX snippets that can be pasted into the `prose` div.
+    *   **Details Section:** Ask for bullet points for the "Details" list (build time, mats needed, difficulty).
+3.  **Integration:**
+    *   Carefully integrate the AI-generated text into your `page.tsx` component.
+    *   Ensure all paths, links, and constants are correct.
+4.  **Update Category Page:**
+    *   Manually update the corresponding category overview page as described in section 3. The AI can help draft the description or title for the card if needed.
+5.  **Review and Refine:** Always thoroughly review the AI-generated content for accuracy, tone, technical correctness (especially paths and props), and completeness. Manually add and optimize images.
+    *   **Punctuation & Escaping Entities:** Pay close attention to punctuation for consistency and correctness, especially to avoid `react/no-unescaped-entities` ESLint errors:
+        *   **Apostrophes & Quotes in JSX:** Single apostrophes (`'`) and double quotes (`"`) used within JSX text content (e.g., inside `<p>Some text with 'quotes'</p>`) often need to be escaped with their HTML entity counterparts. 
+            *   For apostrophes: use `&apos;` (e.g., `it&apos;s`).
+            *   For double quotes: use `&quot;` for a general double quote, or `&ldquo;` (left) and `&rdquo;` (right) for more typographic control (e.g., `&ldquo;Quote&rdquo;`).
+        *   **Hyphens vs. Em-dashes:** Decide on a consistent style for using hyphens (-) for compound words or ranges, and em-dashes (—) for breaks in thought or parenthetical statements (or use hyphens for both if preferred, but be consistent). If replacing em-dashes pasted from other sources, ensure they are all updated. Note that these usually do not need to be escaped unless they conflict with JSX syntax or cause other linting issues.
 
-By following these guidelines, we can ensure consistency and make it easy to manage and display blog content. 
+This hardcoding approach gives direct control over the component structure and styling for each post. Remember to be consistent with paths and naming conventions, and to apply the responsive ordering for optimal mobile viewing. 

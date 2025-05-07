@@ -38,9 +38,9 @@ export default function SunshineCubePostPage() {
           {postSubtitle && <p className="text-xl sm:text-2xl text-muted-foreground">{postSubtitle}</p>}
         </header>
 
-        <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+        <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12">
           {/* Content Section */}
-          <div className="prose dark:prose-invert max-w-none md:col-span-1">
+          <div className="prose dark:prose-invert max-w-none md:col-span-1 order-2 md:order-1">
             <p className="lead">
               A single tall box with a sun-window cut-out turns plain foam mats into a cozy micro-home. Toddlers can crawl in, sit upright, wave through the window, and chill—minimal effort for you, maximum &quot;I have my own place&quot; pride for them.
             </p>
@@ -60,7 +60,7 @@ export default function SunshineCubePostPage() {
 
           {/* Image Section */}
           {/* Using default aspect-ratio and object-cover for potentially standard photo */}
-          <div className="w-full overflow-hidden rounded-lg shadow-lg md:col-span-1">
+          <div className="w-full overflow-hidden rounded-lg shadow-lg md:col-span-1 order-1 md:order-2">
             <Image
               src={imageUrl}
               alt={`Image for ${postTitle}`}

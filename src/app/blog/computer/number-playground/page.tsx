@@ -38,9 +38,9 @@ export default function NumberPlaygroundPostPage() {
           {postSubtitle && <p className="text-xl sm:text-2xl text-muted-foreground">{postSubtitle}</p>}
         </header>
 
-        <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+        <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12">
           {/* Content Section */}
-          <div className="prose dark:prose-invert max-w-none md:col-span-1">
+          <div className="prose dark:prose-invert max-w-none md:col-span-1 order-2 md:order-1">
             <p>My three-year-old can already chant every episode title of Numberblocks by heart. She&apos;s cracked 0–10, sings the &quot;Die Wunderbare Welt von Eins&quot; song on repeat, and still begs to re-watch the same clips—because the music slaps and the math just clicks.</p>
             <p>Last week,she randomly asked, &quot;Mama can you build me a new game?&quot; Challenge accepted. Three coffee-powered hours later, Number Playground was born.</p>
             
@@ -103,7 +103,7 @@ export default function NumberPlaygroundPostPage() {
           </div>
 
           {/* Image Section - Portrait handling */}
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg md:col-span-1">
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg md:col-span-1 order-1 md:order-2">
             <Image
               src={imageUrl}
               alt={`Image for ${postTitle}`}
