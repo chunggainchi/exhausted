@@ -55,7 +55,7 @@ export default function AiCategoryPage() {
 
       <div className="text-center text-muted-foreground">
         <p>New posts coming tomorrow!</p>
-              {/* Placeholder for future post grid */}
+       {/* Placeholder for future post grid */}
       </div>
     </div>
   );
