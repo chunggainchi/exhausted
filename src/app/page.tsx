@@ -1,6 +1,7 @@
 import CategoryTiles from "@/components/CategoryTiles";
 import Image from "next/image";
 import Link from 'next/link';
+import AboutSection from '@/components/AboutSection';
 
 export default function HomePage() {
   return (
@@ -84,6 +85,10 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* About Section */}
+      <AboutSection />
+
     </div>
   );
 }

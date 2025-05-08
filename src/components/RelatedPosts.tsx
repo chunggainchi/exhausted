@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { getRelatedPosts, BlogPostMeta } from '@/lib/blogData';
+import { getRelatedPosts } from '@/lib/blogData';
 
 interface RelatedPostsProps {
   currentSlug: string;
