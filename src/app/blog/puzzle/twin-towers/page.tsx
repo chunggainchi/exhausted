@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
+import RelatedPosts from '@/components/RelatedPosts';
+import BackToTopButton from '@/components/BackToTopButton';
 
 export const metadata: Metadata = {
   title: 'Twin Towers (Petronas-inspired) | Puzzle | Exhausted Rocket', // Updated category in title
@@ -13,6 +15,7 @@ export default function TwinTowersPostPage() {
   const categoryHref = "/blog/category/puzzle"; // Updated category href
   const postTitle = "Twin Towers";
   const postSubtitle = "(Petronas-inspired)";
+  const currentSlug = "/blog/puzzle/twin-towers"; // Added for RelatedPosts
 
   // Placeholder - replace with actual image path
   const imageUrl = "/images/blog/twin-towers.webp"; // <<< PLEASE PROVIDE ACTUAL IMAGE PATH
@@ -81,7 +84,12 @@ export default function TwinTowersPostPage() {
             </li>
           </ul>
         </section>
+
+        {/* Related Posts Section */}
+        <RelatedPosts currentSlug={currentSlug} currentCategory={categoryName} />
+
       </article>
+      <BackToTopButton />
     </div>
   );
 } 

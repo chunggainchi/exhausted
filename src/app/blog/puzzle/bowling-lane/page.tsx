@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
+import RelatedPosts from '@/components/RelatedPosts';
+import BackToTopButton from '@/components/BackToTopButton';
 
 export const metadata: Metadata = {
   title: 'Bowling Lane (kid-proof, gutter-proof) | Puzzle | Exhausted Rocket',
@@ -13,6 +15,7 @@ export default function BowlingLanePostPage() {
   const categoryHref = "/blog/category/puzzle";
   const postTitle = "Bowling Lane";
   const postSubtitle = "(kid-proof, gutter-proof)";
+  const currentSlug = "/blog/puzzle/bowling-lane";
 
   const imageUrl = "/images/blog/bowling.webp"; // Main image
 
@@ -118,7 +121,11 @@ export default function BowlingLanePostPage() {
           </p>
         </section>
 
+        {/* Related Posts Section */}
+        <RelatedPosts currentSlug={currentSlug} currentCategory={categoryName} />
+
       </article>
+      <BackToTopButton />
     </div>
   );
 } 

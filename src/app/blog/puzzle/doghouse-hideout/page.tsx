@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
+import RelatedPosts from '@/components/RelatedPosts';
+import BackToTopButton from '@/components/BackToTopButton';
 
 export const metadata: Metadata = {
   title: 'Doghouse Hideout (Snoopy-style) | Puzzle | Exhausted Rocket',
@@ -13,6 +15,7 @@ export default function DoghouseHideoutPostPage() {
   const categoryHref = "/blog/category/puzzle";
   const postTitle = "Doghouse Hideout";
   const postSubtitle = "(Snoopy-style, but rainbow)";
+  const currentSlug = "/blog/puzzle/doghouse-hideout";
 
   const imageUrl = "/images/blog/doghouse.webp"; // <<< PLEASE PROVIDE ACTUAL IMAGE PATH
 
@@ -105,7 +108,12 @@ export default function DoghouseHideoutPostPage() {
             </li>
           </ul>
         </section>
+
+        {/* Related Posts Section */}
+        <RelatedPosts currentSlug={currentSlug} currentCategory={categoryName} />
+
       </article>
+      <BackToTopButton />
     </div>
   );
 } 

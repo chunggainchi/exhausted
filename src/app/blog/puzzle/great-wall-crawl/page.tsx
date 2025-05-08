@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
+import RelatedPosts from '@/components/RelatedPosts';
+import BackToTopButton from '@/components/BackToTopButton';
 
 export const metadata: Metadata = {
   title: 'Great Wall Crawl (watch-tower edition) | Puzzle | Exhausted Rocket',
@@ -13,6 +15,7 @@ export default function GreatWallCrawlPostPage() {
   const categoryHref = "/blog/category/puzzle";
   const postTitle = "Great Wall Crawl";
   const postSubtitle = "(watch-tower edition)";
+  const currentSlug = "/blog/puzzle/great-wall-crawl";
 
   const imageUrl = "/images/blog/greatwall.webp"; // Main image
 
@@ -110,7 +113,11 @@ export default function GreatWallCrawlPostPage() {
           </p>
         </section>
 
+        {/* Related Posts Section */}
+        <RelatedPosts currentSlug={currentSlug} currentCategory={categoryName} />
+
       </article>
+      <BackToTopButton />
     </div>
   );
 } 

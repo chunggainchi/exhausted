@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
+import RelatedPosts from '@/components/RelatedPosts';
+import BackToTopButton from '@/components/BackToTopButton';
 
 export const metadata: Metadata = {
   title: 'Sunshine Cube (tiny-house vibes) | Puzzle | Exhausted Rocket',
@@ -13,6 +15,7 @@ export default function SunshineCubePostPage() {
   const categoryHref = "/blog/category/puzzle";
   const postTitle = "Sunshine Cube";
   const postSubtitle = "(tiny-house vibes)";
+  const currentSlug = "/blog/puzzle/sunshine-cube";
 
   const imageUrl = "/images/blog/Cube.webp"; // Main image
 
@@ -115,7 +118,11 @@ export default function SunshineCubePostPage() {
           </p>
         </section>
 
+        {/* Related Posts Section */}
+        <RelatedPosts currentSlug={currentSlug} currentCategory={categoryName} />
+
       </article>
+      <BackToTopButton />
     </div>
   );
 } 

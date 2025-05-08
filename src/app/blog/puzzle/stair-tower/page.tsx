@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
+import RelatedPosts from '@/components/RelatedPosts';
+import BackToTopButton from '@/components/BackToTopButton';
 
 export const metadata: Metadata = {
   title: 'Stair-Tower | Puzzle | Exhausted Rocket',
@@ -13,6 +15,7 @@ export default function StairTowerPostPage() {
   const categoryHref = "/blog/category/puzzle";
   const postTitle = "Stair-Tower";
   const postSubtitle = "(looks like steps, not for stepping)";
+  const currentSlug = "/blog/puzzle/stair-tower";
 
   const imageUrl = "/images/blog/stairtower.webp";
 
@@ -85,7 +88,11 @@ export default function StairTowerPostPage() {
           </p>
         </section>
 
+        {/* Related Posts Section */}
+        <RelatedPosts currentSlug={currentSlug} currentCategory={categoryName} />
+
       </article>
+      <BackToTopButton />
     </div>
   );
 } 

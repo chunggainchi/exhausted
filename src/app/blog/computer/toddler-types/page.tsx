@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
+import RelatedPosts from '@/components/RelatedPosts';
+import BackToTopButton from '@/components/BackToTopButton';
 
 export const metadata: Metadata = {
   title: 'Toddler Types! (a super-chill first typing trainer) | Computer | Exhausted Rocket',
@@ -13,6 +15,7 @@ export default function ToddlerTypesPostPage() {
   const categoryHref = "/blog/category/computer";
   const postTitle = "Toddler Types!";
   const postSubtitle = "(a super-chill first typing trainer)";
+  const currentSlug = "/blog/computer/toddler-types";
 
   const imageUrl = "/images/blog/typing.webp"; // Main image for this post
 
@@ -116,7 +119,12 @@ export default function ToddlerTypesPostPage() {
             </div>
           </section>
         )}
+
+        {/* Related Posts Section */}
+        <RelatedPosts currentSlug={currentSlug} currentCategory={categoryName} />
+
       </article>
+      <BackToTopButton />
     </div>
   );
 } 

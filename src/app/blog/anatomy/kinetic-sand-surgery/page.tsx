@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
+import RelatedPosts from '@/components/RelatedPosts';
+import BackToTopButton from '@/components/BackToTopButton';
 
 export const metadata: Metadata = {
   title: 'Kinetic-Sand Surgery | Anatomy | Exhausted Rocket',
@@ -21,6 +23,7 @@ export default function KineticSandSurgeryPostPage() {
   const postSubtitle = "(tiny scrub suits, real-body wow factor)";
   const imageUrl = "/images/blog/surgery.webp";
   const imageAlt = "Child performing kinetic sand surgery with toy instruments and plastic organs.";
+  const currentSlug = "/blog/anatomy/kinetic-sand-surgery";
 
   // Added additionalImages array
   const additionalImages: Array<{ src: string; alt: string }> = [
@@ -169,7 +172,12 @@ export default function KineticSandSurgeryPostPage() {
             </p>
           </section>
         )}
+
+        {/* Related Posts Section */}
+        <RelatedPosts currentSlug={currentSlug} currentCategory={categoryName} />
+
       </article>
+      <BackToTopButton />
     </div>
   );
 } 

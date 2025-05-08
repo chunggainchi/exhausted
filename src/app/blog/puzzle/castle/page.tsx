@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
+import RelatedPosts from '@/components/RelatedPosts';
+import BackToTopButton from '@/components/BackToTopButton';
 
 export const metadata: Metadata = {
   title: 'Castle (Château de Chambord-inspired) | Puzzle | Exhausted Rocket',
@@ -13,6 +15,7 @@ export default function CastlePostPage() {
   const categoryHref = "/blog/category/puzzle";
   const postTitle = "Castle";
   const postSubtitle = "(think mini Château de Chambord—big blocky keep, two pointy roofs, a little gatehouse off the side)";
+  const currentSlug = "/blog/puzzle/castle";
 
   // Placeholder - replace with actual image path
   const imageUrl = "/images/blog/castle.webp"; // <<< PLEASE PROVIDE ACTUAL IMAGE PATH
@@ -130,7 +133,11 @@ export default function CastlePostPage() {
           </p>
         </section>
 
+        {/* Related Posts Section */}
+        <RelatedPosts currentSlug={currentSlug} currentCategory={categoryName} />
+
       </article>
+      <BackToTopButton />
     </div>
   );
 } 

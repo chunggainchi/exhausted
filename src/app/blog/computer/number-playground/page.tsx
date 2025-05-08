@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
+import RelatedPosts from '@/components/RelatedPosts';
+import BackToTopButton from '@/components/BackToTopButton';
 
 export const metadata: Metadata = {
   title: 'Number Playground | Computer | Exhausted Rocket',
@@ -13,6 +15,7 @@ export default function NumberPlaygroundPostPage() {
   const categoryHref = "/blog/category/computer";
   const postTitle = "Number Playground";
   const postSubtitle = "(my one-evening tribute to Numberblocks)";
+  const currentSlug = "/blog/computer/number-playground";
 
   const imageUrl = "/images/blog/numbers.webp"; // <<< PLEASE PROVIDE ACTUAL IMAGE PATH
 
@@ -132,7 +135,12 @@ export default function NumberPlaygroundPostPage() {
             </div>
           </section>
         )}
+
+        {/* Related Posts Section */}
+        <RelatedPosts currentSlug={currentSlug} currentCategory={categoryName} />
+
       </article>
+      <BackToTopButton />
     </div>
   );
 } 

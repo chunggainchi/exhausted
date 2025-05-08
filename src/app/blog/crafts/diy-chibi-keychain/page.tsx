@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
+import RelatedPosts from '@/components/RelatedPosts';
+import BackToTopButton from '@/components/BackToTopButton';
 
 export const metadata: Metadata = {
   title: 'DIY Chibi Keychain | Crafts | Exhausted Rocket',
@@ -13,6 +15,7 @@ export default function DIYChibiKeychainPostPage() {
   const categoryHref = "/blog/category/crafts";
   const postTitle = "DIY Chibi Keychain";
   const postSubtitle = "(bringing AI art off-screen and onto zippers)";
+  const currentSlug = "/blog/crafts/diy-chibi-keychain";
 
   const imageUrl = "/images/blog/keychainmock.webp"; 
 
@@ -190,7 +193,12 @@ export default function DIYChibiKeychainPostPage() {
             </li>
           </ul>
         </section>
+
+        {/* Related Posts Section */}
+        <RelatedPosts currentSlug={currentSlug} currentCategory={categoryName} />
+
       </article>
+      <BackToTopButton />
     </div>
   );
 } 
