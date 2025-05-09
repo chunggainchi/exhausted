@@ -45,7 +45,7 @@ export default function KineticSandSurgeryPostPage() {
     {
       href: "https://amzn.to/3YxIGGM",
       text: "Kid-Size Garden Gloves",
-      description: "(Couldn&apos;t find surgical gloves for children lol I wonder why, but these work well enough and she can use them for other stuff too!)"
+      description: "(Couldn\'t find surgical gloves for children lol I wonder why, but these work well enough and she can use them for other stuff too!)"
     },
     {
       href: "https://amzn.to/4m0nbZr",
@@ -60,7 +60,7 @@ export default function KineticSandSurgeryPostPage() {
     {
       href: "https://amzn.to/3Sp07Wp",
       text: "Neck Reading Light",
-      description: "(I used this normally to read, but it&apos;s also great for the kids)"
+      description: "(I used this normally to read, but it\'s also great for the kids)"
     }
   ];
 
@@ -113,7 +113,7 @@ export default function KineticSandSurgeryPostPage() {
             </ul>
             <h3 className="text-xl font-semibold mt-6 mb-2">What&apos;s next?</h3>
             <p>
-              I&apos;ve been a fan of The Breakfasteur on YouTube since long before I had a kid; those hands-on dissections and crystal-clear explanations are the level we&apos;ll level-up to once the basics stick. For now, daily sand surgeries keep the questions (and giggles) flowing—and yes, she still presses her ear to my chest to hear a real heartbeat. I&apos;ll never say no to that prescription.
+              I&apos;ve been a fan of The Breakfasteur on YouTube since long before I had a kid; those hands-on dissections and crystal-clear explanations are the level we&apos;ll level-up to once the basics stick. For now, daily sand surgeries keep the questions (and giggles) flowing - and yes, she still presses her ear to my chest to hear a real heartbeat. I&apos;ll never say no to that prescription.
             </p>
           </div>
 

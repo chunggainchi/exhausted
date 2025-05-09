@@ -44,7 +44,7 @@ export default function NumberPlaygroundPostPage() {
         <div className="flex flex-col md:grid md:grid-cols-2 gap-8 md:gap-12">
           {/* Content Section */}
           <div className="prose dark:prose-invert max-w-none md:col-span-1 order-2 md:order-1">
-            <p>My three-year-old can already chant every episode title of Numberblocks by heart. She&apos;s cracked 0–10, sings the &ldquo;Die Wunderbare Welt von Eins&rdquo; song on repeat, and still begs to re-watch the same clips—because the music slaps and the math just clicks.</p>
+            <p>My three-year-old can already chant every episode title of Numberblocks by heart. She&apos;s cracked 0–10, sings the &ldquo;Die Wunderbare Welt von Eins&rdquo; song on repeat, and still begs to re-watch the same clips - because the music slaps and the math just clicks.</p>
             <p>Last week, she randomly asked, &ldquo;Mama can you build me a new game?&rdquo; Challenge accepted. Three coffee-powered hours later, Number Playground was born.</p>
             
             <h3 className="text-xl font-semibold mt-8 mb-4">What you can do inside the Playground</h3>
@@ -100,7 +100,7 @@ export default function NumberPlaygroundPostPage() {
               <li><strong>P.S.:</strong> A lot of copy-paste bravery and a ton of patience required</li>
             </ul>
             
-            <p>She&apos;s already pushing towers through the wall, shrieking when the confetti pops, and—bonus for me—practising addition without even realising it. If your little one loves Numberblocks, let them drive the blocks themselves:</p>
+            <p>She&apos;s already pushing towers through the wall, shrieking when the confetti pops, and - bonus for me - practising addition without even realising it. If your little one loves Numberblocks, let them drive the blocks themselves:</p>
             <p className= "mt-4 mb-4">👉 Play the prototype here: <a href="https://vps.heidekrueger.com/projects/numbers/" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-500 hover:underline">Number Playground</a></p>
             <p>Hit me with feedback; bedtime coding sessions are officially a thing now!</p>
           </div>

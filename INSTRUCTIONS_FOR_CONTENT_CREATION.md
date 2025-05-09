@@ -171,11 +171,17 @@ When using an LLM like the one in Cursor to help write blog posts:
 4.  **Update Category Page:**
     *   Manually update the corresponding category overview page as described in section 3. The AI can help draft the description or title for the card if needed.
 5.  **Review and Refine:** Always thoroughly review the AI-generated content for accuracy, tone, technical correctness (especially paths and props), and completeness. Manually add and optimize images.
-    *   **Punctuation & Escaping Entities:** Pay close attention to punctuation for consistency and correctness, especially to avoid `react/no-unescaped-entities` ESLint errors:
-        *   **Apostrophes & Quotes in JSX:** Single apostrophes (`'`) and double quotes (`"`) used within JSX text content (e.g., inside `<p>Some text with 'quotes'</p>`) often need to be escaped with their HTML entity counterparts. 
-            *   For apostrophes: use `&apos;` (e.g., `it&apos;s`).
-            *   For double quotes: use `&quot;` for a general double quote, or `&ldquo;` (left) and `&rdquo;` (right) for more typographic control (e.g., `&ldquo;Quote&rdquo;`).
-        *   **Hyphens vs. Em-dashes:** Decide on a consistent style for using hyphens (-) for compound words or ranges, and em-dashes (—) for breaks in thought or parenthetical statements (or use hyphens for both if preferred, but be consistent). If replacing em-dashes pasted from other sources, ensure they are all updated. Note that these usually do not need to be escaped unless they conflict with JSX syntax or cause other linting issues.
+    *   **Punctuation & Escaping Entities:** Pay close attention to punctuation for consistency and correctness.
+        *   **Apostrophes (') and Quotation Marks (") in Text Content:**
+            *   **Directly in JSX:** When an apostrophe or quote is part of text directly within a JSX element (e.g., `<p>It's a sunny day.</p>`), it often needs to be escaped to avoid ESLint errors (`react/no-unescaped-entities`) and ensure correct rendering. 
+                *   For a straight apostrophe: use `&apos;` (e.g., `<p>It&apos;s sunny.</p>`).
+                *   For curly apostrophes: use `&lsquo;` (left single quote) and `&rsquo;` (right single quote/apostrophe) (e.g., `<p>She said, &lsquo;Hello,&rsquo; and it&rsquo;s great.</p>`).
+                *   For double quotes: use `&quot;` for a general double quote, or `&ldquo;` (left) and `&rdquo;` (right) for typographic double quotes (e.g., `<p>He exclaimed, &ldquo;Wow!&rdquo;</p>`).
+            *   **Inside JavaScript String Literals (e.g., in variables, props, or arrays of data like `affiliateLinks`):** Use the actual apostrophe or quote character directly. 
+                *   If the string is delimited by single quotes, escape internal apostrophes with a backslash: `const message = 'It\'s important.';`
+                *   If the string is delimited by double quotes, apostrophes can be used directly: `const message = "It's important.";` (and vice-versa for double quotes within single-quoted strings).
+                *   Do **not** use HTML entities like `&apos;` or `&quot;` inside JavaScript string literals, as they will be treated as literal text and not rendered as the special character in the HTML.
+        *   **Hyphens vs. Em-dashes:** Decide on a consistent style. Hyphens (-) are for compound words or ranges. **NEVER use em-dashes (—); use hyphens (-) for any scenario where an em-dash might typically be considered.** Standardize on hyphens for simplicity and to avoid inconsistencies. These usually don't need escaping unless they cause syntax issues.
 
 ## 7. Adding Affiliate Links (e.g., Amazon Associates)
 

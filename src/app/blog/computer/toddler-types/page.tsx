@@ -70,7 +70,7 @@ export default function ToddlerTypesPostPage() {
                   </tr>
                   <tr>
                     <td className="px-4 py-3">Nothing to press?</td>
-                    <td className="px-4 py-3">Wait—next character spawns after a short pause</td>
+                    <td className="px-4 py-3">Wait - next character spawns after a short pause</td>
                     <td className="px-4 py-3">Teaches patience & control</td>
                   </tr>
                 </tbody>
@@ -82,9 +82,9 @@ export default function ToddlerTypesPostPage() {
             <ul>
               <li><strong>Time spent:</strong> ~1 focused hour</li>
               <li><strong>Stack:</strong> vanilla HTML, coded in Cursor with Claude 3.5</li>
-              <li><strong>Design goal:</strong> one finger, one key, one win - no timers, only up counting score, some digs to give positive feedback, gentle FUN</li>
+              <li><strong>Design goal:</strong> one finger, one key, one win - no timers, only up counting score, some dings to give positive feedback, gentle FUN</li>
             </ul>
-            <p className="mt-6">My toddler loves &ldquo;catching&rdquo; the letters, I love the non-twerky quietness, and the dings keep them motivated without any flashing alarms.</p>
+            <p className="mt-6">My toddler loves &ldquo;catching&rdquo; the letters, I love the non-twerky quietness, and the dings keep her motivated enough without a dopamine overdose.</p>
             <p className="mt-4 mb-4">👉 Play the prototype here: <a href="/games/toddler-types.html" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-500hover:underline">Toddler Types! Game</a></p>
             <p>Feedback welcome!</p>
           </div>
