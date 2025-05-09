@@ -48,8 +48,8 @@ export default function SkeeBallPostPage() {
             
             <h3 className="text-xl font-semibold mt-6 mb-2">Details:</h3>
             <ul>
-              <li><strong>Estimated build time:</strong> &approx; 10 mins</li>
-              <li><strong>Mats needed:</strong> &approx; 47 pcs (tunnel + cube + 1 ramp panel)</li>
+              <li><strong>Estimated build time:</strong> ≈ 10 mins</li>
+              <li><strong>Mats needed:</strong> ≈ 47 pcs (tunnel + cube + 1 ramp panel)</li>
               <li><strong>Difficulty:</strong> Medium</li>
             </ul>
 
