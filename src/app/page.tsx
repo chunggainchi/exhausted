@@ -2,7 +2,7 @@ import CategoryTiles from "@/components/CategoryTiles";
 import Image from "next/image";
 import Link from 'next/link';
 import AboutSection from '@/components/AboutSection';
-import { allBlogPosts, BlogPostMeta } from '@/lib/blogData';
+import { allBlogPosts } from '@/lib/blogData';
 
 export default function HomePage() {
   // Find the specific blog posts by slug
