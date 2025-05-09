@@ -19,6 +19,8 @@ export default function NumberPlaygroundPostPage() {
 
   const imageUrl = "/images/blog/numbers.webp"; // <<< PLEASE PROVIDE ACTUAL IMAGE PATH
 
+  const spotifyEmbedHtml = `<iframe style="border-radius:12px" src="https://open.spotify.com/embed/album/2CxycLctmzdEruHPdG2pG2?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`; // <<< PASTE SPOTIFY IFRAME CODE HERE
+
   // Data for additional images gallery (empty for now)
   const additionalImages: Array<{ src: string; alt: string }> = [];
 
@@ -133,6 +135,14 @@ export default function NumberPlaygroundPostPage() {
                 </Link>
               ))}
             </div>
+          </section>
+        )}
+
+        {/* Spotify Embed Section */}
+        {spotifyEmbedHtml && (
+          <section className="mt-12 pt-8 border-t">
+            <h3 className="text-2xl font-semibold mb-4">Background Audio</h3>
+            <div dangerouslySetInnerHTML={{ __html: spotifyEmbedHtml }} />
           </section>
         )}
 

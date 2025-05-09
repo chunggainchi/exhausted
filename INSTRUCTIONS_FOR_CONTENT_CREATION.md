@@ -153,7 +153,49 @@ After creating the individual blog post page, you **must** add it to the list of
     *   Replace `YOUR_VIDEO_ID` with the actual ID of the YouTube video.
     *   The surrounding `div` helps make the video responsive. Place this structure within your content section.
 
-## 6. Workflow for AI-Assisted Content Creation (Cursor)
+## 6. Embedding Spotify Audio (Tracks, Episodes, Playlists)
+
+You can embed interactive audio players directly from Spotify into your blog posts. This is useful for adding background music, relevant podcast episodes, or curated playlists.
+
+1.  **Get the Embed Code from Spotify:**
+    *   Open the Spotify Web Player or the Spotify desktop app.
+    *   Navigate to the track, episode, album, or playlist you wish to embed.
+    *   Click the "..." (more options) icon next to the content (or right-click it).
+    *   Select **Share**, then choose the sub-option that starts with **Embed** (e.g., "Embed track", "Embed episode").
+    *   Spotify will show a preview and customization options (like size and color theme). Adjust as needed.
+    *   Click **Copy** to copy the `<iframe>` HTML code to your clipboard.
+    *   (Reference: [Creating an Embed - Spotify Developer](https://developer.spotify.com/documentation/embeds/tutorials/creating-an-embed/), [Embedded players - Spotify Support](https://support.spotify.com/us/artists/article/embedded-players/))
+
+
+2.  **Add to Your Blog Post Page (`page.tsx`):**
+    *   In your specific blog post file (e.g., `src/app/blog/[category]/[slug]/page.tsx`), add a new string constant near the top of your page component, typically where you define `postTitle`, `imageUrl`, etc. Name it `spotifyEmbedHtml`.
+    *   Paste the entire `<iframe>` code you copied from Spotify as a template literal (backticks `` ` ``) into this constant.
+
+    **Example Constant:**
+    ```typescript
+    const spotifyEmbedHtml = `<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/YOUR_TRACK_ID?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
+    // IMPORTANT: Replace the example iframe content with the actual code from Spotify.
+    ```
+
+3.  **Render the Spotify Player in JSX:**
+    *   Decide where you want the player to appear in your article. A common place is after the main content or an image gallery, but before related posts or affiliate links.
+    *   Conditionally render a `section` for the Spotify player. It will only display if `spotifyEmbedHtml` has content.
+    *   Use `dangerouslySetInnerHTML` to render the HTML string from `spotifyEmbedHtml`.
+
+    **Example JSX Structure:**
+    ```typescript jsx
+    {/* Spotify Embed Section */}
+    {spotifyEmbedHtml && (
+      <section className="mt-12 pt-8 border-t"> {/* Adjust margins/padding as needed */}
+        <h3 className="text-2xl font-semibold mb-4">Background Audio</h3> {/* Or a more specific title */}
+        <div dangerouslySetInnerHTML={{ __html: spotifyEmbedHtml }} />
+      </section>
+    )}
+    ```
+    *   The `<iframe>` provided by Spotify typically includes styling for responsiveness (`width="100%"`). You can adjust the `height` in the `<iframe>` code itself if needed, or Spotify's embed options might allow this. The default height is often `352px` for tracks/albums or `232px` for a compact version, or even `152px` for a smaller player. Choose what best fits your design.
+    *   The `loading="lazy"` attribute in the `iframe` is good for performance.
+
+## 7. Workflow for AI-Assisted Content Creation (Cursor)
 
 When using an LLM like the one in Cursor to help write blog posts:
 
@@ -183,7 +225,7 @@ When using an LLM like the one in Cursor to help write blog posts:
                 *   Do **not** use HTML entities like `&apos;` or `&quot;` inside JavaScript string literals, as they will be treated as literal text and not rendered as the special character in the HTML.
         *   **Hyphens vs. Em-dashes:** Decide on a consistent style. Hyphens (-) are for compound words or ranges. **NEVER use em-dashes (—); use hyphens (-) for any scenario where an em-dash might typically be considered.** Standardize on hyphens for simplicity and to avoid inconsistencies. These usually don't need escaping unless they cause syntax issues.
 
-## 7. Adding Affiliate Links (e.g., Amazon Associates)
+## 8. Adding Affiliate Links (e.g., Amazon Associates)
 
 If you plan to include affiliate links in your blog posts, here's a recommended approach to integrate them in a non-intrusive way:
 

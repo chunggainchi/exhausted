@@ -31,6 +31,8 @@ export default function KineticSandSurgeryPostPage() {
     { src: "/images/blog/drequipment.webp", alt: "Toy medical equipment including stethoscope, syringe, and Play-Doh scalpel" },
   ];
 
+  const spotifyEmbedHtml = `<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/3mFP98CBS2f7s1s8uplMd9?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`; // <<< PASTE SPOTIFY IFRAME CODE HERE
+
   const affiliateLinks: AffiliateLink[] = [
     {
       href: "https://amzn.to/3YywTbn",
@@ -128,6 +130,14 @@ export default function KineticSandSurgeryPostPage() {
           </div>
         </div>
 
+
+        {/* Spotify Embed Section */}
+        {spotifyEmbedHtml && (
+          <section className="mt-12 pt-8 border-t">
+            <h3 className="text-2xl font-semibold mb-4">Background Audio</h3>
+            <div dangerouslySetInnerHTML={{ __html: spotifyEmbedHtml }} />
+          </section>
+        )}
         {/* Additional Images Gallery (conditionally rendered) */}
         {additionalImages.length > 0 && (
           <section className="mt-12 pt-8 border-t">
@@ -147,6 +157,7 @@ export default function KineticSandSurgeryPostPage() {
             </div>
           </section>
         )}
+
 
         {/* Affiliate Links Section - MOVED TO THE BOTTOM & LEFT ALIGNED */}
         {affiliateLinks.length > 0 && (
