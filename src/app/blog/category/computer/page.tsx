@@ -71,7 +71,7 @@ export default function ComputerCategoryPage() {
       </div>
 
       <header className="text-center mb-8 md:mb-12">
-        <h1 className="text-4xl sm:text-5xl font-bold">{categoryName} Posts</h1>
+        <h1 className="text-4xl sm:text-5xl font-bold">Just Enough {categoryName} Fun</h1>
         <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
         I&apos;ve never been a true gamer (I tried, but one of my guilty pleasures is buying tons of games and finishing none). Out of nowhere, my daughter started asking me to build her games (who even told her that was a thing?!). The clueless part of me just said, &apos;Sure!&apos; and that&apos;s how this journey began. Somehow, creating these simple games for her is way more fulfilling than playing games myself.
         </p>

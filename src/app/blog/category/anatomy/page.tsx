@@ -61,7 +61,7 @@ export default function AnatomyCategoryPage() {
       </div>
 
       <header className="text-center mb-12">
-        <h1 className="text-4xl font-bold">{categoryName}</h1>
+        <h1 className="text-4xl font-bold">{categoryName} Learning for Children</h1>
       </header>
 
       {anatomyPosts.length > 0 ? (

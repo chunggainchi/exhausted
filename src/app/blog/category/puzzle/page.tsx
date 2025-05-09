@@ -112,7 +112,7 @@ export default function PuzzleCategoryPage() {
       </div>
 
       <header className="text-center mb-8 md:mb-12">
-        <h1 className="text-4xl sm:text-5xl font-bold">{categoryName} Posts</h1>
+        <h1 className="text-4xl sm:text-5xl font-bold">{categoryName} Mat Structures</h1>
         <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
         I grew up building playhouses and structures with my two little sisters using puzzle mats, and I absolutely loved it! These simple toys are so versatile and timeless, sparking imaginative play that&apos;s physically engaging, even indoors. I can only imagine the epic creations we could make with a garden, combining them with cardboard structures!
         </p>

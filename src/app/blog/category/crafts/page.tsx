@@ -63,7 +63,7 @@ export default function CraftsCategoryPage() {
       </div>
 
       <header className="text-center mb-8 md:mb-12">
-        <h1 className="text-4xl sm:text-5xl font-bold">{categoryName} Posts</h1>
+        <h1 className="text-4xl sm:text-5xl font-bold">{categoryName} & DIYs at Home</h1>
       </header>
 
       {/* Blog Post Grid */}
