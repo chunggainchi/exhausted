@@ -22,6 +22,7 @@ export default function GreatWallCrawlPostPage() {
   // Data for additional images gallery
   const additionalImages: Array<{ src: string; alt: string }> = [
     { src: "/images/blog/greatwall-low.webp", alt: "Great Wall Crawl - low view" },
+    { src: "/images/blog/greatwall-front.webp", alt: "Great Wall Crawl - front view" },
   ];
 
   return (

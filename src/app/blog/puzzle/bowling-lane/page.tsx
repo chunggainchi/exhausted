@@ -22,6 +22,8 @@ export default function BowlingLanePostPage() {
   // Data for additional images gallery (empty for now as none were specified)
   const additionalImages: Array<{ src: string; alt: string }> = [];
 
+  const spotifyEmbedHtml = `<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/1LI9Q5nYW6qfFXeYtxglbb?utm_source=generator" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`; // <<< PASTE SPOTIFY IFRAME CODE HERE  
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Breadcrumbs */}
@@ -97,6 +99,14 @@ export default function BowlingLanePostPage() {
             </div>
           </section>
         )}
+
+        {/* Spotify Embed Section */}
+        {spotifyEmbedHtml && (
+          <section className="mt-12 pt-8 border-t">
+            <h3 className="text-2xl font-semibold mb-4">Background Audio</h3>
+            <div dangerouslySetInnerHTML={{ __html: spotifyEmbedHtml }} />
+          </section>
+        )}        
 
         {/* Affiliate Links Section */}
         <section className="mt-12 pt-8 border-t">
