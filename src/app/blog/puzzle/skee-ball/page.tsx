@@ -42,7 +42,7 @@ export default function SkeeBallPostPage() {
             <p className="lead">
               A simple tunnel plus a cube &ldquo;clubhouse,&rdquo; topped with one extra mat as a gentle ramp - that&apos;s it. Little players sit inside the house, roll soft balls down the ramp, watch them rattle along the tunnel, and crash into whatever targets you set at the far end (plastic bottles, plushies, snack cans&hellip; you pick the prize zone).
             </p>
-            <p>
+            <p className="mt-4">
               Have an older sharpshooter? Flip the rules: roll up the ramp toward the house, lay a few rope loops inside, and score points by landing in the right ring - full skee-ball vibes, no tokens needed.
             </p>
             

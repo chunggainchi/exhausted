@@ -47,7 +47,7 @@ export default function ToddlerTypesPostPage() {
           {/* Content Section */}
           <div className="prose dark:prose-invert max-w-none md:col-span-1 order-2 md:order-1">
             <p>My three-year-old has been sneaking phonics lessons who knows where, suddenly she can spot half the alphabet on her own. She&apos;s also fascinated whenever we&apos;re clacking away on our keyboards, so I went hunting for a slow, no-pressure typing game. Everything online was either lightning-fast, buzzer-loud, or graded like a college exam.</p>
-            <p>So - same drill as last time - I opened Cursor, vibe-coded with Claude for an hour or so, and out popped this tiny HTML page.</p>
+            <p className="mt-4">So - same drill as last time - I opened Cursor, vibe-coded with Claude for an hour or so, and out popped this tiny HTML page.</p>
             
             <h3 className="text-xl font-semibold mt-8 mb-4">How it works</h3>
             <div className="overflow-x-auto">

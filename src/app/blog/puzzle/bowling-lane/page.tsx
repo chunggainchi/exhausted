@@ -47,14 +47,14 @@ export default function BowlingLanePostPage() {
           {/* Content Section */}
           <div className="prose dark:prose-invert max-w-none md:col-span-1 order-2 md:order-1">
             <p className="lead">
-              A low rectangular &ldquo;alley&rdquo; with 3-tile-high bumpers keeps the ball on track while six (or more) recycled bottles wait to be knocked down in the middle. Roll, crash, reset—repeat for endless giggles and hand-eye workout.
+              A low rectangular &ldquo;alley&rdquo; with 3-tile-high bumpers keeps the ball on track while six (or more) recycled bottles wait to be knocked down in the middle. Roll, crash, reset - repeat for endless giggles and hand-eye workout.
             </p>
             <h3 className="text-xl font-semibold mt-6 mb-2">Details:</h3>
             <ul>
               <li><strong>Difficulty:</strong> medium (needs a few extra props)</li>
               <li><strong>Estimated build time:</strong> ≈ 10–12 mins</li>
-              <li><strong>Mats needed:</strong> 25 full squares + 6 edge strips (for the bumpers)</li>
-              <li><strong>Extra props:</strong> soft ball, 6 empty bottles (half-filled with water or rice for stability)</li>
+              <li><strong>Mats needed:</strong> 25 full squares + 6 edge strips (for holding up the bumpers)</li>
+              <li><strong>Extra props:</strong> soft ball, 6 empty bottles (if needed half-filled with water or rice for stability)</li>
             </ul>
             <h3 className="text-xl font-semibold mt-6 mb-2">Quick build:</h3>
             <ol>
@@ -62,8 +62,8 @@ export default function BowlingLanePostPage() {
               <li><strong>Bumpers:</strong> stand edge pieces on all sides except the front, use thin edge pieces to stabalize the walls.</li>
               <li><strong>Pin zone:</strong> line up bottles at the far end.</li>
             </ol>
-            <p>
-              That&apos;s it—DIY bowling without the sticky rental shoes. Keep spare pins nearby for rapid resets (make dad do it) and let the strikes begin!
+            <p className="mt-4">
+              That&apos;s it - DIY bowling without the sticky rental shoes. Keep spare pins nearby for rapid resets (make dad do it) and let the strikes begin!
             </p>
           </div>
 

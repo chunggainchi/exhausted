@@ -48,7 +48,7 @@ export default function DoghouseHideoutPostPage() {
           {/* Content Section */}
           <div className="prose dark:prose-invert max-w-none md:col-span-1 order-2 md:order-1">
             <p className="lead">
-              One tall, hollow cube topped with a simple pitched roof. A single doorway at floor level lets kids crawl in, stand up, peek out, squat, and crawl back—a cozy hide-and-seek spot that sneaks in a bit of squatting.
+              One tall, hollow cube topped with a simple pitched roof. A single doorway at floor level lets kids crawl in, stand up, peek out, squat, and crawl back - a cozy hide-and-seek spot that sneaks in a bit of squatting.
             </p>
             <h3 className="text-xl font-semibold mt-6 mb-2">Details:</h3>
             <ul>

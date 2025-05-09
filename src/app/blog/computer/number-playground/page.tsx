@@ -47,7 +47,7 @@ export default function NumberPlaygroundPostPage() {
           {/* Content Section */}
           <div className="prose dark:prose-invert max-w-none md:col-span-1 order-2 md:order-1">
             <p>My three-year-old can already chant every episode title of Numberblocks by heart. She&apos;s cracked 0–10, sings the &ldquo;Die Wunderbare Welt von Eins&rdquo; song on repeat, and still begs to re-watch the same clips - because the music slaps and the math just clicks.</p>
-            <p>Last week, she randomly asked, &ldquo;Mama can you build me a new game?&rdquo; Challenge accepted. Three coffee-powered hours later, Number Playground was born.</p>
+            <p className="mt-4">Last week, she randomly asked, &ldquo;Mama can you build me a new game?&rdquo; Challenge accepted. Three coffee-powered hours later, Number Playground was born.</p>
             
             <h3 className="text-xl font-semibold mt-8 mb-4">What you can do inside the Playground</h3>
             <div className="overflow-x-auto">

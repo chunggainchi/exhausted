@@ -63,7 +63,7 @@ export default function FlyingCarPostPage() {
             <p className="lead">
               A modern cockpit up front, a roomy cube trunk in back, and two clip-on wings turn plain foam mats into a land-and-air machine. The slanted windshield is just one mat hinged forward and braced by two edge pieces, giving the pilot generous legroom plus authentic &ldquo;driver&apos;s view.&rdquo; There&apos;s space for one tiny driver (perfect for politely declining extra passengers) and cargo for 4-5 plush co-pilots.
             </p>
-            <p>
+            <p className="mt-4">
               Need the road version? Pop the wings off and cruise. Planning a long-haul &ldquo;flight&rdquo;? Snap them back on-though you might want an extra prop or two for stability before take-off.
             </p>
             

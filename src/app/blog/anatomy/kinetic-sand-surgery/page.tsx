@@ -21,9 +21,9 @@ export default function KineticSandSurgeryPostPage() {
   const categoryHref = "/blog/category/anatomy";
   const postTitle = "Kinetic-Sand Surgery";
   const postSubtitle = "(tiny scrub suits, real-body wow factor)";
-  const imageUrl = "/images/blog/surgery.webp";
-  const imageAlt = "Child performing kinetic sand surgery with toy instruments and plastic organs.";
   const currentSlug = "/blog/anatomy/kinetic-sand-surgery";
+
+  const mainVideoEmbedHtml = `<iframe src="https://www.youtube.com/embed/vqUwy-r9i9w?si=ZmV4SLLTjkLos0tH" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>`;
 
   // Added additionalImages array
   const additionalImages: Array<{ src: string; alt: string }> = [
@@ -119,17 +119,11 @@ export default function KineticSandSurgeryPostPage() {
             </p>
           </div>
 
-          {/* Image Section */}
-          <div className="relative aspect-video w-full overflow-hidden rounded-lg shadow-lg md:col-span-1 order-1 md:order-2"> {/* aspect-video for landscape */}
-            <Image
-              src={imageUrl}
-              alt={imageAlt}
-              fill
-              className="object-cover"
-            />
+          {/* Main Video Section (Replaced Image Section) */}
+          <div className="relative aspect-video w-full overflow-hidden rounded-lg shadow-lg md:col-span-1 order-1 md:order-2">
+            <div dangerouslySetInnerHTML={{ __html: mainVideoEmbedHtml }} />
           </div>
         </div>
-
 
         {/* Spotify Embed Section */}
         {spotifyEmbedHtml && (
