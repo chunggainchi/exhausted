@@ -19,6 +19,14 @@ export const metadata: Metadata = {
 // Temporary hardcoded post data - this would eventually come from a CMS or local files
 const puzzlePosts: BlogPostCardProps[] = [
   {
+    title: "Skee-Ball",
+    subtitle: "(carnival lane, foam-mat edition)",
+    description: "Learn to build a versatile foam-mat Skee-Ball game. Perfect for toddlers and older kids with adjustable rules for rolling or scoring. Easy to set up with a ramp, tunnel, and clubhouse.",
+    imageUrl: "/images/blog/skeeball.webp",
+    href: "/blog/puzzle/skee-ball",
+    imageAlt: "Foam puzzle mat skee-ball game setup",
+  },
+  {
     title: "Stair-Tower",
     subtitle: "(looks like steps, not for stepping)",
     description: "A colourful cube 'stair-tower' puzzle mat castle, perfect for little ones to explore. Learn how to build this easy fort.",

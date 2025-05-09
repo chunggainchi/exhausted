@@ -261,6 +261,12 @@ If you plan to include affiliate links in your blog posts, here's a recommended 
         </p>
         ```
 
+    ***For Puzzle Mat Category Posts:*** *All posts in the 'Puzzle' category should include a standard affiliate link for the puzzle mats themselves. Use the following details:*
+      *   *Link:* `https://amzn.to/4d91cez`
+      *   *Text:* `Puzzle Play Mats`
+      *   *Description:* `(I started with 4 packs which has been enough for all the builds shown here. Of course, more mats = more building possibilities!)`
+    *This section should be placed before the 'Related Posts' component and after the main article content.*
+
 5.  **Styling:**
     *   Ensure the section is styled to be readable and visually distinct but not overly aggressive. The example above uses basic Tailwind classes. Adjust these to fit your site's design.
     *   For left alignment of the entire section (heading, list, disclosure), ensure no centering classes like `text-center` or `mx-auto` are applied to the main `<section>` container or its direct children unless intended for specific elements within.
