@@ -19,6 +19,14 @@ export const metadata: Metadata = {
 // Temporary hardcoded post data - this would eventually come from a CMS or local files
 const puzzlePosts: BlogPostCardProps[] = [
   {
+    title: "Flying Car",
+    subtitle: "(detachable wings, first-class legroom)",
+    description: "Build a foam-mat flying car with detachable wings, a spacious cockpit, and room for plush co-pilots. Easy to switch between road and flight mode.",
+    imageUrl: "/images/blog/flyingcar.webp",
+    href: "/blog/puzzle/flying-car",
+    imageAlt: "Foam puzzle mat flying car with detachable wings",
+  },
+  {
     title: "Skee-Ball",
     subtitle: "(carnival lane, foam-mat edition)",
     description: "Learn to build a versatile foam-mat Skee-Ball game. Perfect for toddlers and older kids with adjustable rules for rolling or scoring. Easy to set up with a ramp, tunnel, and clubhouse.",
