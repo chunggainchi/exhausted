@@ -105,12 +105,12 @@ export default function GallbladderSurgeryPage() {
               The gallbladder (that little green pouch tucked under the liver) stores extra bile. When tiny pebbles of hardened cholesterol or pigment - gallstones - clog its duct, the organ swells and hurts. Real surgeons snip it out; patients live perfectly fine without it because the liver keeps making bile that now drips straight into the gut.
             </p>
             
-            <p className="font-semibold">Today's pretend operation lets kids:</p>
+            <p className="font-semibold">Today&apos;s pretend operation lets kids:</p>
             <ol className="list-decimal list-inside space-y-1 mb-4">
               <li>Find the gallbladder on a play-dough organ set.</li>
               <li>Discover what bile does and why stones cause pain.</li>
               <li>Practise the careful cut-detach-lift manoeuvre to remove the whole pouch.</li>
-              <li>Giggle over the Cantonese saying &ldquo;冇膽匪類&rdquo; (literally &ldquo;coward without gallbladder&rdquo;) and realise Grandpa once had this surgery and he is now a "coward" 😂!</li>
+              <li>Giggle over the Cantonese saying &ldquo;冇膽匪類&rdquo; (literally &ldquo;coward without gallbladder&rdquo;) and realise Grandpa once had this surgery and he is now a &quot;coward&quot; 😂!</li>
             </ol>
 
             <h3 className="text-xl font-semibold mt-6 mb-3">Set-up: What You&apos;ll Need</h3>
@@ -133,7 +133,7 @@ export default function GallbladderSurgeryPage() {
                   </tr>
                   <tr>
                     <td className="px-4 py-2 align-top text-sm font-medium text-gray-900 dark:text-gray-100">Instruments</td>
-                    <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">Plastic scalpel; kid tweezers/chopsticks; blunt hook or toothpick for 'clips'; plastic needle for sutures</td>
+                    <td className="px-4 py-2 text-sm text-gray-500 dark:text-gray-300">Plastic scalpel; kid tweezers/chopsticks; blunt hook or toothpick for &apos;clips&apos;; plastic needle for sutures</td>
                   </tr>
                   <tr>
                     <td className="px-4 py-2 align-top text-sm font-medium text-gray-900 dark:text-gray-100">Foil-lined tray</td>
@@ -148,13 +148,13 @@ export default function GallbladderSurgeryPage() {
               <li>Incise the skin - slice the orange sheet, fold back the flap.</li>
               <li>Locate &amp; lift the liver gently to see the green gallbladder hiding beneath.</li>
               <li>Snip the neck (one clean cut) and pluck the whole pouch free.</li>
-              <li>Open the pouch on a side table, dig out the "gallstones", explain why they cause pain.</li>
-              <li>Close the skin with finger "sutures." Patient cured, no more tummy ache!</li>
+              <li>Open the pouch on a side table, dig out the &quot;gallstones&quot;, explain why they cause pain.</li>
+              <li>Close the skin with finger &quot;sutures.&quot; Patient cured, no more tummy ache!</li>
             </ol>
 
             <h4 className="text-lg font-semibold mt-4 mb-2">Advanced steps (for older kids / fine-motor practice)</h4>
             <ul className="list-disc list-inside space-y-1 mb-4">
-              <li>Pinch a narrow "cystic duct," clip it with two tiny dough rings, and cut between them - just like the real critical-view safety step.</li>
+              <li>Pinch a narrow &quot;cystic duct,&quot; clip it with two tiny dough rings, and cut between them - just like the real critical-view safety step.</li>
               <li>Peel the gallbladder off the underside of the liver with short, gentle scrapings.</li>
               <li>Pretend-inspect the bile duct for leaks before closing.</li>
             </ul>
@@ -163,12 +163,12 @@ export default function GallbladderSurgeryPage() {
             <ul className="list-disc list-inside space-y-1 mb-4">
               <li>Anatomy: liver, gallbladder, ducts, intestines.</li>
               <li>Physiology: bile helps digest fats; stones block flow → pain.</li>
-              <li>Life lesson: you can live "膽小" (without a gallbladder!) and still be brave.</li>
+              <li>Life lesson: you can live &quot;膽小&quot; (without a gallbladder!) and still be brave.</li>
               <li>Skills: pinpoint cutting, steady tweezing, two-hand coordination, tidy closure.</li>
             </ul>
 
             <p className="mt-6">
-              Seal the incision, announce "operation complete!" and let your junior surgeon parade the pebble-stones as proof that strange things inside the body sometimes need a ticket out. Next snack-time, ask which foods are fatty enough to need bile - instant revision disguised as fun.
+              Seal the incision, announce &quot;operation complete!&quot; and let your junior surgeon parade the pebble-stones as proof that strange things inside the body sometimes need a ticket out. Next snack-time, ask which foods are fatty enough to need bile - instant revision disguised as fun.
             </p>
           </div>
 
