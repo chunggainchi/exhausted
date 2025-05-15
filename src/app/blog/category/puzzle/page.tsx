@@ -19,6 +19,14 @@ export const metadata: Metadata = {
 // Temporary hardcoded post data - this would eventually come from a CMS or local files
 const puzzlePosts: BlogPostCardProps[] = [
   {
+    title: "Secret Playhouse",
+    subtitle: "(with a real swing-open door + privacy window)",
+    description: "Build a big foam cube, hinge one mat for the door, and hand over the keys. Kids can swing the whole door open for grand entrances or latch the bottom half shut and leave a single square 'service window' for top-secret deliveries. Two occupants fit if they don't mind elbows; one child plus pillows and an art stash fits perfectly. Door closed, creativity closed-door-session engaged.",
+    imageUrl: "/images/blog/playhouse.webp",
+    href: "/blog/puzzle/secret-playhouse",
+    imageAlt: "Secret Playhouse made of colorful puzzle mats with a swing-open door and privacy window"
+  },
+  {
     title: "Flying Car",
     subtitle: "(detachable wings, first-class legroom)",
     description: "Build a foam-mat flying car with detachable wings, a spacious cockpit, and room for plush co-pilots. Easy to switch between road and flight mode.",
