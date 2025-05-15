@@ -18,6 +18,14 @@ export const metadata: Metadata = {
 
 const anatomyPosts: BlogPostCardProps[] = [
   {
+    title: "Play-Dough Surgery: Trichobezoar Removal",
+    subtitle: "(inspired by The Breakfasteur's real OR footage)",
+    description: "Learn how to perform a play-dough surgery to remove a trichobezoar (hairball) from a model stomach. A fun, hands-on anatomy lesson for kids inspired by real OR footage.",
+    imageUrl: "/images/blog/stomach.webp",
+    href: "/blog/anatomy/play-dough-surgery-trichobezoar-removal",
+    imageAlt: "Play-dough stomach with a trichobezoar (hairball) visible inside",
+  },
+  {
     title: "Kinetic-Sand Surgery",
     subtitle: "(tiny scrub suits, real-body wow factor)",
     description: "A fun and educational sensory activity where kids perform \"surgery\" on kinetic sand to find plastic organs, learning about anatomy in a hands-on way.",
