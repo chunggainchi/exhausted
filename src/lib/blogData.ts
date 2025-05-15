@@ -36,6 +36,13 @@ export const allBlogPosts: BlogPostMeta[] = [
     description: 'How to build a Great Wall Crawl (watch-tower edition) out of puzzle mats.'
   },
   {
+    slug: '/blog/puzzle/secret-playhouse',
+    title: 'Secret Playhouse',
+    category: 'Puzzle',
+    image: '/images/blog/playhouse.webp',
+    description: 'Build a big foam cube with a real swing-open door and privacy window. This Secret Playhouse is quick to build, fun to use, and perfect for solo or two-kid play.'
+  },
+  {
     slug: '/blog/puzzle/stair-tower',
     title: 'Stair-Tower',
     category: 'Puzzle',
@@ -76,6 +83,20 @@ export const allBlogPosts: BlogPostMeta[] = [
     category: 'Anatomy',
     image: '/images/blog/surgery.webp',
     description: 'A fun and educational sensory activity where kids perform "surgery" on kinetic sand to find plastic organs, learning about anatomy in a hands-on way.'
+  },
+  {
+    slug: '/blog/anatomy/play-dough-surgery-trichobezoar-removal',
+    title: 'Play-Dough Surgery: Trichobezoar Removal',
+    category: 'Anatomy',
+    image: '/images/blog/stomach.webp',
+    description: 'Learn how to perform a play-dough surgery to remove a trichobezoar (hairball) from a model stomach. A fun, hands-on anatomy lesson for kids inspired by real OR footage.'
+  },
+  {
+    slug: '/blog/anatomy/play-dough-surgery-gallbladder-removal',
+    title: 'Play-Dough Surgery: Gallbladder Removal (Cholecystectomy)',
+    category: 'Anatomy',
+    image: '/images/blog/gallbladder removal.webp',
+    description: 'Learn how to perform a toddler-safe play-dough cholecystectomy, exploring gallbladder anatomy, the function of bile, and why gallstones cause issues. Fun and educational!'
   },
   {
     slug: '/blog/crafts/diy-chibi-keychain',

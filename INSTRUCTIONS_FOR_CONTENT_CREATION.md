@@ -20,6 +20,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react'; // Or other icons as needed
+import RelatedPosts from '@/components/RelatedPosts';
+import BackToTopButton from '@/components/BackToTopButton';
 
 // 1. Metadata Export
 export const metadata: Metadata = {
@@ -36,6 +38,7 @@ export default function YourPostNamePage() {
   const postSubtitle = "(Optional Subtitle)"; // Optional
   const imageUrl = "/images/blog/your-post-image.webp"; // Path relative to /public directory
   const imageAlt = "Alt text for your post image";
+  const currentSlug = "/blog/your-category/your-post-slug";
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -84,7 +87,11 @@ export default function YourPostNamePage() {
             />
           </div>
         </div>
+
+        {/* Related Posts Section */}
+        <RelatedPosts currentSlug={currentSlug} currentCategory={categoryName} />
       </article>
+      <BackToTopButton />
     </div>
   );
 }
@@ -316,3 +323,83 @@ If you plan to include affiliate links in your blog posts, here's a recommended 
 By following these guidelines, you can provide helpful product recommendations to your readers while maintaining transparency and a good user experience.
 
 This hardcoding approach gives direct control over the component structure and styling for each post. Remember to be consistent with paths and naming conventions, and to apply the responsive ordering for optimal mobile viewing. 
+
+## 9. Utility Components (Recommended)
+
+To enhance user experience and navigation, consider adding the following components to your blog post pages:
+
+*   **`RelatedPosts` Component:**
+    *   **Purpose:** Displays a section of other posts from the same category, encouraging further reading.
+    *   **Import:** `import RelatedPosts from '@/components/RelatedPosts';`
+    *   **Usage:** Place this component towards the end of your main `<article>` tag, typically after all content sections (including affiliate links, Spotify, etc.).
+    *   **Props:**
+        *   `currentSlug`: A string representing the full path of the current post (e.g., `"/blog/category-name/post-slug"`). You'll need to define this as a constant in your page component.
+        *   `currentCategory`: A string for the display name of the current category (e.g., `"Puzzle"`). This is usually already defined as `categoryName`.
+    *   **Example Constant for `currentSlug`:**
+        ```typescript
+        const currentSlug = "/blog/your-category/your-post-slug";
+        ```
+    *   **Example JSX:**
+        ```typescript jsx
+        {/* ... other article content ... */}
+
+        {/* Related Posts Section */}
+        <RelatedPosts currentSlug={currentSlug} currentCategory={categoryName} />
+      </article>
+        ```
+
+*   **`BackToTopButton` Component:**
+    *   **Purpose:** Provides a floating button that allows users to quickly scroll back to the top of the page, especially useful for longer posts.
+    *   **Import:** `import BackToTopButton from '@/components/BackToTopButton';`
+    *   **Usage:** Place this component at the very end of your page component's main returned `div` (the one that usually has `className="container mx-auto px-4 py-8"`), after the closing `</article>` tag.
+    *   **Props:** This component typically doesn't require any props for basic usage.
+    *   **Example JSX:**
+        ```typescript jsx
+        {/* ... other article content ... */}
+        <RelatedPosts currentSlug={currentSlug} currentCategory={categoryName} />
+      </article>
+      <BackToTopButton />
+    </div> // End of main container div
+  );
+}
+        ```
+
+**Updating the Page Structure Template (Section 2):**
+
+The general structure example in Section 2 should also be updated to reflect these imports and placements:
+
+```typescript jsx
+import { Metadata } from 'next';
+import Link from 'next/link';
+import Image from 'next/image';
+import { ChevronRight } from 'lucide-react'; // Or other icons as needed
+import RelatedPosts from '@/components/RelatedPosts';
+import BackToTopButton from '@/components/BackToTopButton';
+
+// 1. Metadata Export
+// ...
+
+// 2. Page Component
+export default function YourPostNamePage() {
+  // 3. Constants for easy management
+  const categoryName = "Category Name";
+  const categoryHref = "/blog/category/category-name";
+  const postTitle = "Your Post Title";
+  // ... other constants ...
+  const currentSlug = "/blog/your-category/your-post-slug";
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      {/* ... breadcrumbs ... */}
+      <article>
+        {/* ... post header, content, image, other sections ... */}
+
+        {/* Related Posts Section (example placement) */}
+        <RelatedPosts currentSlug={currentSlug} currentCategory={categoryName} />
+      </article>
+      <BackToTopButton />
+    </div>
+  );
+}
+```
+This makes it clear that these components are part of the recommended structure. 

@@ -18,10 +18,18 @@ export const metadata: Metadata = {
 
 const anatomyPosts: BlogPostCardProps[] = [
   {
+    title: "Play-Dough Surgery: Gallbladder Removal",
+    subtitle: "(Gallbladder is a small organ that stores bile)",
+    description: "Learn how to perform a toddler-safe play-dough cholecystectomy, exploring gallbladder anatomy, the function of bile, and why gallstones cause issues. Fun and educational!",
+    imageUrl: "/images/blog/gbremoval.webp",
+    href: "/blog/anatomy/play-dough-surgery-gallbladder-removal",
+    imageAlt: "Play-dough model showing gallbladder removal surgery setup with liver, gallbladder, and tools",
+  },
+  {
     title: "Play-Dough Surgery: Trichobezoar Removal",
-    subtitle: "(inspired by The Breakfasteur's real OR footage)",
+    subtitle: "(Trichobezoar is a hairball that can get stuck in the stomach)",
     description: "Learn how to perform a play-dough surgery to remove a trichobezoar (hairball) from a model stomach. A fun, hands-on anatomy lesson for kids inspired by real OR footage.",
-    imageUrl: "/images/blog/stomach.webp",
+    imageUrl: "/images/blog/bezoarremoval.webp",
     href: "/blog/anatomy/play-dough-surgery-trichobezoar-removal",
     imageAlt: "Play-dough stomach with a trichobezoar (hairball) visible inside",
   },

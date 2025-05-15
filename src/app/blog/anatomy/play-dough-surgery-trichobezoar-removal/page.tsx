@@ -2,11 +2,20 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronRight } from 'lucide-react';
+import RelatedPosts from '@/components/RelatedPosts';
+import BackToTopButton from '@/components/BackToTopButton';
 
 export const metadata: Metadata = {
   title: 'Play-Dough Surgery: Trichobezoar Removal | Anatomy | Exhausted Rocket',
   description: 'Learn how to perform a play-dough surgery to remove a trichobezoar (hairball) from a model stomach. A fun, hands-on anatomy lesson for kids inspired by real OR footage.',
 };
+
+// Added AffiliateLink Interface
+interface AffiliateLink {
+  href: string;
+  text: string;
+  description?: string;
+}
 
 export default function PlayDoughSurgeryPage() {
   const categoryName = "Anatomy";
@@ -15,6 +24,7 @@ export default function PlayDoughSurgeryPage() {
   const postSubtitle = "(inspired by real OR footage and the Breakfasteur)";
   const imageUrl = "/images/blog/stomach.webp"; // This is a portrait image
   const imageAlt = "Play-dough stomach with a trichobezoar (hairball) visible inside";
+  const currentSlug = "/blog/anatomy/play-dough-surgery-trichobezoar-removal";
 
   const galleryImages = [
     { src: "/images/blog/organ setup.webp", alt: "Play-dough organs setup for surgery: liver, stomach, gallbladder, intestines" },
@@ -28,6 +38,45 @@ export default function PlayDoughSurgeryPage() {
   const breakfasteurPlaydoughVideoEmbedHtml = `<div style="position: relative; padding-bottom: 177.78%; /* Adjusted for 9:16 Shorts aspect ratio */ height: 0; overflow: hidden; max-width: 100%; max-width: 320px; /* Optional: constrain max width for shorts */ margin: 0 auto;"><iframe src="https://www.youtube.com/embed/arjiyEiprQY" title="The Breakfasteur Play-Dough Surgery Inspiration" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>`;
 
   const spotifyEmbedHtml = `<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/3mFP98CBS2f7s1s8uplMd9?utm_source=generator&theme=0" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>`;
+
+  // Added affiliateLinks constant
+  const affiliateLinks: AffiliateLink[] = [
+    {
+      href: "https://amzn.to/3YywTbn",
+      text: "Premium Doctor Stethoscope",
+      description: "(The real stethoscope I used to hear her heartbeat when pregnant. Do not ask me why I needed this. 🙈)"
+    },
+    {
+      href: "https://amzn.to/44sJj8u",
+      text: "Dentist Play Set",
+      description: "(We borrowed some props from a dentist set like this.)"
+    },
+    {
+      href: "https://amzn.to/3YxIGGM",
+      text: "Kid-Size Garden Gloves",
+      description: "(Couldn\'t find surgical gloves for children lol I wonder why, but these work well enough and she can use them for other stuff too!)"
+    },
+    {
+      href: "https://amzn.to/4dtS84b",
+      text: "Playdough set",
+      description: "(What I use to make the organs and skin)"
+    },
+    {
+      href: "https://amzn.to/4jLnIwI",
+      text: "The Body Book (in German)",
+      description: "This is an amazing book i found on the streets, it has a lot of foldouts and is super informative 🔥"
+    },
+    {
+      href: "https://amzn.to/4k4WYHO",
+      text: "Headlamp",
+      description: "(USB-C rechargeable headlamp that is perfect for surgeries as well as adventures)"
+    },
+    {
+      href: "https://amzn.to/3FbnvUo",
+      text: "Felt sewing set",
+      description: "(We use this to learn how to do running stitches, and also to create other cute things that are now hanging all over her bed)"
+    }
+  ];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -166,18 +215,26 @@ export default function PlayDoughSurgeryPage() {
           </section>
         )}
 
-        {/* Real-Life Inspiration Video Section */}
+        {/* YouTube Inspiration Videos Section - MODIFIED */}
         <section className="mt-12 pt-8 border-t">
-          <h3 className="text-2xl font-semibold mb-4">Inspiration</h3>
-          {realLifeInspirationVideoEmbedHtml1 && (
-            <div className="aspect-video mb-8" dangerouslySetInnerHTML={{ __html: realLifeInspirationVideoEmbedHtml1 }} />
-          )}
-          {breakfasteurPlaydoughVideoEmbedHtml && (
+          <h3 className="text-2xl font-semibold mb-6 text-center">Inspiration</h3> {/* Kept original section title */}
+          <div className="grid md:grid-cols-2 gap-8 items-start">
+            <div>
+              <h4 className="text-lg font-semibold mb-2 text-center">Real-Life Footage:</h4> {/* Adjusted subtitle slightly for clarity */}
+              {realLifeInspirationVideoEmbedHtml1 && (
+                <div className="aspect-video" dangerouslySetInnerHTML={{ __html: realLifeInspirationVideoEmbedHtml1 }} />
+              )}
+            </div>
             <div>
               <h4 className="text-lg font-semibold mb-2 text-center">The Breakfasteur&apos;s Play-Dough Version:</h4>
-              <div className="max-w-xs mx-auto" dangerouslySetInnerHTML={{ __html: breakfasteurPlaydoughVideoEmbedHtml }} />
+              {breakfasteurPlaydoughVideoEmbedHtml && (
+                // For the YouTube Short, we might want to keep its original styling if aspect-video is too wide.
+                // For now, applying aspect-video for consistency as discussed.
+                // If the Short looks too wide, this can be reverted to max-w-xs mx-auto and the specific padding-bottom for Shorts.
+                <div className="aspect-video" dangerouslySetInnerHTML={{ __html: breakfasteurPlaydoughVideoEmbedHtml }} />
+              )}
             </div>
-          )}
+          </div>
         </section>
 
         {/* Spotify Embed Section */}
@@ -187,7 +244,37 @@ export default function PlayDoughSurgeryPage() {
             <div dangerouslySetInnerHTML={{ __html: spotifyEmbedHtml }} />
           </section>
         )}
+
+        {/* Affiliate Links Section - Added */}
+        {affiliateLinks.length > 0 && (
+          <section className="mt-12 pt-8 border-t">
+            <h3 className="text-2xl font-semibold mb-4">Gear We Used (Affiliate Links)</h3>
+            <ul className="list-disc list-inside space-y-2">
+              {affiliateLinks.map((link) => (
+                <li key={link.text}>
+                  <a 
+                    href={link.href} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    {link.text}
+                  </a>
+                  {link.description && <span className="text-sm text-muted-foreground ml-1">{link.description}</span>}
+                </li>
+              ))}
+            </ul>
+            <p className="text-xs text-muted-foreground mt-4">
+              (This is not the reason why I started this blog, but since readers are already asking might as well.)
+            </p>
+          </section>
+        )}
+
+        {/* Related Posts Section */}
+        <RelatedPosts currentSlug={currentSlug} currentCategory={categoryName} />
+
       </article>
+      <BackToTopButton />
     </div>
   );
 }
