@@ -20,6 +20,11 @@ const jostHeader = Jost({
 export const metadata: Metadata = {
   title: "Exhausted Rocket - Play Idea Hacks & More",
   description: "Blog of a tired mom documenting her attempts to expel her toddler's energy.",
+  verification: {
+    other: {
+      'p:domain_verify': 'e399bca6beb28d63e4ad30b0627c9e71',
+    },
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode })                       {
