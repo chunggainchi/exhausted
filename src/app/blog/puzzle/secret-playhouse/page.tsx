@@ -134,10 +134,7 @@ export default function SecretPlayhousePage() {
                 </li>
               ))}
             </ul>
-            <p className="text-xs text-muted-foreground mt-4">
-              (This is not the reason why I started this blog, but since readers are already asking might as well.)
-            </p>
-          </section>
+           </section>
         )}
       </article>
     </div>

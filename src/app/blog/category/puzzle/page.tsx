@@ -22,7 +22,7 @@ const puzzlePosts: BlogPostCardProps[] = [
     title: "Basketball Arcade",
     subtitle: "(slanted return lane, arcade-style rebounds)",
     description: "Learn how to build a DIY Basketball Arcade with puzzle mats, featuring a slanted ball return and arcade-style rebounds. A fun and challenging project that packs away easily.",
-    imageUrl: "/images/blog/basketballarcade.webp",
+    imageUrl: "/images/blog/arcade.webp",
     href: "/blog/puzzle/basketball-arcade",
     imageAlt: "Basketball Arcade puzzle mat build with slanted return lane and arcade-style rebounds"
   },

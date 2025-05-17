@@ -29,7 +29,7 @@ export default function BlogPostCard({
   return (
     <Link href={href} className="group block" passHref legacyBehavior={false}>
       <Card className="h-full flex flex-col overflow-hidden transition-shadow duration-300 group-hover:shadow-xl rounded-lg pt-0">
-        <div className="relative aspect-video w-full overflow-hidden rounded-t-lg leading-none text-[0px]">
+        <div className="relative aspect-[1/1] w-full overflow-hidden rounded-t-lg leading-none text-[0px]">
           <Image 
             src={imageUrl}
             alt={imageAlt || title}

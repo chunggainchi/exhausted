@@ -7,18 +7,30 @@ import { allBlogPosts } from '@/lib/blogData';
 export default function HomePage() {
   // Find the specific blog posts by slug
   const kineticSandPost = allBlogPosts.find(post => post.slug === '/blog/anatomy/kinetic-sand-surgery');
-  // As Flying Car is new, we'll define its details directly if not found, assuming it will be added to blogData.ts soon
-  let flyingCarPost = allBlogPosts.find(post => post.slug === '/blog/puzzle/flying-car');
-  if (!flyingCarPost) {
-    flyingCarPost = {
-      slug: '/blog/puzzle/flying-car',
-      title: 'Flying Car Build',
-      category: 'Puzzle',
-      image: '/images/blog/flyingcar.webp',
-      description: 'Foam-mat flying car with detachable wings.' // Placeholder description
+  
+  // Define Trichobezoar Post
+  let trichobezoarPost = allBlogPosts.find(post => post.slug === '/blog/anatomy/play-dough-surgery-trichobezoar-removal');
+  if (!trichobezoarPost) {
+    trichobezoarPost = {
+      slug: '/blog/anatomy/play-dough-surgery-trichobezoar-removal',
+      title: 'Play-Dough Surgery: Trichobezoar',
+      category: 'Anatomy',
+      image: '/images/blog/trichobezoar.webp', // PLEASE VERIFY THIS IMAGE PATH
+      description: 'A Play-Dough surgery simulation for removing a trichobezoar.'
     };
   }
-  const twinTowersPost = allBlogPosts.find(post => post.slug === '/blog/puzzle/twin-towers');
+
+  // Define Basketball Arcade Post
+  let basketballArcadePost = allBlogPosts.find(post => post.slug === '/blog/puzzle/basketball-arcade');
+  if (!basketballArcadePost) {
+    basketballArcadePost = {
+      slug: '/blog/puzzle/basketball-arcade',
+      title: 'Basketball Arcade',
+      category: 'Puzzle',
+      image: '/images/blog/basketballarcade.webp',
+      description: 'DIY Basketball Arcade with a slanted ball return.'
+    };
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 flex flex-col items-center">
@@ -60,7 +72,7 @@ export default function HomePage() {
               href="/games/toddler-types.html"
               className="block w-full rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300 ease-in-out bg-card group"
             >
-              <div className="relative aspect-video">
+              <div className="relative aspect-[1/1]">
                 <Image
                   src="/images/blog/typing.webp"
                   alt="Toddler Types Game Screenshot"
@@ -71,7 +83,7 @@ export default function HomePage() {
               </div>
               <div className="p-5">
                 <h3 className="text-xl font-semibold text-card-foreground text-center">
-                  Toddler Types
+                  Baby Typing Game
                 </h3>
               </div>
             </Link>
@@ -83,7 +95,7 @@ export default function HomePage() {
               rel="noopener noreferrer"
               className="block w-full rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300 ease-in-out bg-card group"
             >
-              <div className="relative aspect-video">
+              <div className="relative aspect-[1/1]">
                 <Image
                   src="/images/blog/numbers.webp"
                   alt="Number Playground Game Screenshot"
@@ -94,7 +106,7 @@ export default function HomePage() {
               </div>
               <div className="p-5">
                 <h3 className="text-xl font-semibold text-card-foreground text-center">
-                  Number Playground
+                  Number Learning Playground
                 </h3>
               </div>
             </Link>
@@ -105,7 +117,7 @@ export default function HomePage() {
                 href={kineticSandPost.slug}
                 className="block w-full rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300 ease-in-out bg-card group"
               >
-                <div className="relative aspect-video">
+                <div className="relative aspect-[1/1]">
                   <Image
                     src={kineticSandPost.image || '/images/placeholder.webp'} // Fallback image
                     alt={kineticSandPost.title}
@@ -122,16 +134,16 @@ export default function HomePage() {
               </Link>
             )}
 
-            {/* Tile 4: Flying Car Post */}
-            {flyingCarPost && (
+            {/* Tile 4: Play-Dough Surgery Trichobezoar Post */}
+            {trichobezoarPost && (
               <Link
-                href={flyingCarPost.slug}
+                href={trichobezoarPost.slug}
                 className="block w-full rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300 ease-in-out bg-card group"
               >
-                <div className="relative aspect-video">
+                <div className="relative aspect-[1/1]">
                   <Image
-                    src={flyingCarPost.image || '/images/placeholder.webp'} // Fallback image
-                    alt={flyingCarPost.title}
+                    src={trichobezoarPost.image || '/images/placeholder.webp'} // Fallback image
+                    alt={trichobezoarPost.title}
                     fill
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                     unoptimized={true}
@@ -139,22 +151,22 @@ export default function HomePage() {
                 </div>
                 <div className="p-5">
                   <h3 className="text-xl font-semibold text-card-foreground text-center">
-                    {flyingCarPost.title}
+                    Play-Dough Surgery
                   </h3>
                 </div>
               </Link>
             )}
 
-            {/* Tile 5: Twin Towers Post */}
-            {twinTowersPost && (
+            {/* Tile 5: Basketball Arcade Post */}
+            {basketballArcadePost && (
               <Link
-                href={twinTowersPost.slug}
+                href={basketballArcadePost.slug}
                 className="block w-full rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300 ease-in-out bg-card group"
               >
-                <div className="relative aspect-video">
+                <div className="relative aspect-[1/1]">
                   <Image
-                    src={twinTowersPost.image || '/images/placeholder.webp'} // Fallback image
-                    alt={twinTowersPost.title}
+                    src={basketballArcadePost.image || '/images/placeholder.webp'} // Fallback image
+                    alt={basketballArcadePost.title}
                     fill
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                     unoptimized={true}
@@ -162,7 +174,7 @@ export default function HomePage() {
                 </div>
                 <div className="p-5">
                   <h3 className="text-xl font-semibold text-card-foreground text-center">
-                    {twinTowersPost.title}
+                    {basketballArcadePost.title}
                   </h3>
                 </div>
               </Link>
