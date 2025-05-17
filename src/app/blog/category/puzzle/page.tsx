@@ -19,6 +19,14 @@ export const metadata: Metadata = {
 // Temporary hardcoded post data - this would eventually come from a CMS or local files
 const puzzlePosts: BlogPostCardProps[] = [
   {
+    title: "Basketball Arcade",
+    subtitle: "(slanted return lane, arcade-style rebounds)",
+    description: "Learn how to build a DIY Basketball Arcade with puzzle mats, featuring a slanted ball return and arcade-style rebounds. A fun and challenging project that packs away easily.",
+    imageUrl: "/images/blog/basketballarcade.webp",
+    href: "/blog/puzzle/basketball-arcade",
+    imageAlt: "Basketball Arcade puzzle mat build with slanted return lane and arcade-style rebounds"
+  },
+  {
     title: "Secret Playhouse",
     subtitle: "(with a real swing-open door + privacy window)",
     description: "Build a big foam cube, hinge one mat for the door, and hand over the keys. Kids can swing the whole door open for grand entrances or latch the bottom half shut and leave a single square 'service window' for top-secret deliveries. Two occupants fit if they don't mind elbows; one child plus pillows and an art stash fits perfectly. Door closed, creativity closed-door-session engaged.",
