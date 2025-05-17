@@ -143,6 +143,85 @@ After creating the individual blog post page, you **must** add it to the list of
     *   In the category overview page (e.g., `puzzle/page.tsx`), set the `imageUrl` in the post object: `imageUrl: "/images/blog/stairtower.webp"`.
 4.  **Optimization:** Before adding images, optimize them for the web (e.g., compress JPEGs, use WebP) to improve page load times.
 
+### 4.5. Implementing a Step-by-Step Image Gallery
+
+For blog posts that include a detailed step-by-step visual guide, you can implement an image gallery with customizable captions and fine-tuned image display for each step. This approach is preferred when you need to provide specific instructions or commentary for each image in a sequence.
+
+1.  **Define a `GalleryImage` Interface:**
+    Add this interface definition near the top of your page component, typically after other interfaces like `AffiliateLink`.
+
+    ```typescript
+    interface GalleryImage {
+      src: string;        // Path to the image (e.g., '/images/blog/your-project/step-1.webp')
+      alt: string;        // Alt text for accessibility (e.g., 'Step 1 of building X')
+      caption: string;    // Custom text to display below the image for this step
+      itemClassName?: string; // Optional: Additional CSS classes for the <a> tag wrapper of this gallery item
+      objectPosition?: string; // Optional: Controls image focus (e.g., 'center top', '50% 25%'). Defaults to 'center'.
+    }
+    ```
+
+2.  **Create an Explicit `galleryImages` Array:**
+    Define an array where each element is an object conforming to the `GalleryImage` interface. This allows for unique captions and settings per image.
+
+    ```typescript
+    const galleryImages: GalleryImage[] = [
+      {
+        src: '/images/blog/your-project/step-1.webp',
+        alt: 'Detailed alt text for step 1',
+        caption: 'Step 1: Describe the first action clearly and concisely. Add any important notes here.',
+        objectPosition: 'center top' // Example: focus on the top part of a portrait image
+      },
+      {
+        src: '/images/blog/your-project/step-2.webp',
+        alt: 'Detailed alt text for step 2',
+        caption: 'Step 2: Explain what to do next, highlighting key details or common mistakes to avoid.',
+        // objectPosition: 'center' // Defaults to 'center' if not specified
+      },
+      // ... more step objects
+    ];
+    ```
+
+3.  **JSX for Rendering the Gallery:**
+    Place this section within your `<article>` where appropriate (e.g., after the main content, before affiliate links or related posts).
+
+    ```typescript jsx
+    {/* Step-by-step Gallery */}
+    {galleryImages && galleryImages.length > 0 && (
+      <section className="mt-12">
+        <h3 className="text-2xl font-semibold mb-4">How to Build: Step-by-Step Photos</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"> {/* Adjust grid columns as needed */}
+          {galleryImages.map((img) => (
+            <a
+              key={img.src}
+              href={img.src} // Links to the full image for closer inspection
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`block group ${img.itemClassName || ''}`} // Apply optional item-specific class
+            >
+              <div className="relative aspect-[3/4] w-full overflow-hidden rounded shadow"> {/* Use aspect-[3/4] for portrait, aspect-[4/3] for landscape items */}
+                <Image
+                  src={img.src}
+                  alt={img.alt}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-200"
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw" // Adjust 'sizes' based on grid and aspect ratio
+                  style={{ objectPosition: img.objectPosition || 'center' }} // Apply custom or default image focus
+                />
+              </div>
+              <span className="block mt-1 text-xs text-center text-muted-foreground">
+                {img.caption} {/* Displays your custom caption for the step */}
+              </span>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+    ```
+    *   **Aspect Ratio and Focus:** The `div` with class `aspect-[3/4]` (recommended for portrait step-by-step images) or `aspect-[4/3]` (for landscape images) combined with `object-cover` on the `Image` component will crop images to fit. The `objectPosition` style (e.g., `'center top'`, `'20% 50%'`) allows you to control which part of the image remains visible. If `objectPosition` is not specified for an image in the `galleryImages` array, it defaults to `'center'`.
+    *   **`sizes` prop:** Adjust the `sizes` prop on the `Image` component according to your grid layout (`grid-cols-X`) and the chosen aspect ratio to help Next.js optimize image loading. Ensure these values are appropriate for how many images will be shown per row at different breakpoints.
+
+This structure gives you full control over each step's presentation in the gallery, making it easy to provide detailed, custom instructions.
+
 ## 5. Video Embedding (e.g., YouTube)
 
 *   For services like YouTube or Vimeo, use their provided `iframe` embed code.

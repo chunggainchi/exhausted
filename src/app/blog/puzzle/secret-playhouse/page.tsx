@@ -14,6 +14,14 @@ interface AffiliateLink {
   description?: string;
 }
 
+interface GalleryImage {
+  src: string;
+  alt: string;
+  caption: string;
+  itemClassName?: string;
+  objectPosition?: string;
+}
+
 export default function SecretPlayhousePage() {
   const categoryName = "Puzzle";
   const categoryHref = "/blog/category/puzzle";
@@ -30,10 +38,20 @@ export default function SecretPlayhousePage() {
     }
   ];
 
-  const galleryImages = Array.from({ length: 12 }, (_, i) => ({
-    src: `/images/blog/playhouse-${i + 1}.webp`,
-    alt: `Secret Playhouse build step ${i + 1}`
-  }));
+  const galleryImages: GalleryImage[] = [
+    { src: '/images/blog/playhouse-1.webp', alt: 'Secret Playhouse build step 1', caption: 'Step 1 - this is the floor piece: start with a 3x2 long rectangle', objectPosition: 'center' },
+    { src: '/images/blog/playhouse-2.webp', alt: 'Secret Playhouse build step 2', caption: 'Step 2 - add a 2x2 square on the top of it', objectPosition: 'center' },
+    { src: '/images/blog/playhouse-3.webp', alt: 'Secret Playhouse build step 3', caption: 'Step 3 - this is the back plane: add another 3x2 long rectangle on the right side', objectPosition: 'center' },
+    { src: '/images/blog/playhouse-4.webp', alt: 'Secret Playhouse build step 4', caption: 'Step 4 - stand these two pieces up to stabilize each other', objectPosition: 'center' },
+    { src: '/images/blog/playhouse-5.webp', alt: 'Secret Playhouse build step 5', caption: 'Step 5 - add another 2x2 square on the bottom and stand it up too', objectPosition: 'center' },
+    { src: '/images/blog/playhouse-6.webp', alt: 'Secret Playhouse build step 6', caption: 'Step 6 - now add a 2x1 long piece to the left side of the front and stand it up', objectPosition: 'center' },
+    { src: '/images/blog/playhouse-7.webp', alt: 'Secret Playhouse build step 7', caption: 'Step 7 - add another 2x1 long piece on the right side of the front and stand it up too', objectPosition: 'center' },
+    { src: '/images/blog/playhouse-8.webp', alt: 'Secret Playhouse build step 8', caption: 'Step 8 - add a 1x2 piece in an additional row at the top corner', objectPosition: 'center' },
+    { src: '/images/blog/playhouse-9.webp', alt: 'Secret Playhouse build step 9', caption: 'Step 9 - use that corner piece as base structure to expand an extra row to the other corner as well', objectPosition: 'center' },
+    { src: '/images/blog/playhouse-10.webp', alt: 'Secret Playhouse build step 10', caption: 'Step 10 - make sure that the front side also is now expanded to 3 rows high', objectPosition: 'center' },
+    { src: '/images/blog/playhouse-11.webp', alt: 'Secret Playhouse build step 11', caption: 'Step 11 - add a 2x3 ceiling on top to close up the house and close the 3rd row to form the door', objectPosition: 'center' },
+    { src: '/images/blog/playhouse-12.webp', alt: 'Secret Playhouse build step 12', caption: 'Step 12 - add a 2x1 long piece as a swing-open door', objectPosition: 'center' },
+  ];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -77,7 +95,7 @@ export default function SecretPlayhousePage() {
           </div>
 
           {/* Image Section */}
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg shadow-lg md:col-span-1 order-1 md:order-2">
+          <div className="relative aspect-[3/4] w-full overflow-hidden rounded-lg shadow-lg md:col-span-1 order-1 md:order-2">
             <Image
               src={imageUrl}
               alt={imageAlt}
@@ -92,24 +110,24 @@ export default function SecretPlayhousePage() {
         <section className="mt-12">
           <h3 className="text-2xl font-semibold mb-4">How to Build: Step-by-Step Photos</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {galleryImages.map((img, idx) => (
+            {galleryImages.map((img) => (
               <a
                 key={img.src}
                 href={img.src}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block group"
-              >
-                <div className="relative aspect-[4/3] w-full overflow-hidden rounded shadow">
+                className={`block group ${img.itemClassName || ''}`}>
+                <div className="relative aspect-[3/4] w-full overflow-hidden rounded shadow">
                   <Image
                     src={img.src}
                     alt={img.alt}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-200"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
+                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw" // Adjusted sizes for portrait gallery
+                    style={{ objectPosition: img.objectPosition || 'center' }}
                   />
                 </div>
-                <span className="block mt-1 text-xs text-center text-muted-foreground">Step {idx + 1}</span>
+                <span className="block mt-1 text-xs text-center text-muted-foreground">{img.caption}</span>
               </a>
             ))}
           </div>
