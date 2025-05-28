@@ -19,6 +19,14 @@ export const metadata: Metadata = {
 // Temporary hardcoded post data - this would eventually come from a CMS or local files
 const puzzlePosts: BlogPostCardProps[] = [
   {
+    title: "Foam Labyrinth",
+    subtitle: "(walk-in maze that reshuffles in minutes)",
+    description: "Build a walk-in maze that reshuffles in minutes using puzzle mats. Create winding corridors for toddlers with multiple game modes including classic maze and Pac-Man dash.",
+    imageUrl: "/images/blog/labyrinth.webp",
+    href: "/blog/puzzle/foam-labyrinth",
+    imageAlt: "Foam labyrinth puzzle mat maze with colorful walls"
+  },
+  {
     title: "Basketball Arcade",
     subtitle: "(slanted return lane, arcade-style rebounds)",
     description: "Learn how to build a DIY Basketball Arcade with puzzle mats, featuring a slanted ball return and arcade-style rebounds. A fun and challenging project that packs away easily.",
