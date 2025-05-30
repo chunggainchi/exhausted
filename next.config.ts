@@ -21,6 +21,9 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true, // Disable image optimization for static export
   },
+  // GitHub Pages configuration for custom domain
+  trailingSlash: true,
+  distDir: 'out',
   /* other config options here */
 };
 
