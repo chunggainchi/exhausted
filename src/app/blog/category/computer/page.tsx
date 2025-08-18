@@ -19,6 +19,14 @@ export const metadata: Metadata = {
 // Placeholder for posts in this category
 const computerPosts: BlogPostCardProps[] = [
   {
+    title: "CantoPlay",
+    subtitle: "(learn Cantonese on canvas)",
+    description: "A calm, canvas-based Cantonese practice game with flashcards, a quiz, and a gentle mini-game - built for my daughter before our HK trip.",
+    imageUrl: "/images/blog/canto-play.webp",
+    href: "/blog/computer/canto-play",
+    imageAlt: "CantoPlay preview"
+  },
+  {
     title: "Number Playground",
     subtitle: "(my one-evening tribute to Numberblocks)",
     description: "A one-evening project to create an interactive number playground for a three-year-old, inspired by Numberblocks.",
