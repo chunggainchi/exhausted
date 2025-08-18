@@ -39,13 +39,13 @@ const WORDS=[
   {id:'where', photo:'where', yue:'喺邊度？', de:'Wo?'},
   {id:'oldaunt', photo:'oldaunt', yue:'嬸嬸你好', de:'Hallo alte Dame'},
   {id:'uncle', photo:'uncle', yue:'叔叔你好', de:'Hallo Onkel'},
-  {id:'aunt', photo:'aunt', yue:'姨姨你好', de:'Hallo Tante'},
+  {id:'aunt', photo:'aunt', yue:'Yee Yee 你好', de:'Hallo Tante'},
   {id:'friend', photo:'friend', yue:'我哋做朋友啦', de:'Lass uns Freunde sein'},
   {id:'play', photo:'play', yue:'一齊玩', de:'Zusammen spielen'},
-  {id:'buy', photo:'buy', yue:'我想呢個', de:'Ich möchte das kaufen'},
+  {id:'buy', photo:'buy', yue:'我想買呢個', de:'Ich möchte das kaufen'},
   {id:'howmuch', photo:'howmuch', yue:'幾多錢？', de:'Wie viel kostet das?'},
   {id:'bus', photo:'bus', yue:'巴士站喺邊？', de:'Wo ist die Bushaltestelle?'},
-  {id:'train', photo:'train', yue:'地鐵站', de:'U‑Bahn/MTR'},
+  {id:'train', photo:'train', yue:'地鐵', de:'U‑Bahn/MTR'},
   {id:'taxi', photo:'taxi', yue:'的士', de:'Taxi'},
   {id:'hot', photo:'hot', yue:'好熱', de:'Heiß'},
   {id:'cold', photo:'cold', yue:'好凍', de:'Kalt'},
@@ -383,7 +383,7 @@ class MouseCheeseScene extends Scene{ get id(){return 'game';}
   constructor(){ super(); this.grid=72; this.speed=5; this.margin=40; this.lastMove=0; this.dir={x:1,y:0}; this.pendingDir=this.dir; this.layout(); this.reset(); }
   layout(){
       const W=canvas.clientWidth, H=canvas.clientHeight;
-      const size = 80, gap = 10, safe = 40; // **FIXED**: Increased safe area buffer
+      const size = 80, gap = 10, safe = 60; // **FIXED**: Increased safe area buffer
       const cx = W - size * 1.5 - gap - safe;
       const cy = H - size * 1.5 - gap - safe;
       this.dpad = {
