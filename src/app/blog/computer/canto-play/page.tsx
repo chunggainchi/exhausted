@@ -52,7 +52,7 @@ export default function CantoPlayPostPage() {
 
             <h3 className="text-xl font-semibold mt-8 mb-4">What&apos;s inside</h3>
             <ul>
-              <li><strong>Flashcards:</strong> Cantonese + German pairs with images; tap to hear the Cantonese pronunciation.</li>
+              <li><strong>Flashcards:</strong> Cantonese + German pairs with images; tap to hear the Cantonese & German pronunciations.</li>
               <li><strong>Quiz:</strong> Hear the Cantonese word and pick the matching picture. Gentle feedback, no stress.</li>
               <li><strong>Mouse &amp; Cheese mini-game:</strong> Steer a little mouse to the cheese; each bite speaks a new Cantonese word.</li>
             </ul>
