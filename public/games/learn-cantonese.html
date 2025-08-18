@@ -85,11 +85,16 @@ const PHOTO_URLS={
 
 // ========= App State & Globals =========
 let activeScene = null;
+const MOBILE_BREAKPOINT = 850;
+let isMobileView = window.innerWidth <= MOBILE_BREAKPOINT;
+let isNavOpen = false;
+let burgerBox = { x: 12, y: 12, w: 48, h: 48 };
 
 // ========= Canvas + GFX helpers =========
 const canvas = document.getElementById('app');
 const ctx = canvas.getContext('2d');
 let DPR = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
+
 function resize() {
   DPR = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
   canvas.width = Math.floor(window.innerWidth * DPR);
@@ -97,6 +102,10 @@ function resize() {
   canvas.style.width = window.innerWidth + 'px';
   canvas.style.height = window.innerHeight + 'px';
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  
+  isMobileView = window.innerWidth <= MOBILE_BREAKPOINT;
+  if (!isMobileView) isNavOpen = false; // Close nav if we resize to desktop
+  
   if (activeScene?.layout) activeScene.layout();
 }
 window.addEventListener('resize', resize);
@@ -138,7 +147,29 @@ function primeAudio() {
   } catch (e) {}
 }
 
-canvas.addEventListener('pointerdown',e=>{ primeAudio(); pointer.down=true; const rect=canvas.getBoundingClientRect(); pointer.x=(e.clientX-rect.left); pointer.y=(e.clientY-rect.top); if(handleNavClick(pointer)) return; activeScene?.onPointer('down', pointer); canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointerdown',e=>{
+  primeAudio();
+  pointer.down=true;
+  const rect=canvas.getBoundingClientRect();
+  pointer.x=(e.clientX-rect.left);
+  pointer.y=(e.clientY-rect.top);
+
+  // Burger menu logic
+  if (isMobileView) {
+    if (pointer.x >= burgerBox.x && pointer.x <= burgerBox.x + burgerBox.w && pointer.y >= burgerBox.y && pointer.y <= burgerBox.y + burgerBox.h) {
+      isNavOpen = !isNavOpen;
+      return;
+    }
+    if (isNavOpen && pointer.x > getActiveSidebarWidth()) {
+      isNavOpen = false;
+      return; // Prevent click-through when closing menu
+    }
+  }
+
+  if(handleNavClick(pointer)) return;
+  activeScene?.onPointer('down', pointer);
+  canvas.setPointerCapture(e.pointerId);
+});
 canvas.addEventListener('pointermove',e=>{ const rect=canvas.getBoundingClientRect(); pointer.x=(e.clientX-rect.left); pointer.y=(e.clientY-rect.top); activeScene?.onPointer('move', pointer); });
 canvas.addEventListener('pointerup',e=>{ pointer.down=false; activeScene?.onPointer('up', pointer); });
 window.addEventListener('keydown',e=>{ primeAudio(); if(handleNavKey(e.key)) return; activeScene?.onKey(e.key); });
@@ -174,10 +205,7 @@ function pickVoices(voices) {
   const isCN = v => /zh[-_]?CN/i.test(v.lang || "");
   voiceHK = voices.find(isHK) || voices.find(isTW) || voices.find(isCN) || null;
 
-  const preferredDE = [
-    { name: 'Katja' }, { name: 'Anna', quality: 'Enhanced'}, { name: 'Conrad' },
-    { name: 'Google Deutsch' }, { name: 'Microsoft Katja Online'},
-  ];
+  const preferredDE = [ { name: 'Katja' }, { name: 'Anna', quality: 'Enhanced'}, { name: 'Conrad' }, { name: 'Google Deutsch' }, { name: 'Microsoft Katja Online'}, ];
   for (const p of preferredDE) {
     const found = voices.find(v => v.lang.startsWith('de') && v.name.includes(p.name));
     if (found) { voiceDE = found; break; }
@@ -244,13 +272,65 @@ const NAV=[
   {id:'quiz', label:'Quiz', emoji:'🧠', scene:()=>new QuizScene()},
   {id:'game', label:'🐭Game', emoji:'', scene:()=>new MouseCheeseScene()}
 ];
-function drawSidebar(activeId){
-  navBoxes=[]; const H=canvas.clientHeight; shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(12,12,SIDEBAR_W-24,H-24,22); ctx.fill();});
-  ctx.fillStyle='#e6ebf2'; ctx.font='20px system-ui'; ctx.fillText('CantoPlay', 26, 44);
-  let y=76; NAV.forEach(item=>{ const isActive=item.id===activeId; const h=54, x=22, w=SIDEBAR_W-44; const c1=isActive?'#22d3ee':'#334155', c2=isActive?'#8b5cf6':'#475569'; shadow(()=>{ ctx.fillStyle=gradient(x,y,w,h,c1,c2); rrect(x,y,w,h,14); ctx.fill();}); ctx.fillStyle='white'; ctx.font='18px system-ui'; const txt=`${item.emoji?item.emoji+' ':''}${item.label}`; const tw=ctx.measureText(txt).width; ctx.fillText(txt, x+Math.max(14,(w-tw)/2), y+34); navBoxes.push({x,y,w,h,id:item.id}); y+=h+12; });
+
+function getActiveSidebarWidth() {
+  if (!isMobileView) return SIDEBAR_W;
+  return isNavOpen ? SIDEBAR_W : 0;
 }
-function handleNavClick(p){ const hit=navBoxes.find(b=> p.x>=b.x && p.x<=b.x+b.w && p.y>=b.y && p.y<=b.y+b.h ); if(hit){ const nav=NAV.find(n=>n.id===hit.id); if(nav) setScene(nav.scene()); return true;} return false; }
+
+function drawSidebar(activeId){
+  navBoxes=[];
+  const H=canvas.clientHeight;
+  const sbw = getActiveSidebarWidth();
+  if (sbw <= 0) return;
+  
+  shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(12,12,sbw-24,H-24,22); ctx.fill();});
+  ctx.fillStyle='#e6ebf2'; ctx.font='20px system-ui'; ctx.fillText('CantoPlay', 26, 44);
+  let y=76; NAV.forEach(item=>{ const isActive=item.id===activeId; const h=54, x=22, w=sbw-44; const c1=isActive?'#22d3ee':'#334155', c2=isActive?'#8b5cf6':'#475569'; shadow(()=>{ ctx.fillStyle=gradient(x,y,w,h,c1,c2); rrect(x,y,w,h,14); ctx.fill();}); ctx.fillStyle='white'; ctx.font='18px system-ui'; const txt=`${item.emoji?item.emoji+' ':''}${item.label}`; const tw=ctx.measureText(txt).width; ctx.fillText(txt, x+Math.max(14,(w-tw)/2), y+34); navBoxes.push({x,y,w,h,id:item.id}); y+=h+12; });
+}
+
+function handleNavClick(p){
+  const sbw = getActiveSidebarWidth();
+  if (sbw <= 0) return false;
+  const hit=navBoxes.find(b=> p.x>=b.x && p.x<=b.x+b.w && p.y>=b.y && p.y<=b.y+b.h );
+  if (hit){
+    const nav=NAV.find(n=>n.id===hit.id);
+    if(nav) setScene(nav.scene());
+    if(isMobileView) isNavOpen = false;
+    return true;
+  }
+  return false;
+}
+
 function handleNavKey(key){ if(key==='h') {setScene(new HomeScene()); return true;} return false; }
+
+function drawBurgerMenu() {
+  if (!isMobileView) return;
+  
+  // Draw dimming overlay if nav is open
+  if (isNavOpen) {
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(getActiveSidebarWidth(), 0, canvas.clientWidth, canvas.clientHeight);
+  }
+
+  // Draw burger button
+  const {x, y, w, h} = burgerBox;
+  shadow(() => {
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    rrect(x, y, w, h, 12);
+    ctx.fill();
+  });
+  ctx.fillStyle = '#e6ebf2';
+  const lineH = 3, lineW = 22;
+  const lineX = x + (w-lineW)/2;
+  let lineY = y + (h-lineH)/2 - 7;
+  rrect(lineX, lineY, lineW, lineH, 1.5); ctx.fill();
+  lineY += 7;
+  rrect(lineX, lineY, lineW, lineH, 1.5); ctx.fill();
+  lineY += 7;
+  rrect(lineX, lineY, lineW, lineH, 1.5); ctx.fill();
+}
+
 
 // ========= Scenes =========
 class Scene{ update(dt){} draw(){} onPointer(type,p){} onKey(key){} get id(){return 'scene';} layout(){}}
@@ -261,10 +341,12 @@ function drawParticles(){ particles.forEach(p=>{ ctx.globalAlpha=Math.max(0,p.a)
 
 class HomeScene extends Scene{ get id(){return 'home';}
   constructor(){ super(); this.buttons=[]; this.layout(); }
-  layout(){ const W=canvas.clientWidth-SIDEBAR_W, H=canvas.clientHeight; const bw=Math.min(360, W*0.8), bh=56; let y = H*0.38; const X = SIDEBAR_W + (W-bw)/2; this.buttons=[ new Button('Flashcards','🃏',X,y,bw,bh,()=> setScene(new CardsOverviewScene())), new Button('Quiz','🧠',X,y+=bh+16,bw,bh,()=> setScene(new QuizScene())), new Button('Spiel: Maus & Käse','🐭🧀',X,y+=bh+16,bw,bh,()=> setScene(new MouseCheeseScene())), ]; }
-  draw(){ const W=canvas.clientWidth, H=canvas.clientHeight; drawSidebar(this.id); const CW=W-SIDEBAR_W;
-    ctx.fillStyle='rgba(255,255,255,0.95)'; ctx.font = (CW>520? 'bold 46px' : 'bold 34px') + ' system-ui'; const title='CantoPlay 粵語'; ctx.fillText(title, SIDEBAR_W + (CW-ctx.measureText(title).width)/2, H*0.18); ctx.font='18px system-ui'; ctx.fillStyle='#AFB6C3'; const sub='Lerne Kantonesisch spielerisch (auf Deutsch)'; ctx.fillText(sub, SIDEBAR_W + (CW-ctx.measureText(sub).width)/2, H*0.18+28);
-    drawBadge(SIDEBAR_W+16,16,'🎯 Ziel: Hören • Sprechen • Sehen'); this.buttons.forEach(b=>{ b.hover=b.contains(pointer.x,pointer.y); b.draw(); }); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; const tip='Tipp: Tippe auf 🔊, um die Aussprache zu hören.'; ctx.fillText(tip, SIDEBAR_W + (CW-ctx.measureText(tip).width)/2, H-20); }
+  layout(){ const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth-sbw, H=canvas.clientHeight; const bw=Math.min(360, W*0.8), bh=56; let y = H*0.38; const X = sbw + (W-bw)/2; this.buttons=[ new Button('Flashcards','🃏',X,y,bw,bh,()=> setScene(new CardsOverviewScene())), new Button('Quiz','🧠',X,y+=bh+16,bw,bh,()=> setScene(new QuizScene())), new Button('Spiel: Maus & Käse','🐭🧀',X,y+=bh+16,bw,bh,()=> setScene(new MouseCheeseScene())), ]; }
+  draw(){ const W=canvas.clientWidth, H=canvas.clientHeight; drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const CW=W-sbw;
+    ctx.fillStyle='rgba(255,255,255,0.95)'; ctx.font = (CW>520? 'bold 46px' : 'bold 34px') + ' system-ui'; const title='CantoPlay 粵語'; ctx.fillText(title, sbw + (CW-ctx.measureText(title).width)/2, H*0.18); ctx.font='18px system-ui'; ctx.fillStyle='#AFB6C3'; const sub='Lerne Kantonesisch spielerisch (auf Deutsch)'; ctx.fillText(sub, sbw + (CW-ctx.measureText(sub).width)/2, H*0.18+28);
+    drawBadge(sbw+16,16,'🎯 Ziel: Hören • Sprechen • Sehen'); this.buttons.forEach(b=>{ b.hover=b.contains(pointer.x,pointer.y); b.draw(); }); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; const tip='Tipp: Tippe auf 🔊, um die Aussprache zu hören.'; ctx.fillText(tip, sbw + (CW-ctx.measureText(tip).width)/2, H-20);
+    drawBurgerMenu();
+  }
   onPointer(type,p){ if(type==='down'){ const b=this.buttons.find(b=>b.contains(p.x,p.y)); if(b) b.onClick(); } }
 }
 
@@ -274,30 +356,23 @@ class CardsOverviewScene extends Scene{ get id(){return 'cards';}
       const H = canvas.clientHeight;
       this.scrollY += deltaY;
       if (this.scrollY < 0) this.scrollY = 0;
-      const maxScroll = this.contentHeight - H;
-      if (maxScroll > 0 && this.scrollY > maxScroll) {
-          this.scrollY = maxScroll;
-      } else if (maxScroll <= 0) {
-          this.scrollY = 0;
-      }
+      const maxScroll = Math.max(0, this.contentHeight - H);
+      if (this.scrollY > maxScroll) this.scrollY = maxScroll;
   }
-  draw(){ drawSidebar(this.id); const W=canvas.clientWidth, H=canvas.clientHeight; const CW=W-SIDEBAR_W; ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText('🃏 Flashcards — Übersicht', SIDEBAR_W+16, 48);
-    const cols = Math.max(2, Math.floor(CW/260)); const gap=16; const tileW = Math.min(240, (CW - (cols+1)*gap)/cols); const tileH= tileW*0.72 + 60; let x=SIDEBAR_W+gap, y=76; this.tileBoxes=[];
-    ctx.save(); ctx.translate(0, -this.scrollY);
-    WORDS.forEach((w,i)=>{ if(x+tileW>SIDEBAR_W+CW-gap){ x=SIDEBAR_W+gap; y+=tileH+gap; } shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,tileW,tileH,18); ctx.fill(); }); const img=IMAGES[w.photo]; if(img&&img.complete){ const ar=img.width/img.height; let dw=tileW, dh=dw/ar; if(dh>tileH-60){ dh=tileH-60; dw=dh*ar; } const ix=x+(tileW-dw)/2, iy=y+(tileH-60-dh)/2; ctx.drawImage(img,ix,iy,dw,dh);} ctx.fillStyle='#e6ebf2'; ctx.font='18px system-ui'; ctx.fillText(w.yue, x+12, y+tileH-26); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText(w.de, x+12, y+tileH-8); this.tileBoxes.push({x,y,w:tileW,h:tileH,index:i}); x+=tileW+gap; });
+  draw(){ drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const CW=W-sbw; ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText('🃏 Flashcards — Übersicht', sbw+16, 48);
+    const cols = Math.max(1, Math.floor(CW/260)); const gap=16; const tileW = Math.min(240, (CW - (cols+1)*gap)/cols); const tileH= tileW*0.72 + 60; let x=sbw+gap, y=76; this.tileBoxes=[];
+    ctx.save(); ctx.beginPath(); rrect(sbw, 0, CW, H, 0); ctx.clip(); ctx.translate(0, -this.scrollY);
+    WORDS.forEach((w,i)=>{ if(x+tileW>sbw+CW-gap){ x=sbw+gap; y+=tileH+gap; } shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,tileW,tileH,18); ctx.fill(); }); const img=IMAGES[w.photo]; if(img&&img.complete){ const ar=img.width/img.height; let dw=tileW, dh=dw/ar; if(dh>tileH-60){ dh=tileH-60; dw=dh*ar; } const ix=x+(tileW-dw)/2, iy=y+(tileH-60-dh)/2; ctx.drawImage(img,ix,iy,dw,dh);} ctx.fillStyle='#e6ebf2'; ctx.font='18px system-ui'; ctx.fillText(w.yue, x+12, y+tileH-26); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText(w.de, x+12, y+tileH-8); this.tileBoxes.push({x,y,w:tileW,h:tileH,index:i}); x+=tileW+gap; });
     this.contentHeight = y + tileH + gap;
-    ctx.restore(); 
+    ctx.restore();
+    drawBurgerMenu();
   }
   onPointer(type,p){
-      if (type==='down') {
-          this.pointerStart = { x: p.x, y: p.y, scroll: this.scrollY };
-      } else if (type==='move' && pointer.down && this.pointerStart) {
-          const dy = p.y - this.pointerStart.y;
-          this.scrollY = this.pointerStart.scroll - dy;
-          this.onScroll(0); // clamp
-      } else if (type==='up' && this.pointerStart) {
+      if (type==='down') { this.pointerStart = { x: p.x, y: p.y, scroll: this.scrollY }; }
+      else if (type==='move' && pointer.down && this.pointerStart) { const dy = p.y - this.pointerStart.y; this.scrollY = this.pointerStart.scroll - dy; this.onScroll(0); }
+      else if (type==='up' && this.pointerStart) {
           const dist = Math.hypot(p.x-this.pointerStart.x, p.y-this.pointerStart.y);
-          if (dist < 10) { // Click, not a drag
+          if (dist < 10) {
               const hit=this.tileBoxes.find(b=> p.x>=b.x && p.x<=b.x+b.w && p.y>=b.y-this.scrollY && p.y<=b.y+b.h-this.scrollY );
               if(hit) setScene(new CardDetailScene(hit.index));
           }
@@ -310,29 +385,26 @@ class CardDetailScene extends Scene{ get id(){return 'cards';}
   constructor(index){ super(); this.i=index; this.hkBtn=new Button('中文 🇭🇰','',0,0,150,44,()=>speakYue(this.current().yue)); this.deBtn=new Button('Deutsch 🇩🇪','',0,0,170,44,()=>speakDe(this.current().de)); this.prevBtn=new Button('⬅️','',0,0,56,56,()=>this.prev()); this.nextBtn=new Button('➡️','',0,0,56,56,()=>this.next()); this.homeBtn=new Button('Zur Übersicht','📚',0,0,180,44,()=>setScene(new CardsOverviewScene())); this.layout(); speakYue(this.current().yue); }
   current(){ return WORDS[this.i]; }
   layout(){
-    const W=canvas.clientWidth,H=canvas.clientHeight; const CW=W-SIDEBAR_W;
+    const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const CW=W-sbw;
     const cardW=Math.min(640,CW*0.7), cardH=Math.min(420,H*0.55);
-    const cardX=SIDEBAR_W + (CW-cardW)/2, cardY=(H-cardH)/2-20;
+    const cardX=sbw + (CW-cardW)/2, cardY=(H-cardH)/2-20;
     this.prevBtn.x = cardX - this.prevBtn.w - 20;
     this.prevBtn.y = cardY + (cardH - this.prevBtn.h) / 2;
     this.nextBtn.x = cardX + cardW + 20;
     this.nextBtn.y = cardY + (cardH - this.nextBtn.h) / 2;
-    const bottomY=H-64; const centerX=SIDEBAR_W+CW/2;
+    const bottomY=H-64; const centerX=sbw+CW/2;
     this.hkBtn.x=centerX-170; this.hkBtn.y=bottomY;
     this.deBtn.x=centerX; this.deBtn.y=bottomY;
     this.homeBtn.x=W-196; this.homeBtn.y=16;
   }
   next(){ this.i=(this.i+1)%WORDS.length; speakYue(this.current().yue); }
   prev(){ this.i=(this.i-1+WORDS.length)%WORDS.length; speakYue(this.current().yue); }
-  draw(){ drawSidebar(this.id); const W=canvas.clientWidth,H=canvas.clientHeight; const w=this.current(); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText(`🃏 Flashcards — ${this.i+1}/${WORDS.length}`, SIDEBAR_W+16, 48); const CW = W-SIDEBAR_W; const cardW=Math.min(640,CW*0.7), cardH=Math.min(420,H*0.55), x=SIDEBAR_W + (CW-cardW)/2, y=(H-cardH)/2-20; shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,cardW,cardH,26); ctx.fill();}); const img=IMAGES[w.photo]; if(img&&img.complete){ const ar=img.width/img.height; let dw=cardW, dh=dw/ar; if(dh>cardH){ dh=cardH; dw=dh*ar; } const ix=x+(cardW-dw)/2, iy=y+(cardH-dh)/2; ctx.drawImage(img,ix,iy,dw,dh);} ctx.fillStyle='#e6ebf2'; ctx.font='32px system-ui'; const yue=w.yue; ctx.fillText(yue, SIDEBAR_W + (CW-ctx.measureText(yue).width)/2, y+cardH+44); ctx.fillStyle='#AFB6C3'; ctx.font='20px system-ui'; const de=w.de; ctx.fillText(de, SIDEBAR_W + (CW-ctx.measureText(de).width)/2, y+cardH+72);
+  draw(){ drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth,H=canvas.clientHeight; const w=this.current(); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText(`🃏 Flashcards — ${this.i+1}/${WORDS.length}`, sbw+16, 48); const CW = W-sbw; const cardW=Math.min(640,CW*0.7), cardH=Math.min(420,H*0.55), x=sbw + (CW-cardW)/2, y=(H-cardH)/2-20; shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,cardW,cardH,26); ctx.fill();}); const img=IMAGES[w.photo]; if(img&&img.complete){ const ar=img.width/img.height; let dw=cardW, dh=dw/ar; if(dh>cardH){ dh=cardH; dw=dh*ar; } const ix=x+(cardW-dw)/2, iy=y+(cardH-dh)/2; ctx.drawImage(img,ix,iy,dw,dh);} ctx.fillStyle='#e6ebf2'; ctx.font='32px system-ui'; const yue=w.yue; ctx.fillText(yue, sbw + (CW-ctx.measureText(yue).width)/2, y+cardH+44); ctx.fillStyle='#AFB6C3'; ctx.font='20px system-ui'; const de=w.de; ctx.fillText(de, sbw + (CW-ctx.measureText(de).width)/2, y+cardH+72);
     [this.prevBtn,this.nextBtn,this.hkBtn,this.deBtn,this.homeBtn].forEach(b=>{ b.hover=b.contains(pointer.x,pointer.y); b.draw();});
+    drawBurgerMenu();
   }
   onPointer(type,p){ if(type!=='down') return; [this.prevBtn,this.nextBtn,this.hkBtn,this.deBtn,this.homeBtn].forEach(b=>{ if(b.contains(p.x,p.y)) b.onClick(); }); }
-  onKey(key) {
-    if (key === 'ArrowLeft') this.prev();
-    if (key === 'ArrowRight') this.next();
-    if (key === 'Escape') setScene(new CardsOverviewScene());
-  }
+  onKey(key) { if (key === 'ArrowLeft') this.prev(); if (key === 'ArrowRight') this.next(); if (key === 'Escape') setScene(new CardsOverviewScene()); }
 }
 
 class QuizScene extends Scene{ get id(){return 'quiz';}
@@ -340,30 +412,31 @@ class QuizScene extends Scene{ get id(){return 'quiz';}
   pickRand(except){ const pool=WORDS.filter(w=>w!==except); return pool[Math.floor(Math.random()*pool.length)]; }
   prepareQuestion(){ this.current = WORDS[Math.floor(Math.random()*WORDS.length)]; this.options=[this.current, this.pickRand(this.current), this.pickRand(this.current), this.pickRand(this.current)]; this.options = Array.from(new Set(this.options)); while(this.options.length<4) this.options.push(this.pickRand(this.current)); this.options.sort(()=>Math.random()-0.5); speakYue(this.current.yue); }
   layout(){
-      const W=canvas.clientWidth,H=canvas.clientHeight; const CW=W-SIDEBAR_W;
-      const bottomY = H-64; const centerX = SIDEBAR_W + CW / 2;
+      const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth,H=canvas.clientHeight; const CW=W-sbw;
+      const bottomY = H-64; const centerX = sbw + CW / 2;
       this.hkBtn.x = centerX - 170; this.hkBtn.y = bottomY;
       this.deBtn.x = centerX; this.deBtn.y = bottomY;
   }
-  draw(){ drawSidebar(this.id); const W=canvas.clientWidth,H=canvas.clientHeight; const CW=W-SIDEBAR_W; ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText('🧠 Quiz — Höre und wähle das richtige Bild', SIDEBAR_W+16, 48);
-    ctx.fillStyle='#e6ebf2'; ctx.font='26px system-ui'; const q=this.current.yue; ctx.fillText(q, SIDEBAR_W + (CW-ctx.measureText(q).width)/2, 92);
+  draw(){ drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth,H=canvas.clientHeight; const CW=W-sbw; ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText('🧠 Quiz — Höre und wähle das richtige Bild', sbw+16, 48);
+    ctx.fillStyle='#e6ebf2'; ctx.font='26px system-ui'; const q=this.current.yue; ctx.fillText(q, sbw + (CW-ctx.measureText(q).width)/2, 92);
     
     const gap=18; const gridW=Math.min(CW-48, 800); const tileW=(gridW-gap)/2, tileH=Math.min(260, tileW*0.66);
-    const gx=SIDEBAR_W + (CW - gridW)/2, gy=130;
+    const gx=sbw + (CW - gridW)/2, gy=130;
     this.options.forEach((opt,i)=>{ const row=Math.floor(i/2), col=i%2; const x=gx + col*(tileW+gap), y=gy + row*(tileH+gap); shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,tileW,tileH,18); ctx.fill();}); const img=IMAGES[opt.photo]; if(img&&img.complete){ const ar=img.width/img.height; let dw=tileW, dh=dw/ar; if(dh>tileH){ dh=tileH; dw=dh*ar; } const ix=x+(tileW-dw)/2, iy=y+(tileH-dh)/2; ctx.drawImage(img,ix,iy,dw,dh);} opt._box={x,y,w:tileW,h:tileH}; });
 
     const gridBottom = gy + 2*tileH + gap;
     const trackY = gridBottom + 40;
-    const trackX=SIDEBAR_W+60, trackW=CW-120, trackH=18;
+    const trackX=sbw+60, trackW=CW-120, trackH=18;
     shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.08)'; rrect(trackX,trackY,trackW,trackH,12); ctx.fill();});
     const stepW=trackW/this.steps; ctx.fillStyle='#22d3ee'; rrect(trackX,trackY, Math.max(0,(this.progress)*stepW), trackH,12); ctx.fill();
     ctx.font='28px system-ui'; ctx.fillText('🐭', trackX + Math.max(0,(this.progress-0.9))*stepW, trackY+trackH+4);
     ctx.fillText('🧀', trackX + trackW-6, trackY+trackH+4);
     
     [this.hkBtn, this.deBtn].forEach(b => { b.hover = b.contains(pointer.x, pointer.y); b.draw(); });
-    ctx.fillStyle='#AFB6C3'; ctx.font='16px system-ui'; ctx.fillText(`✅ ${this.correct} richtig`, SIDEBAR_W+16, H-16);
+    ctx.fillStyle='#AFB6C3'; ctx.font='16px system-ui'; ctx.fillText(`✅ ${this.correct} richtig`, sbw+16, H-16);
     if(this.negTimer>0){ ctx.globalAlpha=Math.min(0.25,this.negTimer/20); ctx.fillStyle='#ef4444'; rrect(gx-10,gy-10,gridW+20,gridBottom-gy+10,24); ctx.fill(); ctx.globalAlpha=1; this.negTimer--; }
     drawParticles();
+    drawBurgerMenu();
   }
   onPointer(type,p){
       if(type!=='down') return;
@@ -376,43 +449,39 @@ class QuizScene extends Scene{ get id(){return 'quiz';}
       else { this.progress=Math.max(0,this.progress-1); this.negTimer=14; fxNegative(); emitConfetti(p.x,p.y,'#ef4444',10); }
   }
   onKey(key){ if(key==='Escape') setScene(new HomeScene()); if(key===' ') speakYue(this.current.yue); }
-  showWin(){ const W=canvas.clientWidth, H=canvas.clientHeight; for(let i=0;i<120;i++){ emitConfetti(SIDEBAR_W+Math.random()*(W-SIDEBAR_W), 140+Math.random()*(H-240), ['#22c55e','#8b5cf6','#22d3ee'][i%3],1); } fxPositive(); fxPositive(); const msg1='Super! Du hast die Käsejagd geschafft!'; const msg2='好叻呀！你攞到芝士啦！'; setTimeout(()=>{ alert(`${msg1}\n${msg2}`); this.correct=0; this.progress=0; this.prepareQuestion(); }, 1200); }
+  showWin(){ const W=canvas.clientWidth, H=canvas.clientHeight; const sbw=getActiveSidebarWidth(); for(let i=0;i<120;i++){ emitConfetti(sbw+Math.random()*(W-sbw), 140+Math.random()*(H-240), ['#22c55e','#8b5cf6','#22d3ee'][i%3],1); } fxPositive(); fxPositive(); const msg1='Super! Du hast die Käsejagd geschafft!'; const msg2='好叻呀！你攞到芝士啦！'; setTimeout(()=>{ alert(`${msg1}\n${msg2}`); this.correct=0; this.progress=0; this.prepareQuestion(); }, 1200); }
 }
 
 class MouseCheeseScene extends Scene{ get id(){return 'game';}
   constructor(){ super(); this.grid=72; this.speed=5; this.margin=40; this.lastMove=0; this.dir={x:1,y:0}; this.pendingDir=this.dir; this.layout(); this.reset(); }
   layout(){
       const W=canvas.clientWidth, H=canvas.clientHeight;
-      const size = 80, gap = 10, safe = 60; // **FIXED**: Increased safe area buffer
+      const size = 80, gap = 10, safe = 60;
       const cx = W - size * 1.5 - gap - safe;
       const cy = H - size * 1.5 - gap - safe;
-      this.dpad = {
-          up:    { x: cx, y: cy - size - gap, w: size, h: size },
-          left:  { x: cx - size - gap, y: cy, w: size, h: size },
-          right: { x: cx + size + gap, y: cy, w: size, h: size },
-          down:  { x: cx, y: cy + size + gap, w: size, h: size }
-      };
+      this.dpad = { up: { x: cx, y: cy - size - gap, w: size, h: size }, left: { x: cx - size - gap, y: cy, w: size, h: size }, right: { x: cx + size + gap, y: cy, w: size, h: size }, down: { x: cx, y: cy + size + gap, w: size, h: size } };
       this.dpad.bounds = { x: cx-size-gap, y: cy-size-gap, w: (size*3+gap*2), h:(size*3+gap*2)};
   }
   playArea(){
-      const W=canvas.clientWidth, H=canvas.clientHeight;
+      const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight;
       let right = W-this.margin;
-      if (W > (SIDEBAR_W + this.dpad.bounds.w + 2 * this.margin)) {
+      if (W > (sbw + this.dpad.bounds.w + 2 * this.margin)) {
           right = this.dpad.bounds.x - this.margin;
       }
-      const left=SIDEBAR_W+this.margin, top=120, bottom=H-this.margin;
+      const left=sbw+this.margin, top=120, bottom=H-this.margin;
       return {left,top,right,bottom,width:right-left,height:bottom-top};
   }
   reset(){ const a=this.playArea(); this.cols=Math.max(1, Math.floor(a.width/this.grid)); this.rows=Math.max(1, Math.floor(a.height/this.grid)); const cx=Math.floor(this.cols/2), cy=Math.floor(this.rows/2); this.body=[{x:cx,y:cy}]; this.placeCheese(); this.score=0; this.wordIndex=0; this.wordOrder=shuffle([...WORDS]); }
   placeCheese(){ this.cheese={x:Math.floor(Math.random()*this.cols), y:Math.floor(Math.random()*this.rows)}; if(this.body.some(s=>s.x===this.cheese.x && s.y===this.cheese.y)) this.placeCheese(); }
   drawGrid(){ const a=this.playArea(); ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.lineWidth=1; for(let x=0;x<=this.cols;x++){ ctx.beginPath(); ctx.moveTo(a.left+x*this.grid, a.top); ctx.lineTo(a.left+x*this.grid, a.bottom); ctx.stroke(); } for(let y=0;y<=this.rows;y++){ ctx.beginPath(); ctx.moveTo(a.left, a.top+y*this.grid); ctx.lineTo(a.right, a.top+y*this.grid); ctx.stroke(); } }
-  draw(){ drawSidebar(this.id); const W=canvas.clientWidth, H=canvas.clientHeight; const a=this.playArea(); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText('🐭 Maus & Käse — Pfeiltasten oder Touch-Controller', SIDEBAR_W+16, 48);
-    const word=this.wordOrder[this.wordIndex % this.wordOrder.length]; const bannerW=Math.min(560,(W-SIDEBAR_W-60)), bannerH=56, bx=SIDEBAR_W + ((W-SIDEBAR_W)-bannerW)/2, by=56; shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(bx,by,bannerW,bannerH,18); ctx.fill(); }); ctx.fillStyle='#e6ebf2'; ctx.font='20px system-ui'; const line=`🧀 Nächster Käse sagt: ${word.yue}  (${word.de})`; ctx.fillText(line, bx+16, by+36);
+  draw(){ drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const a=this.playArea(); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText('🐭 Maus & Käse — Pfeiltasten oder Touch-Controller', sbw+16, 48);
+    const word=this.wordOrder[this.wordIndex % this.wordOrder.length]; const bannerW=Math.min(560,(W-sbw-60)), bannerH=56, bx=sbw + ((W-sbw)-bannerW)/2, by=56; shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(bx,by,bannerW,bannerH,18); ctx.fill(); }); ctx.fillStyle='#e6ebf2'; ctx.font='20px system-ui'; const line=`🧀 Nächster Käse sagt: ${word.yue}  (${word.de})`; ctx.fillText(line, bx+16, by+36);
     this.drawGrid();
     ctx.font = `${this.grid}px system-ui`; ctx.fillText('🧀', a.left + this.cheese.x*this.grid + 4, a.top + this.cheese.y*this.grid + this.grid - 6);
     this.body.forEach((s,i)=>{ if(i===0){ ctx.font=`${this.grid+4}px system-ui`; ctx.fillText('🐭', a.left + s.x*this.grid + 2, a.top + s.y*this.grid + this.grid - 4); } else { ctx.fillStyle='rgba(255,255,255,0.5)'; rrect(a.left + s.x*this.grid+6, a.top + s.y*this.grid+6, this.grid-12, this.grid-12, 6); ctx.fill(); } });
-    ctx.fillStyle='#AFB6C3'; ctx.font='16px system-ui'; ctx.fillText(`Punkte: ${this.score}`, SIDEBAR_W+16, H-16);
+    ctx.fillStyle='#AFB6C3'; ctx.font='16px system-ui'; ctx.fillText(`Punkte: ${this.score}`, sbw+16, H-16);
     this.drawDpad();
+    drawBurgerMenu();
   }
   drawDpad(){
     Object.entries(this.dpad).forEach(([key, box])=>{
@@ -424,7 +493,7 @@ class MouseCheeseScene extends Scene{ get id(){return 'game';}
   }
   step(){ const now=performance.now(); if(now-this.lastMove < (1000/this.speed)) return; this.lastMove=now; const head={x:this.body[0].x+this.pendingDir.x, y:this.body[0].y+this.pendingDir.y};
     head.x=(head.x+this.cols)%this.cols; head.y=(head.y+this.rows)%this.rows;
-    if(this.body.some((s,i)=> i>0 && s.x===head.x && s.y===head.y)){ emitConfetti(SIDEBAR_W+40,80,'#ef4444'); this.reset(); return; }
+    if(this.body.some((s,i)=> i>0 && s.x===head.x && s.y===head.y)){ const a=this.playArea(); emitConfetti(a.left+40,a.top+40,'#ef4444'); this.reset(); return; }
     this.dir=this.pendingDir; this.body.unshift(head);
     if(head.x===this.cheese.x && head.y===this.cheese.y){ this.score++; const a=this.playArea(); emitConfetti(a.left + (head.x+0.5)*this.grid, a.top + (head.y+0.5)*this.grid,'#22c55e',28); const w=this.wordOrder[this.wordIndex % this.wordOrder.length]; speakYue(w.yue); this.wordIndex++; this.placeCheese(); } else { this.body.pop(); }
   }
