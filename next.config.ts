@@ -1,31 +1,30 @@
-import type { NextConfig } from "next";
-import createMDX from '@next/mdx';
+// next.config.ts
+import type { NextConfig } from 'next'
+import createMDX from '@next/mdx'
 
 const withMDX = createMDX({
-  // Add options here if needed
   extension: /\.mdx?$/,
-  options: {
-    // remarkPlugins: [], // Add remark plugins here
-    // rehypePlugins: [], // Add rehype plugins here
-    // If you use `MDXProvider`, uncomment the following line. 
-    // providerImportSource: "@mdx-js/react",
-  },
-});
+  options: {}
+})
 
 const nextConfig: NextConfig = {
-  output: "export",
-  // Configure pageExtensions to include md and mdx
-  pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
-  // Optionally, add any other Next.js config below
-  reactStrictMode: true,
-  images: {
-    unoptimized: true, // Disable image optimization for static export
-  },
-  // GitHub Pages configuration for custom domain
-  trailingSlash: true,
-  distDir: 'out',
-  /* other config options here */
-};
+  // IMPORTANT: no static-export options here.
+  // - DO NOT set output:'export'
+  // - DO NOT set distDir:'out'
+  // - DO NOT set trailingSlash
+  // - DO NOT set images.unoptimized
 
-// Merge MDX config with Next.js config
-export default withMDX(nextConfig);
+  reactStrictMode: true,
+  pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
+
+  // Serve HTML files from /public/games and add pretty URLs
+  async rewrites() {
+    return [
+      { source: '/games/learn-cantonese', destination: '/games/learn-cantonese.html' },
+      { source: '/games/toddler-types',  destination: '/games/toddler-types.html' },
+      { source: '/games/:path*.html',    destination: '/games/:path*.html' }
+    ]
+  }
+}
+
+export default withMDX(nextConfig)
