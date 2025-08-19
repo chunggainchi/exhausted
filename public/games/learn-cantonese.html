@@ -25,34 +25,100 @@
 <script>
 // ========= Data provided by Sharon =========
 const WORDS=[
-  {id:'hello', photo:'hello', yue:'你好', de:'Hallo'},
-  {id:'thanks', photo:'thanks', yue:'多謝', de:'Danke'},
-  {id:'toilet', photo:'toilet', yue:'廁所喺邊？', de:'Wo ist die Toilette?'},
-  {id:'hungry', photo:'hungry', yue:'我好肚餓', de:'Ich habe Hunger'},
-  {id:'thirsty', photo:'thirsty', yue:'我好口渴', de:'Ich habe Durst'},
-  {id:'rice', photo:'rice', yue:'白飯', de:'Reis'},
-  {id:'noodles', photo:'noodles', yue:'麵', de:'Nudeln'},
-  {id:'dumpling', photo:'dumpling', yue:'餃子', de:'Dumpling'},
-  {id:'yummy', photo:'yummy', yue:'好好味', de:'Lecker'},
-  {id:'full', photo:'full', yue:'我食飽啦', de:'Ich bin satt'},
-  {id:'sorry', photo:'sorry', yue:'對唔住', de:'Entschuldigung'},
-  {id:'where', photo:'where', yue:'喺邊度？', de:'Wo?'},
-  {id:'oldaunt', photo:'oldaunt', yue:'嬸嬸你好', de:'Hallo alte Dame'},
-  {id:'uncle', photo:'uncle', yue:'叔叔你好', de:'Hallo Onkel'},
-  {id:'aunt', photo:'aunt', yue:'Yee Yee 你好', de:'Hallo Tante'},
-  {id:'friend', photo:'friend', yue:'我哋做朋友啦', de:'Lass uns Freunde sein'},
-  {id:'play', photo:'play', yue:'一齊玩', de:'Zusammen spielen'},
-  {id:'buy', photo:'buy', yue:'我想買呢個', de:'Ich möchte das kaufen'},
-  {id:'howmuch', photo:'howmuch', yue:'幾多錢？', de:'Wie viel kostet das?'},
-  {id:'bus', photo:'bus', yue:'巴士站喺邊？', de:'Wo ist die Bushaltestelle?'},
-  {id:'train', photo:'train', yue:'地鐵', de:'U‑Bahn/MTR'},
-  {id:'taxi', photo:'taxi', yue:'的士', de:'Taxi'},
-  {id:'hot', photo:'hot', yue:'好熱', de:'Heiß'},
-  {id:'cold', photo:'cold', yue:'好凍', de:'Kalt'},
-  {id:'help', photo:'help', yue:'幫下手', de:'Hilf mir bitte'},
-  {id:'toilet2', photo:'toilet2', yue:'我要去廁所', de:'Ich muss aufs Klo'},
-  {id:'bye', photo:'bye', yue:'拜拜', de:'Tschüss'},
+  {id:'hello', theme:'basics', photo:'hello', yue:'你好', de:'Hallo', en:'Hello'},
+  {id:'thanks', theme:'basics', photo:'thanks', yue:'多謝', de:'Danke', en:'Thank you'},
+  {id:'toilet', theme:'basics', photo:'toilet', yue:'廁所喺邊？', de:'Wo ist die Toilette?', en:'Where is the toilet?'},
+  {id:'hungry', theme:'basics', photo:'hungry', yue:'我好肚餓', de:'Ich habe Hunger', en:'I am hungry'},
+  {id:'thirsty', theme:'basics', photo:'thirsty', yue:'我好口渴', de:'Ich habe Durst', en:'I am thirsty'},
+  {id:'rice', theme:'basics', photo:'rice', yue:'白飯', de:'Reis', en:'Rice'},
+  {id:'noodles', theme:'basics', photo:'noodles', yue:'麵', de:'Nudeln', en:'Noodles'},
+  {id:'dumpling', theme:'basics', photo:'dumpling', yue:'餃子', de:'Dumpling', en:'Dumpling'},
+  {id:'yummy', theme:'basics', photo:'yummy', yue:'好好味', de:'Lecker', en:'Tasty'},
+  {id:'full', theme:'basics', photo:'full', yue:'我食飽啦', de:'Ich bin satt', en:'I am full'},
+  {id:'sorry', theme:'basics', photo:'sorry', yue:'對唔住', de:'Entschuldigung', en:'Sorry'},
+  {id:'where', theme:'basics', photo:'where', yue:'喺邊度？', de:'Wo?', en:'Where?'},
+  {id:'oldaunt', theme:'basics', photo:'oldaunt', yue:'嬸嬸你好', de:'Hallo alte Dame', en:'Hello auntie'},
+  {id:'uncle', theme:'basics', photo:'uncle', yue:'叔叔你好', de:'Hallo Onkel', en:'Hello uncle'},
+  {id:'aunt', theme:'basics', photo:'aunt', yue:'Yee Yee 你好', de:'Hallo Tante', en:'Hello aunt'},
+  {id:'friend', theme:'basics', photo:'friend', yue:'我哋做朋友啦', de:'Lass uns Freunde sein', en:'Let’s be friends'},
+  {id:'play', theme:'basics', photo:'play', yue:'一齊玩', de:'Zusammen spielen', en:'Play together'},
+  {id:'buy', theme:'basics', photo:'buy', yue:'我想買呢個', de:'Ich möchte das kaufen', en:'I want to buy this'},
+  {id:'howmuch', theme:'basics', photo:'howmuch', yue:'幾多錢？', de:'Wie viel kostet das?', en:'How much?'},
+  {id:'bus', theme:'basics', photo:'bus', yue:'巴士站喺邊？', de:'Wo ist die Bushaltestelle?', en:'Where is the bus stop?'},
+  {id:'train', theme:'basics', photo:'train', yue:'地鐵', de:'U‑Bahn/MTR', en:'Subway/MTR'},
+  {id:'taxi', theme:'basics', photo:'taxi', yue:'的士', de:'Taxi', en:'Taxi'},
+  {id:'hot', theme:'basics', photo:'hot', yue:'好熱', de:'Heiß', en:'Hot'},
+  {id:'cold', theme:'basics', photo:'cold', yue:'好凍', de:'Kalt', en:'Cold'},
+  {id:'help', theme:'basics', photo:'help', yue:'幫下手', de:'Hilf mir bitte', en:'Please help me'},
+  {id:'toilet2', theme:'basics', photo:'toilet2', yue:'我要去廁所', de:'Ich muss aufs Klo', en:'I need the toilet'},
+  {id:'bye', theme:'basics', photo:'bye', yue:'拜拜', de:'Tschüss', en:'Bye'},
+  {id:'hurt', theme:'basics', photo:'hurt', yue:'好痛', de:'Es tut weh', en:'It hurts'},
+  {id:'sleep', theme:'basics', photo:'sleep', yue:'我想瞓覺', de:'Ich will schlafen', en:'I want to sleep'},
+  {id:'dirty', theme:'basics', photo:'dirty', yue:'污糟咗', de:'Schmutzig geworden', en:'Dirty'},
+  {id:'washclean', theme:'basics', photo:'washclean', yue:'洗乾淨', de:'Sauber waschen', en:'Wash clean'},
+  {id:'noisy', theme:'basics', photo:'noisy', yue:'好嘈', de:'Zu laut', en:'Too noisy'},
+  {id:'moreplease', theme:'basics', photo:'moreplease', yue:'要多啲', de:'Mehr bitte', en:'More please'},
+  {id:'gohome', theme:'basics', photo:'gohome', yue:'番屋企', de:'Nach Hause gehen', en:'Go home'},
+  {id:'iwanttosee', theme:'basics', photo:'iwanttosee', yue:'我想睇', de:'Ich möchte sehen', en:'I want to see'},
+  {id:'nothanks', theme:'basics', photo:'nothanks', yue:'唔洗啦唔該', de:'Nein danke', en:'No thanks'},
+
+  // Colors (Farben)
+  {id:'red', theme:'colors', photo:'red', yue:'紅色', de:'Rot', en:'Red'},
+  {id:'blue', theme:'colors', photo:'blue', yue:'藍色', de:'Blau', en:'Blue'},
+  {id:'green', theme:'colors', photo:'green', yue:'綠色', de:'Grün', en:'Green'},
+  {id:'yellow', theme:'colors', photo:'yellow', yue:'黃色', de:'Gelb', en:'Yellow'},
+  {id:'orange', theme:'colors', photo:'orange', yue:'橙色', de:'Orange', en:'Orange'},
+  {id:'purple', theme:'colors', photo:'purple', yue:'紫色', de:'Lila', en:'Purple'},
+  {id:'black', theme:'colors', photo:'black', yue:'黑色', de:'Schwarz', en:'Black'},
+  {id:'white', theme:'colors', photo:'white', yue:'白色', de:'Weiß', en:'White'},
+  {id:'gray', theme:'colors', photo:'gray', yue:'灰色', de:'Grau', en:'Gray'},
+  {id:'brown', theme:'colors', photo:'brown', yue:'啡色', de:'Braun', en:'Brown'},
+
+  // Feelings (Gefühle)
+  {id:'happy', theme:'feelings', photo:'happy', yue:'開心', de:'Glücklich', en:'Happy'},
+  {id:'sad', theme:'feelings', photo:'sad', yue:'唔開心', de:'Traurig', en:'Sad'},
+  {id:'angry', theme:'feelings', photo:'angry', yue:'嬲', de:'Wütend', en:'Angry'},
+  {id:'scared', theme:'feelings', photo:'scared', yue:'驚', de:'Ängstlich', en:'Scared'},
+  {id:'tired', theme:'feelings', photo:'tired', yue:'攰', de:'Müde', en:'Tired'},
+
+  // Animals (Tiere)
+  {id:'dog', theme:'animals', photo:'dog', yue:'狗', de:'Hund', en:'Dog'},
+  {id:'cat', theme:'animals', photo:'cat', yue:'貓', de:'Katze', en:'Cat'},
+  {id:'bird', theme:'animals', photo:'bird', yue:'雀仔', de:'Vogel', en:'Bird'},
+  {id:'fish', theme:'animals', photo:'fish', yue:'魚', de:'Fisch', en:'Fish'},
+  {id:'rhino', theme:'animals', photo:'rhino', yue:'犀牛', de:'Nashorn', en:'Rhino'},
+  {id:'lion', theme:'animals', photo:'lion', yue:'獅子', de:'Löwe', en:'Lion'},
+  {id:'tiger', theme:'animals', photo:'tiger', yue:'老虎', de:'Tiger', en:'Tiger'},
+  {id:'elephant', theme:'animals', photo:'elephant', yue:'大笨象', de:'Elefant', en:'Elephant'},
+  {id:'mouse', theme:'animals', photo:'mouse', yue:'老鼠', de:'Maus', en:'Mouse'},
+  {id:'squirrel', theme:'animals', photo:'squirrel', yue:'松鼠', de:'Eichhörnchen', en:'Squirrel'},
+  {id:'crocodile', theme:'animals', photo:'crocodile', yue:'鱷魚', de:'Krokodil', en:'Crocodile'},
+  {id:'crow', theme:'animals', photo:'crow', yue:'烏鴉', de:'Krähe', en:'Crow'},
+
+  // Funny (sound-alikes)
+  {id:'computer', theme:'funny', photo:'computer', yue:'電腦', de:'Computer', en:'Computer'},
+  {id:'stove', theme:'funny', photo:'stove', yue:'電爐', de:'Elektroherd', en:'Electric stove'},
+  {id:'crazy-man', theme:'funny', photo:'crazy', yue:'癲佬', de:'Verrückter', en:'Crazy man'},
+  {id:'spider', theme:'funny', photo:'spider', yue:'蜘蛛', de:'Spinne', en:'Spider'},
+  {id:'point-at', theme:'funny', photo:'point', yue:'指住', de:'Zeig darauf', en:'Point at'},
+  {id:'stuck', theme:'funny', photo:'stuck', yue:'痴住', de:'Festkleben', en:'Stuck'},
+  {id:'sugar', theme:'funny', photo:'sugar', yue:'砂糖', de:'Zucker', en:'Sugar'},
+  {id:'sand', theme:'funny', photo:'sand', yue:'沙灘', de:'Sand', en:'Sand'},
+  {id:'book', theme:'funny', photo:'book', yue:'書', de:'Buch', en:'Book'},
+  {id:'tree', theme:'funny', photo:'tree', yue:'樹', de:'Baum', en:'Tree'},
 ];
+
+// Themes (categories) for organizing flashcards
+const THEMES=[
+  { id:'basics', label:'Grundlagen', emoji:'📚' },
+  { id:'colors', label:'Farben', emoji:'🎨' },
+  { id:'feelings', label:'Gefühle', emoji:'💕' },
+  { id:'animals', label:'Tiere', emoji:'🐶' },
+  { id:'funny', label:'Funny', emoji:'😂' },
+];
+
+function getWordsForTheme(themeId){ return WORDS.filter(w=> (w.theme===themeId) || (Array.isArray(w.themes) && w.themes.includes(themeId))); }
+function getAvailableThemes(){ return THEMES.map(t=> ({...t, count: getWordsForTheme(t.id).length})).filter(t=>t.count>0); }
 const PHOTO_URLS={
   hello:'https://images.unsplash.com/photo-1560265036-021b3652b490?q=80&w=1932&auto=format&fit=crop',
   thanks:'https://fennellseeds.com/wp-content/uploads/2020/01/How-To-Teach-Kids-to-Say-Please-and-Thank-You-FB.jpg',
@@ -80,7 +146,58 @@ const PHOTO_URLS={
   cold:'https://images.unsplash.com/photo-1520889905494-a9ba556b0cf2?q=80&w=1626&auto=format&fit=crop',
   help:'https://images.unsplash.com/photo-1559225306-3f60aa7b39a3?q=80&w=1548&auto=format&fit=crop',
   bye:'https://media.istockphoto.com/id/1663429935/photo/see-you-later.jpg?s=612x612&w=0&k=20&c=PgM6GK41MSU_ElY_KWdb7uX7wAlRiwcu6TO7oo-qqKE=',
-  toilet2:'https://dam.northwell.edu/m/3ac740d5100b2bfa/Drupal-TheWell_bladderurge_AS_475303494.jpg'
+  toilet2:'https://dam.northwell.edu/m/3ac740d5100b2bfa/Drupal-TheWell_bladderurge_AS_475303494.jpg',
+  hurt:'https://images.unsplash.com/photo-1602932213623-cc17e9541bb4?q=80&w=1740&auto=format&fit=crop',
+  sleep:'https://images.unsplash.com/photo-1618517047922-d18a5a36c109?q=80&w=1740&auto=format&fit=crop',
+  dirty:'https://images.unsplash.com/photo-1483569577148-f14683bed627?q=80&w=1752&auto=format&fit=crop',
+  washclean:'https://images.unsplash.com/photo-1584362522440-4d09ca37e47b?q=80&w=1452&auto=format&fit=crop',
+  noisy:'https://images.unsplash.com/photo-1525569815264-42cac54bfd4c?q=80&w=1740&auto=format&fit=crop',
+  moreplease:'https://media.licdn.com/dms/image/v2/C5112AQH0AXCdL-Uftw/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1520061524783?e=1761177600&v=beta&t=8oba2b6768wFjyM-qt5BnwzWS0JsT3XD40C335r0vjI',
+  gohome:'https://images.unsplash.com/photo-1460317442991-0ec209397118?q=80&w=1740&auto=format&fit=crop',
+  iwanttosee:'https://images.unsplash.com/photo-1542310538-7df3a6688674?q=80&w=1740&auto=format&fit=crop',
+  nothanks:'https://images.unsplash.com/photo-1596995923538-ee6ce5e4565d?q=80&w=1740&auto=format&fit=crop',
+  // Colors
+  red:'https://images.unsplash.com/flagged/photo-1593005510509-d05b264f1c9c?q=80&w=1740&auto=format&fit=crop',
+  blue:'https://images.unsplash.com/photo-1588421357574-87938a86fa28?q=80&w=1740&auto=format&fit=crop',
+  green:'https://images.unsplash.com/photo-1601370690183-1c7796ecec61?q=80&w=1740&auto=format&fit=crop',
+  yellow:'https://images.unsplash.com/flagged/photo-1593005510329-8a4035a7238f?q=80&w=1740&auto=format&fit=crop',
+  orange:'https://images.unsplash.com/photo-1617957718614-8c23f060c2d0?q=80&w=1932&auto=format&fit=crop',
+  purple:'https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=1658&auto=format&fit=crop',
+  black:'https://images.unsplash.com/photo-1550684376-efcbd6e3f031?q=80&w=1740&auto=format&fit=crop',
+  white:'https://images.unsplash.com/photo-1617713964959-d9a36bbc7b52?q=80&w=1740&auto=format&fit=crop',
+  gray:'https://images.unsplash.com/photo-1590884056072-0248bac7797e?q=80&w=1740&auto=format&fit=crop',
+  brown:'https://images.unsplash.com/photo-1558051815-0f18e64e6280?q=80&w=1738&auto=format&fit=crop',
+
+  // Feelings
+  happy:'https://images.unsplash.com/photo-1472162072942-cd5147eb3902?q=80&w=1738&auto=format&fit=crop',
+  sad:'https://images.unsplash.com/photo-1453227588063-bb302b62f50b?q=80&w=1740&auto=format&fit=crop',
+  angry:'https://images.unsplash.com/photo-1603815671596-31aa538d8809?q=80&w=1740&auto=format&fit=crop',
+  scared:'https://images.unsplash.com/photo-1565239500265-bd02167453ae?q=80&w=1740&auto=format&fit=crop',
+  tired:'https://images.unsplash.com/photo-1562426772-f7b1d159764b?q=80&w=1740&auto=format&fit=crop',
+  // Animals
+  dog:'https://images.unsplash.com/photo-1552053831-71594a27632d?q=80&w=1200&auto=format&fit=crop',
+  cat:'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?q=80&w=1200&auto=format&fit=crop',
+  bird:'https://images.unsplash.com/photo-1480044965905-02098d419e96?q=80&w=1740&auto=format&fit=crop',
+  fish:'https://images.unsplash.com/photo-1497671954146-59a89ff626ff?q=80&w=1740&auto=format&fit=crop',
+  rhino:'https://images.unsplash.com/photo-1598894000396-bc30e0996899?q=80&w=1740&auto=format&fit=crop',
+  lion:'https://images.unsplash.com/photo-1546182990-dffeafbe841d?q=80&w=1718&auto=format&fit=crop',
+  tiger:'https://images.unsplash.com/photo-1500463959177-e0869687df26?q=80&w=1740&auto=format&fit=crop',
+  elephant:'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?q=80&w=1932&auto=format&fit=crop',
+  mouse:'https://images.unsplash.com/photo-1624116518496-993146f67f4a?q=80&w=1742&auto=format&fit=crop',
+  squirrel:'https://images.unsplash.com/photo-1470130623320-9583a8d06241?q=80&w=1740&auto=format&fit=crop',
+  crocodile:'https://images.unsplash.com/photo-1611069648374-733e7bb73e5c?q=80&w=1740&auto=format&fit=crop',
+  crow:'https://images.unsplash.com/photo-1709524575638-412648bda2dc?q=80&w=1740&auto=format&fit=crop',
+  // Funny
+  computer:'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=1742&auto=format&fit=crop',
+  stove:'https://cdn.shopify.com/s/files/1/0733/5903/2619/files/Electric_Stove_1024x1024.jpg?v=1710832617',
+  crazy:'https://images.unsplash.com/photo-1714135166698-c94809926444?q=80&w=1536&auto=format&fit=crop',
+  spider:'https://images.unsplash.com/photo-1440952306150-7f239990787e?q=80&w=1826&auto=format&fit=crop',
+  point:'https://images.unsplash.com/photo-1689143947647-062e1a24bf2d?q=80&w=1740&auto=format&fit=crop',
+  stuck:'https://dm.henkel-dam.com/is/image/henkel/loctite-us-seo-glue-on-fingers',
+  sugar:'https://images.unsplash.com/photo-1673791031093-eb8eefa60083?q=80&w=1746&auto=format&fit=crop',
+  sand:'https://images.unsplash.com/photo-1468413253725-0d5181091126?q=80&w=1740&auto=format&fit=crop',
+  book:'https://images.unsplash.com/photo-1491841573634-28140fc7ced7?q=80&w=1740&auto=format&fit=crop',
+  tree:'https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=1740&auto=format&fit=crop'
 };
 
 // ========= App State & Globals =========
@@ -183,7 +300,7 @@ canvas.addEventListener('wheel', e => {
 
 
 // ========= Speech (robust + cross-browser) =========
-let voiceHK = null, voiceDE = null;
+let voiceHK = null, voiceDE = null, voiceEN = null;
 let voicesReady = false;
 let speechWarmed = false;
 
@@ -220,6 +337,19 @@ function pickVoices(voices) {
   };
   voiceDE = pickByName(deLocal) || deLocal[0] || pickByName(deVoices) || deVoices[0] || null;
 
+  // Prefer low-latency, local English voices
+  const enVoices = voices.filter(v => /^en([-_]|$)/i.test(v.lang || "") || /English/i.test(v.name || ""));
+  const enLocal = enVoices.filter(v => v.localService && !/online|cloud|natural/i.test((v.name || "")));
+  const preferEnByName = ['Samantha','Karen','Moira','Daniel','Alex','Google US English','Microsoft Aria','Microsoft Guy'];
+  const pickEnByName = (list)=>{
+    for (const n of preferEnByName) {
+      const f = list.find(v => (v.name || "").includes(n));
+      if (f) return f;
+    }
+    return null;
+  };
+  voiceEN = pickEnByName(enLocal) || enLocal[0] || pickEnByName(enVoices) || enVoices[0] || null;
+
   voicesReady = true;
 }
 
@@ -239,8 +369,10 @@ function warmSpeechOnce(){
   // Speak very short and very quiet snippets to reduce first-utterance latency
   const warmHK = '喂';
   const warmDE = 'ja';
+  const warmEN = 'hi';
   try { speak(warmHK, { voice: voiceHK, lang: (voiceHK && voiceHK.lang) || 'zh-HK', rate: 1, pitch: 1, volume: 0.001 }); } catch(_) {}
   try { speak(warmDE, { voice: voiceDE, lang: (voiceDE && voiceDE.lang) || 'de-DE', rate: 1, pitch: 1, volume: 0.001 }); } catch(_) {}
+  try { speak(warmEN, { voice: voiceEN, lang: (voiceEN && voiceEN.lang) || 'en-US', rate: 1, pitch: 1, volume: 0.001 }); } catch(_) {}
 }
 
 async function speak(text, { voice, lang, rate = 0.92, pitch = 1, volume = 1 } = {}) {
@@ -260,6 +392,7 @@ async function speak(text, { voice, lang, rate = 0.92, pitch = 1, volume = 1 } =
 
 const speakYue = (t)=> speak(t, { voice: voiceHK, lang: (voiceHK && voiceHK.lang) || 'zh-HK' });
 const speakDe  = (t)=> speak(t, { voice: voiceDE, lang: (voiceDE && voiceDE.lang) || 'de-DE', rate: 0.95 });
+const speakEn  = (t)=> speak(t, { voice: voiceEN, lang: (voiceEN && voiceEN.lang) || 'en-US', rate: 0.98 });
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') resumeEngineIfNeeded();
@@ -371,39 +504,68 @@ class HomeScene extends Scene{ get id(){return 'home';}
 }
 
 class CardsOverviewScene extends Scene{ get id(){return 'cards';}
-  constructor(){ super(); this.tileBoxes=[]; this.scrollY=0; this.contentHeight=0; this.pointerStart=null;}
+  constructor(themeId=null){ super(); this.themeId=themeId; this.tileBoxes=[]; this.themeBoxes=[]; this.scrollY=0; this.contentHeight=0; this.pointerStart=null; this.wordList=this.themeId?getWordsForTheme(this.themeId):null; this.backBtn=new Button('Zur Übersicht','📚',0,0,180,44,()=>setScene(new CardsOverviewScene())); this.layout(); }
+  layout(){ const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; this.backBtn.x=W-196; this.backBtn.y=16; }
   onScroll(deltaY) {
+      if (!this.wordList) return; // no scroll on theme grid
       const H = canvas.clientHeight;
       this.scrollY += deltaY;
       if (this.scrollY < 0) this.scrollY = 0;
       const maxScroll = Math.max(0, this.contentHeight - H);
       if (this.scrollY > maxScroll) this.scrollY = maxScroll;
   }
-  draw(){ drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const CW=W-sbw; ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText('🃏 Flashcards — Übersicht', sbw+16, 48);
-    const cols = Math.max(1, Math.floor(CW/260)); const gap=16; const tileW = Math.min(240, (CW - (cols+1)*gap)/cols); const tileH= tileW*0.72 + 60; let x=sbw+gap, y=76; this.tileBoxes=[];
+  draw(){ drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const CW=W-sbw; ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui';
+    if(!this.wordList){
+      // Theme grid
+      ctx.fillText('🃏 Flashcards — Themen auswählen', sbw+16, 48);
+      const themes = getAvailableThemes();
+      const cols = Math.max(1, Math.floor(CW/300)); const gap=16; const tileW = Math.min(280, (CW - (cols+1)*gap)/cols); const tileH=86; let x=sbw+gap, y=80; this.themeBoxes=[];
+      themes.forEach(t=>{ if(x+tileW>sbw+CW-gap){ x=sbw+gap; y+=tileH+gap; } shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,tileW,tileH,16); ctx.fill();}); ctx.fillStyle='#e6ebf2'; ctx.font='20px system-ui'; const label=`${t.emoji||''} ${t.label}`.trim(); ctx.fillText(label, x+16, y+36); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText(`${t.count} Karten`, x+16, y+60); this.themeBoxes.push({x,y,w:tileW,h:tileH,id:t.id}); x+=tileW+gap; });
+      drawBurgerMenu();
+      return;
+    }
+    // Word grid for specific theme
+    const theme=THEMES.find(t=>t.id===this.themeId); const header=theme?`🃏 ${theme.label}`:'🃏 Flashcards'; ctx.fillText(header, sbw+16, 48);
+    // Consistent back button (top-right)
+    this.backBtn.hover=this.backBtn.contains(pointer.x,pointer.y);
+    this.backBtn.draw();
+    const gap=16; const cols = Math.max(1, Math.floor(CW/260));
+    const rawTileW = (CW - (cols+1)*gap)/cols;
+    const tileW = Math.max(120, Math.min(240, Number.isFinite(rawTileW) ? rawTileW : 240));
+    const tileH = Math.max(100, tileW*0.72 + 60);
+    let x=sbw+gap, y=76; this.tileBoxes=[];
+    if (CW <= 0 || tileW <= 0 || tileH <= 0) { drawBurgerMenu(); return; }
     ctx.save(); ctx.beginPath(); rrect(sbw, 0, CW, H, 0); ctx.clip(); ctx.translate(0, -this.scrollY);
-    WORDS.forEach((w,i)=>{ if(x+tileW>sbw+CW-gap){ x=sbw+gap; y+=tileH+gap; } shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,tileW,tileH,18); ctx.fill(); }); const img=IMAGES[w.photo]; if(img&&img.complete){ const ar=img.width/img.height; let dw=tileW, dh=dw/ar; if(dh>tileH-60){ dh=tileH-60; dw=dh*ar; } const ix=x+(tileW-dw)/2, iy=y+(tileH-60-dh)/2; ctx.drawImage(img,ix,iy,dw,dh);} ctx.fillStyle='#e6ebf2'; ctx.font='18px system-ui'; ctx.fillText(w.yue, x+12, y+tileH-26); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText(w.de, x+12, y+tileH-8); this.tileBoxes.push({x,y,w:tileW,h:tileH,index:i}); x+=tileW+gap; });
+    this.wordList.forEach((w,i)=>{ if(!w) return; if(x+tileW>sbw+CW-gap){ x=sbw+gap; y+=tileH+gap; } shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,tileW,tileH,18); ctx.fill(); }); const img=IMAGES[w.photo]; if(img&&img.complete&&img.naturalWidth>0&&img.naturalHeight>0){ const ar=img.naturalWidth/img.naturalHeight; let dw=tileW, dh=dw/ar; if(dh>tileH-60){ dh=tileH-60; dw=dh*ar; } if (dh>0 && dw>0){ const ix=x+(tileW-dw)/2, iy=y+(tileH-60-dh)/2; ctx.drawImage(img,ix,iy,dw,dh);} } ctx.fillStyle='#e6ebf2'; ctx.font='18px system-ui'; ctx.fillText(w.yue, x+12, y+tileH-26); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText(w.de, x+12, y+tileH-8); this.tileBoxes.push({x,y,w:tileW,h:tileH,index:i}); x+=tileW+gap; });
     this.contentHeight = y + tileH + gap;
     ctx.restore();
     drawBurgerMenu();
   }
   onPointer(type,p){
+      if(!this.wordList){
+        if(type!=='down') return;
+        const hit=this.themeBoxes.find(b=> p.x>=b.x && p.x<=b.x+b.w && p.y>=b.y && p.y<=b.y+b.h );
+        if(hit) setScene(new CardsOverviewScene(hit.id));
+        return;
+      }
       if (type==='down') { this.pointerStart = { x: p.x, y: p.y, scroll: this.scrollY }; }
       else if (type==='move' && pointer.down && this.pointerStart) { const dy = p.y - this.pointerStart.y; this.scrollY = this.pointerStart.scroll - dy; this.onScroll(0); }
       else if (type==='up' && this.pointerStart) {
           const dist = Math.hypot(p.x-this.pointerStart.x, p.y-this.pointerStart.y);
           if (dist < 10) {
               const hit=this.tileBoxes.find(b=> p.x>=b.x && p.x<=b.x+b.w && p.y>=b.y-this.scrollY && p.y<=b.y+b.h-this.scrollY );
-              if(hit) setScene(new CardDetailScene(hit.index));
+              if(hit) setScene(new CardDetailScene(hit.index, this.wordList, this.themeId));
           }
           this.pointerStart = null;
       }
+      // Back button click (handle on down for responsiveness)
+      if (type==='down' && this.backBtn.contains(p.x,p.y)) { this.backBtn.onClick(); }
   }
 }
 
 class CardDetailScene extends Scene{ get id(){return 'cards';}
-  constructor(index){ super(); this.i=index; this.hkBtn=new Button('中文 🇭🇰','',0,0,150,44,()=>speakYue(this.current().yue)); this.deBtn=new Button('Deutsch 🇩🇪','',0,0,170,44,()=>speakDe(this.current().de)); this.prevBtn=new Button('⬅️','',0,0,56,56,()=>this.prev()); this.nextBtn=new Button('➡️','',0,0,56,56,()=>this.next()); this.homeBtn=new Button('Zur Übersicht','📚',0,0,180,44,()=>setScene(new CardsOverviewScene())); this.layout(); speakYue(this.current().yue); }
-  current(){ return WORDS[this.i]; }
+  constructor(index, wordList, themeId=null){ super(); this.i=index; this.wordList=wordList||WORDS; this.themeId=themeId; this.hkBtn=new Button('中文 🇭🇰','',0,0,150,44,()=>speakYue(this.current().yue)); this.deBtn=new Button('Deutsch 🇩🇪','',0,0,170,44,()=>speakDe(this.current().de)); this.enBtn=new Button('English 🇬🇧','',0,0,170,44,()=>speakEn(this.current().en || this.current().de)); this.prevBtn=new Button('⬅️','',0,0,56,56,()=>this.prev()); this.nextBtn=new Button('➡️','',0,0,56,56,()=>this.next()); this.homeBtn=new Button('Zur Übersicht','📚',0,0,180,44,()=>setScene(new CardsOverviewScene(this.themeId))); this.layout(); speakYue(this.current().yue); }
+  current(){ return this.wordList[this.i]; }
   layout(){
     const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const CW=W-sbw;
     const cardW=Math.min(640,CW*0.7), cardH=Math.min(420,H*0.55);
@@ -413,31 +575,78 @@ class CardDetailScene extends Scene{ get id(){return 'cards';}
     this.nextBtn.x = cardX + cardW + 20;
     this.nextBtn.y = cardY + (cardH - this.nextBtn.h) / 2;
     const bottomY=H-64; const centerX=sbw+CW/2;
-    this.hkBtn.x=centerX-170; this.hkBtn.y=bottomY;
-    this.deBtn.x=centerX; this.deBtn.y=bottomY;
+    this.hkBtn.x=centerX-250; this.hkBtn.y=bottomY;
+    this.deBtn.x=centerX-60; this.deBtn.y=bottomY;
+    this.enBtn.x=centerX+130; this.enBtn.y=bottomY;
     this.homeBtn.x=W-196; this.homeBtn.y=16;
   }
-  next(){ this.i=(this.i+1)%WORDS.length; speakYue(this.current().yue); }
-  prev(){ this.i=(this.i-1+WORDS.length)%WORDS.length; speakYue(this.current().yue); }
-  draw(){ drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth,H=canvas.clientHeight; const w=this.current(); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText(`🃏 Flashcards — ${this.i+1}/${WORDS.length}`, sbw+16, 48); const CW = W-sbw; const cardW=Math.min(640,CW*0.7), cardH=Math.min(420,H*0.55), x=sbw + (CW-cardW)/2, y=(H-cardH)/2-20; shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,cardW,cardH,26); ctx.fill();}); const img=IMAGES[w.photo]; if(img&&img.complete){ const ar=img.width/img.height; let dw=cardW, dh=dw/ar; if(dh>cardH){ dh=cardH; dw=dh*ar; } const ix=x+(cardW-dw)/2, iy=y+(cardH-dh)/2; ctx.drawImage(img,ix,iy,dw,dh);} ctx.fillStyle='#e6ebf2'; ctx.font='32px system-ui'; const yue=w.yue; ctx.fillText(yue, sbw + (CW-ctx.measureText(yue).width)/2, y+cardH+44); ctx.fillStyle='#AFB6C3'; ctx.font='20px system-ui'; const de=w.de; ctx.fillText(de, sbw + (CW-ctx.measureText(de).width)/2, y+cardH+72);
-    [this.prevBtn,this.nextBtn,this.hkBtn,this.deBtn,this.homeBtn].forEach(b=>{ b.hover=b.contains(pointer.x,pointer.y); b.draw();});
+  next(){ this.i=(this.i+1)%this.wordList.length; speakYue(this.current().yue); }
+  prev(){ this.i=(this.i-1+this.wordList.length)%this.wordList.length; speakYue(this.current().yue); }
+  draw(){ drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth,H=canvas.clientHeight; const w=this.current(); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText(`🃏 Flashcards — ${this.i+1}/${this.wordList.length}`, sbw+16, 48); const CW = W-sbw; const cardW=Math.min(640,CW*0.7), cardH=Math.min(420,H*0.55), x=sbw + (CW-cardW)/2, y=(H-cardH)/2-20; shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,cardW,cardH,26); ctx.fill();}); const img=IMAGES[w.photo]; if(img&&img.complete&&img.naturalWidth>0&&img.naturalHeight>0){ const ar=img.naturalWidth/img.naturalHeight; let dw=cardW, dh=dw/ar; if(dh>cardH){ dh=cardH; dw=dh*ar; } if (dw>0 && dh>0){ const ix=x+(cardW-dw)/2, iy=y+(cardH-dh)/2; ctx.drawImage(img,ix,iy,dw,dh);} } ctx.fillStyle='#e6ebf2'; ctx.font='32px system-ui'; const yue=w.yue || ''; ctx.fillText(yue, sbw + (CW-ctx.measureText(yue).width)/2, y+cardH+44); ctx.fillStyle='#AFB6C3'; ctx.font='20px system-ui'; const de=w.de || ''; ctx.fillText(de, sbw + (CW-ctx.measureText(de).width)/2, y+cardH+72); ctx.fillStyle='#94a3b8'; ctx.font='18px system-ui'; const en=w.en || ''; ctx.fillText(en, sbw + (CW-ctx.measureText(en).width)/2, y+cardH+98);
+    [this.prevBtn,this.nextBtn,this.hkBtn,this.deBtn,this.enBtn,this.homeBtn].forEach(b=>{ b.hover=b.contains(pointer.x,pointer.y); b.draw();});
     drawBurgerMenu();
   }
-  onPointer(type,p){ if(type!=='down') return; [this.prevBtn,this.nextBtn,this.hkBtn,this.deBtn,this.homeBtn].forEach(b=>{ if(b.contains(p.x,p.y)) b.onClick(); }); }
-  onKey(key) { if (key === 'ArrowLeft') this.prev(); if (key === 'ArrowRight') this.next(); if (key === 'Escape') setScene(new CardsOverviewScene()); }
+  onPointer(type,p){ if(type!=='down') return; [this.prevBtn,this.nextBtn,this.hkBtn,this.deBtn,this.enBtn,this.homeBtn].forEach(b=>{ if(b.contains(p.x,p.y)) b.onClick(); }); }
+  onKey(key) { if (key === 'ArrowLeft') this.prev(); if (key === 'ArrowRight') this.next(); if (key === 'Escape') setScene(new CardsOverviewScene(this.themeId)); }
 }
 
 class QuizScene extends Scene{ get id(){return 'quiz';}
-  constructor(){ super(); this.correct=0; this.negTimer=0; this.steps=10; this.progress=0; this.hkBtn=new Button('中文 🇭🇰','',0,0,150,44,()=>speakYue(this.current.yue)); this.deBtn=new Button('Deutsch 🇩🇪','',0,0,170,44,()=>speakDe(this.current.de)); this.prepareQuestion(); this.layout(); }
-  pickRand(except){ const pool=WORDS.filter(w=>w!==except); return pool[Math.floor(Math.random()*pool.length)]; }
-  prepareQuestion(){ this.current = WORDS[Math.floor(Math.random()*WORDS.length)]; this.options=[this.current, this.pickRand(this.current), this.pickRand(this.current), this.pickRand(this.current)]; this.options = Array.from(new Set(this.options)); while(this.options.length<4) this.options.push(this.pickRand(this.current)); this.options.sort(()=>Math.random()-0.5); speakYue(this.current.yue); }
+  constructor(){ super(); this.correct=0; this.negTimer=0; this.steps=10; this.progress=0;
+    this.selectedThemeId = null; // null => all themes
+    this.hkBtn=new Button('中文 🇭🇰','',0,0,150,44,()=>speakYue(this.current.yue));
+    this.deBtn=new Button('Deutsch 🇩🇪','',0,0,170,44,()=>speakDe(this.current.de));
+    this.enBtn=new Button('English 🇬🇧','',0,0,170,44,()=>speakEn(this.current.en || this.current.de));
+    this.themeDropdown = { x:0,y:0,w:220,h:40, open:false };
+    this.prepareQuestion(); this.layout(); }
+  pool(){ const p = this.selectedThemeId ? getWordsForTheme(this.selectedThemeId) : WORDS; return (p && p.length) ? p : WORDS; }
+  safePickRand(except, excludeSet){
+      const basePool = this.pool();
+      const tryFrom = (arr)=>{
+          const choices = arr.filter(w=> w && w!==except && !excludeSet.has(w));
+          if (!choices.length) return null;
+          return choices[Math.floor(Math.random()*choices.length)];
+      };
+      return tryFrom(basePool) || tryFrom(WORDS);
+  }
+  prepareQuestion(){
+      const p=this.pool();
+      this.current = p[Math.floor(Math.random()*p.length)];
+      const exclude = new Set([this.current]);
+      const opts=[this.current];
+      while(opts.length<4){
+          const next=this.safePickRand(this.current, new Set(opts));
+          if(!next) break;
+          opts.push(next);
+          if (opts.length>=4) break;
+      }
+      // If still not enough, fill from global WORDS deterministically
+      if (opts.length<4){
+          for (const w of WORDS){ if(w && !exclude.has(w) && !opts.includes(w)){ opts.push(w); if(opts.length>=4) break; } }
+      }
+      this.options = opts.slice(0,4).sort(()=>Math.random()-0.5);
+      speakYue(this.current.yue);
+  }
   layout(){
       const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth,H=canvas.clientHeight; const CW=W-sbw;
       const bottomY = H-64; const centerX = sbw + CW / 2;
-      this.hkBtn.x = centerX - 170; this.hkBtn.y = bottomY;
-      this.deBtn.x = centerX; this.deBtn.y = bottomY;
+      this.hkBtn.x = centerX - 250; this.hkBtn.y = bottomY;
+      this.deBtn.x = centerX - 60; this.deBtn.y = bottomY;
+      this.enBtn.x = centerX + 130; this.enBtn.y = bottomY;
+      this.themeDropdown.x = sbw + 16; this.themeDropdown.y = 56; this.themeDropdown.w = Math.min(260, CW-32);
   }
   draw(){ drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth,H=canvas.clientHeight; const CW=W-sbw; ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText('🧠 Quiz — Höre und wähle das richtige Bild', sbw+16, 48);
+    // Theme filter dropdown (simple)
+    const dd=this.themeDropdown; const currentTheme = this.selectedThemeId ? THEMES.find(t=>t.id===this.selectedThemeId) : {label:'Alle Themen', emoji:'🌐'};
+    shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.08)'; rrect(dd.x,dd.y,dd.w,dd.h,10); ctx.fill();});
+    ctx.fillStyle='#e6ebf2'; ctx.font='16px system-ui'; const ddLabel=`${currentTheme.emoji||''} ${currentTheme.label}`.trim(); ctx.fillText(ddLabel, dd.x+12, dd.y+26);
+    ctx.fillText('▾', dd.x+dd.w-24, dd.y+26);
+    if (dd.open && this.ddItems){
+      const itemH=36; const x=dd.x, y=dd.y+dd.h+6, w=dd.w; const h=this.ddItems.length*itemH;
+      shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.08)'; rrect(x,y,w,h,10); ctx.fill();});
+      ctx.fillStyle='#e6ebf2'; ctx.font='15px system-ui';
+      this.ddItems.forEach((it,idx)=>{ const iy=y+idx*itemH+24; const lab=`${it.emoji||''} ${it.label}`.trim(); ctx.fillText(lab, x+12, iy); });
+    }
+
     ctx.fillStyle='#e6ebf2'; ctx.font='26px system-ui'; const q=this.current.yue; ctx.fillText(q, sbw + (CW-ctx.measureText(q).width)/2, 92);
     
     const gap=18; const gridW=Math.min(CW-48, 800); const tileW=(gridW-gap)/2, tileH=Math.min(260, tileW*0.66);
@@ -452,7 +661,7 @@ class QuizScene extends Scene{ get id(){return 'quiz';}
     ctx.font='28px system-ui'; ctx.fillText('🐭', trackX + Math.max(0,(this.progress-0.9))*stepW, trackY+trackH+4);
     ctx.fillText('🧀', trackX + trackW-6, trackY+trackH+4);
     
-    [this.hkBtn, this.deBtn].forEach(b => { b.hover = b.contains(pointer.x, pointer.y); b.draw(); });
+    [this.hkBtn, this.deBtn, this.enBtn].forEach(b => { b.hover = b.contains(pointer.x, pointer.y); b.draw(); });
     ctx.fillStyle='#AFB6C3'; ctx.font='16px system-ui'; ctx.fillText(`✅ ${this.correct} richtig`, sbw+16, H-16);
     if(this.negTimer>0){ ctx.globalAlpha=Math.min(0.25,this.negTimer/20); ctx.fillStyle='#ef4444'; rrect(gx-10,gy-10,gridW+20,gridBottom-gy+10,24); ctx.fill(); ctx.globalAlpha=1; this.negTimer--; }
     drawParticles();
@@ -462,6 +671,28 @@ class QuizScene extends Scene{ get id(){return 'quiz';}
       if(type!=='down') return;
       if(this.hkBtn.contains(p.x, p.y)) { this.hkBtn.onClick(); return; }
       if(this.deBtn.contains(p.x, p.y)) { this.deBtn.onClick(); return; }
+      if(this.enBtn.contains(p.x, p.y)) { this.enBtn.onClick(); return; }
+
+      // Toggle dropdown
+      const dd=this.themeDropdown; if(p.x>=dd.x && p.x<=dd.x+dd.w && p.y>=dd.y && p.y<=dd.y+dd.h){
+        dd.open = !dd.open;
+        if(dd.open){
+          this.ddItems = [{id:null,label:'Alle Themen',emoji:'🌐'}].concat(THEMES);
+        } else {
+          this.ddItems = null;
+        }
+        return;
+      }
+      // If dropdown is open, check selection
+      if(this.themeDropdown.open && this.ddItems){
+        const itemH=36; const x=dd.x, y=dd.y+dd.h+6, w=dd.w; const items=this.ddItems;
+        const idx=Math.floor((p.y - y)/itemH);
+        if(p.x>=x && p.x<=x+w && p.y>=y && idx>=0 && idx<items.length){
+          const choice=items[idx]; this.selectedThemeId=choice.id||null; this.themeDropdown.open=false; this.ddItems=null; this.correct=0; this.progress=0; this.prepareQuestion(); return;
+        }
+        // Click outside closes
+        this.themeDropdown.open=false; this.ddItems=null;
+      }
 
       const hit=this.options.find(o=> p.x>=o._box.x && p.x<=o._box.x+o._box.w && p.y>=o._box.y && p.y<=o._box.y+o._box.h );
       if(!hit) return;
@@ -469,11 +700,11 @@ class QuizScene extends Scene{ get id(){return 'quiz';}
       else { this.progress=Math.max(0,this.progress-1); this.negTimer=14; fxNegative(); emitConfetti(p.x,p.y,'#ef4444',10); }
   }
   onKey(key){ if(key==='Escape') setScene(new HomeScene()); if(key===' ') speakYue(this.current.yue); }
-  showWin(){ const W=canvas.clientWidth, H=canvas.clientHeight; const sbw=getActiveSidebarWidth(); for(let i=0;i<120;i++){ emitConfetti(sbw+Math.random()*(W-sbw), 140+Math.random()*(H-240), ['#22c55e','#8b5cf6','#22d3ee'][i%3],1); } fxPositive(); fxPositive(); const msg1='Super! Du hast die Käsejagd geschafft!'; const msg2='好叻呀！你攞到芝士啦！'; setTimeout(()=>{ alert(`${msg1}\n${msg2}`); this.correct=0; this.progress=0; this.prepareQuestion(); }, 1200); }
+  showWin(){ const W=canvas.clientWidth, H=canvas.clientHeight; const sbw=getActiveSidebarWidth(); for(let i=0;i<120;i++){ emitConfetti(sbw+Math.random()*(W-sbw), 140+Math.random()*(H-240), ['#22c55e','#8b5cf6','#22d3ee'][i%3],1); } fxPositive(); fxPositive(); const msg1='Super! Du hast die Käsejagd geschafft 🧀!'; const msg2='🎊 好叻呀！你攞到芝士啦！'; setTimeout(()=>{ alert(`${msg1}\n${msg2}`); this.correct=0; this.progress=0; this.prepareQuestion(); }, 1200); }
 }
 
 class MouseCheeseScene extends Scene{ get id(){return 'game';}
-  constructor(){ super(); this.grid=72; this.speed=5; this.margin=40; this.lastMove=0; this.dir={x:1,y:0}; this.pendingDir=this.dir; this.layout(); this.reset(); }
+  constructor(){ super(); this.grid=72; this.speed=5; this.margin=40; this.lastMove=0; this.dir={x:1,y:0}; this.pendingDir=this.dir; this.cheeseHitRadius=2; this.cheeseDrawScale=1.9; this.layout(); this.reset(); }
   layout(){
       const W=canvas.clientWidth, H=canvas.clientHeight;
       const size = 80, gap = 10, safe = 60;
@@ -497,7 +728,22 @@ class MouseCheeseScene extends Scene{ get id(){return 'game';}
   draw(){ drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const a=this.playArea(); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText('🐭 Maus & Käse — Pfeiltasten oder Touch-Controller', sbw+16, 48);
     const word=this.wordOrder[this.wordIndex % this.wordOrder.length]; const bannerW=Math.min(560,(W-sbw-60)), bannerH=56, bx=sbw + ((W-sbw)-bannerW)/2, by=56; shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(bx,by,bannerW,bannerH,18); ctx.fill(); }); ctx.fillStyle='#e6ebf2'; ctx.font='20px system-ui'; const line=`🧀 Nächster Käse sagt: ${word.yue}  (${word.de})`; ctx.fillText(line, bx+16, by+36);
     this.drawGrid();
-    ctx.font = `${this.grid}px system-ui`; ctx.fillText('🧀', a.left + this.cheese.x*this.grid + 4, a.top + this.cheese.y*this.grid + this.grid - 6);
+    // Draw cheese larger and centered with a soft target ring for tolerance
+    const cx = a.left + (this.cheese.x+0.5)*this.grid;
+    const cy = a.top + (this.cheese.y+0.5)*this.grid;
+    if (this.cheeseHitRadius>0){
+      ctx.save();
+      ctx.globalAlpha=0.12;
+      ctx.fillStyle='#fde68a';
+      ctx.beginPath();
+      ctx.arc(cx, cy, this.cheeseHitRadius*this.grid*0.8, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font = `${Math.round(this.grid*this.cheeseDrawScale)}px system-ui`;
+    ctx.fillText('🧀', cx, cy+2);
+    ctx.textAlign='start'; ctx.textBaseline='alphabetic';
     this.body.forEach((s,i)=>{ if(i===0){ ctx.font=`${this.grid+4}px system-ui`; ctx.fillText('🐭', a.left + s.x*this.grid + 2, a.top + s.y*this.grid + this.grid - 4); } else { ctx.fillStyle='rgba(255,255,255,0.5)'; rrect(a.left + s.x*this.grid+6, a.top + s.y*this.grid+6, this.grid-12, this.grid-12, 6); ctx.fill(); } });
     ctx.fillStyle='#AFB6C3'; ctx.font='16px system-ui'; ctx.fillText(`Punkte: ${this.score}`, sbw+16, H-16);
     this.drawDpad();
@@ -515,7 +761,10 @@ class MouseCheeseScene extends Scene{ get id(){return 'game';}
     head.x=(head.x+this.cols)%this.cols; head.y=(head.y+this.rows)%this.rows;
     if(this.body.some((s,i)=> i>0 && s.x===head.x && s.y===head.y)){ const a=this.playArea(); emitConfetti(a.left+40,a.top+40,'#ef4444'); this.reset(); return; }
     this.dir=this.pendingDir; this.body.unshift(head);
-    if(head.x===this.cheese.x && head.y===this.cheese.y){ this.score++; const a=this.playArea(); emitConfetti(a.left + (head.x+0.5)*this.grid, a.top + (head.y+0.5)*this.grid,'#22c55e',28); const w=this.wordOrder[this.wordIndex % this.wordOrder.length]; speakYue(w.yue); this.wordIndex++; this.placeCheese(); } else { this.body.pop(); }
+    const dx=Math.min(Math.abs(head.x-this.cheese.x), this.cols - Math.abs(head.x-this.cheese.x));
+    const dy=Math.min(Math.abs(head.y-this.cheese.y), this.rows - Math.abs(head.y-this.cheese.y));
+    const dist=Math.hypot(dx,dy);
+    if(dist<=this.cheeseHitRadius){ this.score++; const a=this.playArea(); const cx=a.left + (head.x+0.5)*this.grid, cy=a.top + (head.y+0.5)*this.grid; emitConfetti(cx, cy,'#22c55e',28); const w=this.wordOrder[this.wordIndex % this.wordOrder.length]; speakYue(w.yue); this.wordIndex++; this.placeCheese(); } else { this.body.pop(); }
   }
   onPointer(type,p){ if(type!=='down') return; const hit=Object.entries(this.dpad).find(([k,b])=> k !== 'bounds' && p.x>=b.x && p.x<=b.x+b.w && p.y>=b.y && p.y<=b.y+b.h); if(hit){ const k=hit[0]; if(k==='up' && this.dir.y!==1) this.pendingDir={x:0,y:-1}; if(k==='down'&& this.dir.y!==-1) this.pendingDir={x:0,y:1}; if(k==='left'&& this.dir.x!==1) this.pendingDir={x:-1,y:0}; if(k==='right'&& this.dir.x!==-1) this.pendingDir={x:1,y:0}; } }
   onKey(key){ if(key==='ArrowUp' && this.dir.y!==1) this.pendingDir={x:0,y:-1}; if(key==='ArrowDown'&& this.dir.y!==-1) this.pendingDir={x:0,y:1}; if(key==='ArrowLeft'&& this.dir.x!==1) this.pendingDir={x:-1,y:0}; if(key==='ArrowRight'&& this.dir.x!==-1) this.pendingDir={x:1,y:0}; if(key==='Escape') setScene(new HomeScene()); if(key===' ') { const w=this.wordOrder[this.wordIndex % this.wordOrder.length]; speakYue(w.yue);} }

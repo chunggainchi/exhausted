@@ -47,7 +47,7 @@ export default function CantoPlayPostPage() {
               We have an upcoming trip to Hong Kong, and my daughter&apos;s still learning Cantonese. It&apos;s not her dominant language - that&apos;s German, thanks to her environment - so I wanted her to practise a handful of practical phrases before we go.
             </p>
             <p className="mt-4">
-              I found out Duolingo doesn&apos;t offer Cantonese, so I made a baby version myself. I used ChatGPT&nbsp;5 to go from nothing to a rough structure, then did the bug fixing and tweaking together with Gemini&nbsp;2.5&nbsp;Pro. The modes are inspired by the OpenAI GPT‑5 announcement livestream, but getting it to a usable, acceptable state was definitely not as quick and painless as in the demo.
+              I found out Duolingo doesn&apos;t offer Cantonese, so I made a baby version myself. I used ChatGPT&nbsp;5 to go from nothing to a rough structure, then did the bug fixing and tweaking together with Gemini&nbsp;2.5&nbsp;Pro. The modes are inspired by the OpenAI GPT‑5 announcement livestream, but getting it to a usable, acceptable state was definitely not as quick and painless as in the demo. This game is made to be played on a laptop or an ipad.
             </p>
 
             <h3 className="text-xl font-semibold mt-8 mb-4">What&apos;s inside</h3>
@@ -62,7 +62,7 @@ export default function CantoPlayPostPage() {
             </p>
 
             <p className="mt-4 mb-4">
-              👉 Play it here: <a href="/games/learn-cantonese.html" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">CantoPlay (learn Cantonese)</a>
+              👉 Play it here: <a href="/games/learn-cantonese.html" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-500 hover:underline">CantoPlay (learn Cantonese)</a>
             </p>
 
             <h3 className="text-xl font-semibold mt-8 mb-2">Details</h3>
