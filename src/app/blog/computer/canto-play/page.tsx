@@ -53,12 +53,12 @@ export default function CantoPlayPostPage() {
             <h3 className="text-xl font-semibold mt-8 mb-4">What&apos;s inside</h3>
             <ul>
               <li><strong>Flashcards:</strong> Cantonese + German pairs with images; tap to hear the Cantonese & German pronunciations.</li>
-              <li><strong>Quiz:</strong> Hear the Cantonese word and pick the matching picture. Gentle feedback, no stress.</li>
-              <li><strong>Mouse &amp; Cheese mini-game:</strong> Steer a little mouse to the cheese; each bite speaks a new Cantonese word.</li>
+              <li><strong>Quiz:</strong> Hear the Cantonese word and pick the matching picture. Gentle feedback, no stress. No reading required.</li>
+              <li><strong>Mouse &amp; Cheese mini-game:</strong> Steer a little mouse to the cheese; each bite speaks a new Cantonese word. She loves this one.</li>
             </ul>
 
             <p className="mt-4">
-              It runs as a single HTML file on the canvas with the Web Speech API for audio, designed to feel calm and playful, not busy. Perfect for a quick practice session together.
+              It runs as a single HTML file on the canvas with the Web Speech API for audio, designed to feel calm and targeted, not busy. Perfect for a quick practice session together.
             </p>
 
             <p className="mt-4 mb-4">
@@ -67,9 +67,9 @@ export default function CantoPlayPostPage() {
 
             <h3 className="text-xl font-semibold mt-8 mb-2">Details</h3>
             <ul>
-              <li><strong>Estimated build time:</strong> ≈ 2 late-night sessions</li>
+              <li><strong>Estimated build time:</strong> ≈ 2-4 hours depending on vibe coding experience</li>
               <li><strong>Stack:</strong> vanilla HTML5 Canvas + Web Speech API; coded in Cursor with ChatGPT&nbsp;5 and Gemini&nbsp;2.5&nbsp;Pro assisting</li>
-              <li><strong>Difficulty:</strong> Medium (lots of small UX tweaks)</li>
+              <li><strong>Difficulty:</strong> Medium (lots of small UX tweaks, some problem solving with tts needed)</li>
             </ul>
           </div>
 

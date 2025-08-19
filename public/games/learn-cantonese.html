@@ -149,6 +149,7 @@ function primeAudio() {
 
 canvas.addEventListener('pointerdown',e=>{
   primeAudio();
+  warmSpeechOnce();
   pointer.down=true;
   const rect=canvas.getBoundingClientRect();
   pointer.x=(e.clientX-rect.left);
@@ -172,7 +173,7 @@ canvas.addEventListener('pointerdown',e=>{
 });
 canvas.addEventListener('pointermove',e=>{ const rect=canvas.getBoundingClientRect(); pointer.x=(e.clientX-rect.left); pointer.y=(e.clientY-rect.top); activeScene?.onPointer('move', pointer); });
 canvas.addEventListener('pointerup',e=>{ pointer.down=false; activeScene?.onPointer('up', pointer); });
-window.addEventListener('keydown',e=>{ primeAudio(); if(handleNavKey(e.key)) return; activeScene?.onKey(e.key); });
+window.addEventListener('keydown',e=>{ primeAudio(); warmSpeechOnce(); if(handleNavKey(e.key)) return; activeScene?.onKey(e.key); });
 canvas.addEventListener('wheel', e => {
   if (activeScene instanceof CardsOverviewScene) {
     e.preventDefault();
@@ -184,6 +185,7 @@ canvas.addEventListener('wheel', e => {
 // ========= Speech (robust + cross-browser) =========
 let voiceHK = null, voiceDE = null;
 let voicesReady = false;
+let speechWarmed = false;
 
 function waitForVoices() {
   return new Promise(resolve => {
@@ -205,15 +207,19 @@ function pickVoices(voices) {
   const isCN = v => /zh[-_]?CN/i.test(v.lang || "");
   voiceHK = voices.find(isHK) || voices.find(isTW) || voices.find(isCN) || null;
 
-  const preferredDE = [ { name: 'Katja' }, { name: 'Anna', quality: 'Enhanced'}, { name: 'Conrad' }, { name: 'Google Deutsch' }, { name: 'Microsoft Katja Online'}, ];
-  for (const p of preferredDE) {
-    const found = voices.find(v => v.lang.startsWith('de') && v.name.includes(p.name));
-    if (found) { voiceDE = found; break; }
-  }
-  if (!voiceDE) {
-    const isDE = v => /de[-_]?DE|german|deutsch/i.test(v.lang || "") || /Deutsch|German/i.test(v.name || "");
-    voiceDE = voices.find(isDE) || null;
-  }
+  // Prefer low-latency, local German voices to avoid online/streamed lag
+  const deVoices = voices.filter(v => /^de([-_]|$)/i.test(v.lang || "") || /Deutsch|German/i.test(v.name || ""));
+  const deLocal = deVoices.filter(v => v.localService && !/online|cloud|natural/i.test((v.name || "")));
+  const preferByName = ['Anna','Katja','Google Deutsch','Conrad'];
+  const pickByName = (list)=>{
+    for (const n of preferByName) {
+      const f = list.find(v => (v.name || "").includes(n));
+      if (f) return f;
+    }
+    return null;
+  };
+  voiceDE = pickByName(deLocal) || deLocal[0] || pickByName(deVoices) || deVoices[0] || null;
+
   voicesReady = true;
 }
 
@@ -227,19 +233,33 @@ async function ensureVoicesReady() {
   pickVoices(voices);
 }
 
-async function speak(text, { voice, lang, rate = 0.92, pitch = 1 } = {}) {
+function warmSpeechOnce(){
+  if (speechWarmed || !voicesReady) return;
+  speechWarmed = true;
+  // Speak very short and very quiet snippets to reduce first-utterance latency
+  const warmHK = '喂';
+  const warmDE = 'ja';
+  try { speak(warmHK, { voice: voiceHK, lang: (voiceHK && voiceHK.lang) || 'zh-HK', rate: 1, pitch: 1, volume: 0.001 }); } catch(_) {}
+  try { speak(warmDE, { voice: voiceDE, lang: (voiceDE && voiceDE.lang) || 'de-DE', rate: 1, pitch: 1, volume: 0.001 }); } catch(_) {}
+}
+
+async function speak(text, { voice, lang, rate = 0.92, pitch = 1, volume = 1 } = {}) {
   if (!('speechSynthesis' in window) || !voicesReady) return;
   resumeEngineIfNeeded();
   const u = new SpeechSynthesisUtterance(text);
-  if (voice) u.voice = voice;
-  if (lang)  u.lang  = lang;
+  if (voice) { u.voice = voice; u.lang = voice.lang || lang || u.lang; }
+  else if (lang)  { u.lang  = lang; }
   u.rate = rate;
   u.pitch = pitch;
-  try { speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (_) {}
+  u.volume = volume;
+  try {
+    if (speechSynthesis.speaking) speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  } catch (_) {}
 }
 
 const speakYue = (t)=> speak(t, { voice: voiceHK, lang: (voiceHK && voiceHK.lang) || 'zh-HK' });
-const speakDe  = (t)=> speak(t, { voice: voiceDE, lang: 'de-DE', rate: 0.95 });
+const speakDe  = (t)=> speak(t, { voice: voiceDE, lang: (voiceDE && voiceDE.lang) || 'de-DE', rate: 0.95 });
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') resumeEngineIfNeeded();
