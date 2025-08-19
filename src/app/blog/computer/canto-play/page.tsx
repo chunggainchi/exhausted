@@ -11,8 +11,8 @@ export const metadata: Metadata = {
 };
 
 export default function CantoPlayPostPage() {
-  const categoryName = 'Computer';
-  const categoryHref = '/blog/category/computer';
+  const categoryName = "Computer";
+  const categoryHref = "/blog/category/computer";
   const postTitle = 'CantoPlay';
   const postSubtitle = '(learn Cantonese on canvas)';
   const currentSlug = '/blog/computer/canto-play';
