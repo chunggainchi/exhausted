@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import { Jost } from 'next/font/google';
 import "./globals.css";
 import Layout from "@/components/Layout";
+import { Analytics } from "@vercel/analytics/next";
 
 // import { GoogleAnalytics } from '@next/third-parties/google'; // Removed
 
