@@ -52,6 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Layout>{children}</Layout>
         {/* <GoogleAnalytics gaId={GA_TRACKING_ID} /> */}{/* Removed */}
+        <Analytics />
       </body>
     </html>
   );
