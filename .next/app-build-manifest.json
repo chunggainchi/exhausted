@@ -1,264 +1,32 @@
 {
   "pages": {
     "/_not-found/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/app/_not-found/page-3c3d4619a1cc7a7b.js"
-    ],
-    "/layout": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/css/66109486180f7c14.css",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/layout-03a232ab74542222.js"
+      "static/chunks/f3714_next_dist_6e49f801._.js",
+      "static/chunks/src_app_favicon_ico_mjs_12e6e8b0._.js",
+      "static/chunks/[root-of-the-server]__100e480f._.css",
+      "static/chunks/node_modules__pnpm_41ede1db._.js",
+      "static/chunks/src_app_layout_tsx_b3444c68._.js",
+      "static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_19b92be2._.js",
+      "static/chunks/f3714_next_dist_compiled_bdb39c77._.js",
+      "static/chunks/f3714_next_dist_client_ac7bdaf6._.js",
+      "static/chunks/f3714_next_dist_7e44ec9a._.js",
+      "static/chunks/61dca_@swc_helpers_cjs_e27e0aca._.js",
+      "static/chunks/_e69f0d32._.js",
+      "static/chunks/_7872db9e._.js"
     ],
     "/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/page-07752ec173fdff02.js"
-    ],
-    "/blog/error": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/app/blog/error-1d29cefa4654ddaa.js"
-    ],
-    "/blog/anatomy/kinetic-sand-surgery/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/blog/anatomy/kinetic-sand-surgery/page-d5261ba04e691148.js"
-    ],
-    "/blog/category/ai/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/22-448ec9b24e9a4a3a.js",
-      "static/chunks/app/blog/category/ai/page-44ac0f9507cfa9aa.js"
-    ],
-    "/blog/anatomy/play-dough-surgery-trichobezoar-removal/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/blog/anatomy/play-dough-surgery-trichobezoar-removal/page-ff97607c760e6a9c.js"
-    ],
-    "/blog/category/anatomy/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/22-448ec9b24e9a4a3a.js",
-      "static/chunks/app/blog/category/anatomy/page-b015ef9c706546c4.js"
-    ],
-    "/blog/anatomy/play-dough-surgery-gallbladder-removal/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/blog/anatomy/play-dough-surgery-gallbladder-removal/page-6ea15f1708ae7ae7.js"
-    ],
-    "/blog/category/crafts/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/22-448ec9b24e9a4a3a.js",
-      "static/chunks/app/blog/category/crafts/page-2f4813cc7a4ca492.js"
-    ],
-    "/blog/category/puzzle/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/22-448ec9b24e9a4a3a.js",
-      "static/chunks/app/blog/category/puzzle/page-2339f30e6103bd7b.js"
-    ],
-    "/blog/category/computer/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/22-448ec9b24e9a4a3a.js",
-      "static/chunks/app/blog/category/computer/page-42e6f37afe9e9317.js"
-    ],
-    "/blog/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/blog/page-8ace130128631218.js"
-    ],
-    "/blog/computer/number-playground/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/blog/computer/number-playground/page-ca92a7cb58774e00.js"
-    ],
-    "/blog/crafts/diy-chibi-keychain/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/blog/crafts/diy-chibi-keychain/page-0db94de9eef1e534.js"
-    ],
-    "/blog/computer/toddler-types/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/blog/computer/toddler-types/page-3ffd8c745defa6ea.js"
-    ],
-    "/blog/puzzle/bowling-lane/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/blog/puzzle/bowling-lane/page-de6b4b6599feae1c.js"
-    ],
-    "/blog/puzzle/doghouse-hideout/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/blog/puzzle/doghouse-hideout/page-1226d661bd2cddef.js"
-    ],
-    "/blog/puzzle/foam-labyrinth/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/blog/puzzle/foam-labyrinth/page-5758d08056d6f492.js"
-    ],
-    "/blog/puzzle/castle/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/blog/puzzle/castle/page-3d81211ab9610f33.js"
-    ],
-    "/blog/puzzle/flying-car/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/blog/puzzle/flying-car/page-58a13318193aca19.js"
-    ],
-    "/blog/puzzle/basketball-arcade/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/blog/puzzle/basketball-arcade/page-c9e5cfe6684fbe09.js"
-    ],
-    "/blog/puzzle/great-wall-crawl/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/blog/puzzle/great-wall-crawl/page-4ff11dfad7bccdaf.js"
-    ],
-    "/blog/puzzle/skee-ball/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/blog/puzzle/skee-ball/page-d418bd233b75594a.js"
-    ],
-    "/blog/puzzle/stair-tower/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/blog/puzzle/stair-tower/page-558aa58341b9d7b3.js"
-    ],
-    "/impressum/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/app/impressum/page-115bf33ab5120bd4.js"
-    ],
-    "/blog/puzzle/sunshine-cube/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/blog/puzzle/sunshine-cube/page-afd7d3908c54aa26.js"
-    ],
-    "/blog/puzzle/twin-towers/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/blog/puzzle/twin-towers/page-784893249db00494.js"
-    ],
-    "/blog/puzzle/secret-playhouse/page": [
-      "static/chunks/webpack-c76ac1e586b2802a.js",
-      "static/chunks/9be954d6-0a5b3038f2fd98c7.js",
-      "static/chunks/493-3fa2d36df5cbe34b.js",
-      "static/chunks/main-app-c444b9f47e67d3c5.js",
-      "static/chunks/123-88d0528f80f31a80.js",
-      "static/chunks/76-344c06c67611be80.js",
-      "static/chunks/app/blog/puzzle/secret-playhouse/page-4e07ae07e4f4144d.js"
+      "static/chunks/f3714_next_dist_6e49f801._.js",
+      "static/chunks/src_app_favicon_ico_mjs_12e6e8b0._.js",
+      "static/chunks/[root-of-the-server]__100e480f._.css",
+      "static/chunks/node_modules__pnpm_41ede1db._.js",
+      "static/chunks/src_app_layout_tsx_b3444c68._.js",
+      "static/chunks/[turbopack]_browser_dev_hmr-client_hmr-client_ts_19b92be2._.js",
+      "static/chunks/f3714_next_dist_compiled_bdb39c77._.js",
+      "static/chunks/f3714_next_dist_client_ac7bdaf6._.js",
+      "static/chunks/f3714_next_dist_7e44ec9a._.js",
+      "static/chunks/61dca_@swc_helpers_cjs_e27e0aca._.js",
+      "static/chunks/_e69f0d32._.js",
+      "static/chunks/_7872db9e._.js"
     ]
   }
 }

@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>LeseSpaß Deutsch — Lernen auf Canvas</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --ink: #e6ebf2;
+      --ink-dim: #AFB6C3;
+      --accent: #10b981;
+      --accent-2: #34d399;
+      --success: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+    }
+    html, body {
+      margin: 0; height: 100%;
+      background:
+        radial-gradient(1200px 800px at 70% 20%, rgba(16,185,129,0.12), transparent 50%),
+        radial-gradient(900px 600px at 30% 80%, rgba(52,211,153,0.1), transparent 50%),
+        var(--bg);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--ink);
+    }
+    canvas { display: block; width: 100vw; height: 100vh; touch-action: none; }
+  </style>
+</head>
+<body>
+<canvas id="app"></canvas>
+
+<script>
+/* ===========================================================
+   LeseSpaß Deutsch — Word Lab + Story + Quiz
+   =========================================================== */
+
+/* ---------- Canvas + globals ---------- */
+const canvas = document.getElementById('app');
+const ctx = canvas.getContext('2d');
+let DPR = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
+
+const MOBILE_BREAKPOINT = 850;
+let isMobileView = window.innerWidth <= MOBILE_BREAKPOINT;
+let isNavOpen = false;
+let burgerBox = { x: 12, y: 12, w: 48, h: 48 };
+let activeScene = null;
+
+function resize(){
+  DPR = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
+  canvas.width = Math.floor(window.innerWidth * DPR);
+  canvas.height = Math.floor(window.innerHeight * DPR);
+  canvas.style.width = window.innerWidth + 'px';
+  canvas.style.height = window.innerHeight + 'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  isMobileView = window.innerWidth <= MOBILE_BREAKPOINT;
+  if(!isMobileView) isNavOpen = false;
+  activeScene?.layout?.();
+}
+window.addEventListener('resize', resize);
+resize();
+
+/* ---------- UI helpers ---------- */
+function rrect(x,y,w,h,r){
+  const rr = Math.min(r, Math.min(w,h)/2);
+  ctx.beginPath();
+  ctx.moveTo(x+rr,y);
+  ctx.arcTo(x+w,y,x+w,y+h,rr);
+  ctx.arcTo(x+w,y+h,x,y+h,rr);
+  ctx.arcTo(x,y+h,x,y,rr);
+  ctx.arcTo(x,y,x+w,y,rr);
+  ctx.closePath();
+}
+function gradient(x,y,w,h,c1,c2){
+  const g = ctx.createLinearGradient(x,y,x+w,y+h);
+  g.addColorStop(0,c1); g.addColorStop(1,c2); return g;
+}
+function shadow(fn){ ctx.save(); ctx.shadowColor='rgba(0,0,0,0.45)'; ctx.shadowBlur=18; ctx.shadowOffsetY=8; fn(); ctx.restore(); }
+function drawBadge(x,y,text){
+  const pad=10, w=Math.max(120, ctx.measureText(text).width+pad*2);
+  ctx.fillStyle='rgba(255,255,255,0.08)'; rrect(x,y,w,32,14); ctx.fill();
+  ctx.fillStyle='var(--ink-dim)'; ctx.font='14px system-ui'; ctx.fillText(text, x+pad, y+21);
+}
+class Button {
+  constructor(label, emoji, x,y,w,h, onClick){ this.label=label; this.emoji=emoji; this.x=x; this.y=y; this.w=w; this.h=h; this.onClick=onClick; this.hover=false; }
+  contains(px,py){ return px>=this.x && py>=this.y && px<=this.x+this.w && py<=this.y+this.h; }
+  draw(){
+    const c1=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#10b981';
+    const c2=getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim() || '#34d399';
+    shadow(()=>{ ctx.fillStyle=gradient(this.x,this.y,this.w,this.h,this.hover?c2:c1,this.hover?c1:c2); rrect(this.x,this.y,this.w,this.h,20); ctx.fill(); });
+    ctx.fillStyle='rgba(255,255,255,0.95)'; ctx.font='20px system-ui';
+    const txt=`${this.emoji?this.emoji+'  ':''}${this.label}`; const tw=ctx.measureText(txt).width;
+    ctx.fillText(txt, this.x+(this.w-tw)/2, this.y+this.h/2+6);
+  }
+}
+function strokeRRect(x,y,w,h,r,lineWidth=2,color='rgba(255,255,255,0.35)',dash=[6,6]){
+  const rr=Math.min(r,Math.min(w,h)/2);
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(x+rr,y);
+  ctx.arcTo(x+w,y,x+w,y+h,rr);
+  ctx.arcTo(x+w,y+h,x,y+h,rr);
+  ctx.arcTo(x,y+h,x,y,rr);
+  ctx.arcTo(x,y,x+w,y,rr);
+  ctx.closePath();
+  ctx.lineWidth=lineWidth; ctx.setLineDash(dash); ctx.strokeStyle=color; ctx.stroke();
+  ctx.restore();
+}
+function IconCircle(x,y,emoji){ const r=26;
+  shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.12)'; rrect(x-r,y-r,r*2,r*2,26); ctx.fill();});
+  ctx.font='22px system-ui'; ctx.fillStyle='#fff'; const tw=ctx.measureText(emoji).width; ctx.fillText(emoji,x-tw/2,y+8);
+  return {x:x-r,y:y-r,w:r*2,h:r*2};
+}
+
+/* ---------- Sidebar / Nav ---------- */
+let navBoxes=[];
+const SIDEBAR_W=230;
+const NAV=[
+  {id:'home',  label:'Home',     emoji:'🏠', scene:()=>new HomeScene()},
+  {id:'lab',   label:'Word Lab', emoji:'🧱', scene:()=>new WordLabStufenScene()},
+  {id:'quiz',  label:'Quiz',     emoji:'🧠', scene:()=>new QuizScene()},
+  {id:'story', label:'Story',    emoji:'📖', scene:()=>new StoryOverviewScene()},
+];
+function getActiveSidebarWidth(){ return (!isMobileView)? SIDEBAR_W : (isNavOpen? SIDEBAR_W : 0); }
+function drawSidebar(activeId){
+  const H=canvas.clientHeight, sbw=getActiveSidebarWidth(); if(sbw<=0) return;
+  shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(12,12,sbw-24,H-24,22); ctx.fill(); });
+  ctx.fillStyle='var(--ink)'; ctx.font='20px system-ui'; ctx.fillText('LeseSpaß Deutsch',26,44);
+  let y=76; navBoxes=[];
+  NAV.forEach(item=>{
+    const isActive=item.id===activeId; const h=54, x=22, w=sbw-44;
+    const c1=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#10b981';
+    const c2=getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim()||'#34d399';
+    shadow(()=>{ ctx.fillStyle=gradient(x,y,w,h,isActive?c1:'#334155',isActive?c2:'#475569'); rrect(x,y,w,h,14); ctx.fill(); });
+    ctx.fillStyle='white'; ctx.font='18px system-ui'; const txt=`${item.emoji?item.emoji+' ':''}${item.label}`;
+    const tw=ctx.measureText(txt).width; ctx.fillText(txt,x+Math.max(14,(w-tw)/2),y+34);
+    navBoxes.push({x,y,w,h,id:item.id}); y+=h+12;
+  });
+}
+function drawBurgerMenu(){
+  if(!isMobileView) return;
+  if(isNavOpen){ ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(getActiveSidebarWidth(),0,canvas.clientWidth,canvas.clientHeight); }
+  const {x,y,w,h}=burgerBox;
+  shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.08)'; rrect(x,y,w,h,12); ctx.fill(); });
+  ctx.fillStyle='#e6ebf2';
+  const lineH=3,lineW=22; const lineX=x+(w-lineW)/2; let lineY=y+(h-lineH)/2-7;
+  rrect(lineX,lineY,lineW,lineH,1.5); ctx.fill(); lineY+=7;
+  rrect(lineX,lineY,lineW,lineH,1.5); ctx.fill(); lineY+=7;
+  rrect(lineX,lineY,lineW,lineH,1.5); ctx.fill();
+}
+function handleNavClick(p){
+  const sbw=getActiveSidebarWidth(); if(sbw<=0) return false;
+  const hit=navBoxes.find(b=> p.x>=b.x && p.x<=b.x+b.w && p.y>=b.y && p.y<=b.y+b.h);
+  if(hit){ const nav=NAV.find(n=>n.id===hit.id); if(nav){ setScene(nav.scene()); if(isMobileView) isNavOpen=false; } return true; }
+  return false;
+}
+
+/* ---------- Input ---------- */
+let pointer={x:0,y:0,down:false};
+let audioUnlocked=false;
+function primeAudio(){ if(audioUnlocked) return; audioUnlocked=true; ensureAC(); try{ speechSynthesis.speak(new SpeechSynthesisUtterance('')); }catch(e){} }
+canvas.addEventListener('pointerdown',e=>{
+  primeAudio(); warmSpeechOnce(); pointer.down=true;
+  const rect=canvas.getBoundingClientRect(); pointer.x=(e.clientX-rect.left); pointer.y=(e.clientY-rect.top);
+  if(isMobileView){
+    if(pointer.x >= burgerBox.x && pointer.x <= burgerBox.x + burgerBox.w && pointer.y >= burgerBox.y && pointer.y <= burgerBox.y + burgerBox.h){ isNavOpen=!isNavOpen; return; }
+    if(isNavOpen && pointer.x > getActiveSidebarWidth()){ isNavOpen=false; return; }
+  }
+  if(handleNavClick(pointer)) return;
+  activeScene?.onPointer?.('down', pointer);
+  canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointermove',e=>{
+  const rect=canvas.getBoundingClientRect();
+  pointer.x=(e.clientX-rect.left); pointer.y=(e.clientY-rect.top);
+  activeScene?.onPointer?.('move', pointer);
+});
+canvas.addEventListener('pointerup',()=>{ pointer.down=false; activeScene?.onPointer?.('up', pointer); });
+window.addEventListener('keydown',e=>{
+  primeAudio(); warmSpeechOnce();
+  if(e.key==='h'){ setScene(new HomeScene()); return; }
+  activeScene?.onKey?.(e.key);
+});
+
+/* ---------- Tiny audio FX ---------- */
+let actx=null; function ensureAC(){ if(!actx){ try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } }
+function tone(freq, dur=0.12, type='sine', gain=0.05){ ensureAC(); if(!actx) return; const t=actx.currentTime; const o=actx.createOscillator(); const g=actx.createGain(); o.type=type; o.frequency.value=freq; g.gain.value=gain; o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+dur); }
+function fxPositive(){ [523,659,784].forEach((f,i)=> setTimeout(()=>tone(f,0.1,'triangle',0.06), i*110)); }
+function fxNegative(){ tone(220,0.15,'sawtooth',0.05); setTimeout(()=>tone(196,0.18,'sawtooth',0.04),120); }
+
+/* ---------- Confetti ---------- */
+const particles=[];
+function emitConfetti(x,y,color='#22c55e',n=18){ for(let i=0;i<n;i++){ particles.push({x,y,vx:(Math.random()-0.5)*6,vy:(Math.random()-1)*6,a:1,c:color}); } }
+function updateParticles(){ for(let i=particles.length-1;i>=0;i--){ const p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.12; p.a-=0.02; if(p.a<=0) particles.splice(i,1);} }
+function drawParticles(){ particles.forEach(p=>{ ctx.globalAlpha=Math.max(0,p.a); ctx.fillStyle=p.c; rrect(p.x,p.y,5,5,2); ctx.fill(); ctx.globalAlpha=1; }); }
+
+/* ---------- Speech (DE) ---------- */
+let voiceDE=null, voicesReady=false, speechWarmed=false;
+function waitForVoices(){
+  return new Promise(resolve=>{
+    const tryLoad=()=>{ const vs=speechSynthesis.getVoices(); if(vs&&vs.length){ resolve(vs);} else { setTimeout(tryLoad,120);} };
+    if(speechSynthesis.onvoiceschanged!==undefined){ speechSynthesis.onvoiceschanged=tryLoad; }
+    tryLoad();
+  });
+}
+function pickDE(voices){
+  const de = voices.filter(v=> /^de([-_]|$)/i.test(v.lang||"") || /Deutsch|German/i.test(v.name||""));
+  const local = de.filter(v=> v.localService && !/online|cloud|natural/i.test(v.name||""));
+  const prefer = ['Anna','Katja','Conrad','Sabine','Google Deutsch','Microsoft Karsten','Microsoft Katja'];
+  voiceDE = (local.find(v=> prefer.some(n=> (v.name||"").includes(n))) || local[0] || de[0] || null);
+}
+function resumeSpeech(){ try{ if(speechSynthesis.paused) speechSynthesis.resume(); }catch(_){ } }
+async function ensureVoicesReady(){ if(voicesReady) return; const vs = await waitForVoices(); pickDE(vs); voicesReady=true; }
+function warmSpeechOnce(){ if(speechWarmed||!voicesReady) return; speechWarmed=true; speakDe('ja',{volume:0.001}); }
+function speakDe(text, opts={}){ if(!('speechSynthesis' in window) || !voicesReady) return;
+  resumeSpeech(); const u=new SpeechSynthesisUtterance(text); if(voiceDE){u.voice=voiceDE; u.lang=voiceDE.lang||'de-DE'; } else {u.lang='de-DE';}
+  u.rate=opts.rate ?? 0.7; u.pitch=opts.pitch ?? 1; u.volume=opts.volume ?? 1;
+  try{ if(speechSynthesis.speaking) speechSynthesis.cancel(); speechSynthesis.speak(u);}catch(_){}
+}
+function speakChunk(chunk){
+  if (!chunk) return;
+  const lc = chunk.toLowerCase();
+  const isSingle = chunk.length === 1;
+  const V_LONG = { a:'ah', e:'eh', i:'ih', o:'oh', u:'uh', ä:'äh', ö:'öh', ü:'üh' };
+  const C_LONG = { m:'mmmm', n:'nnnn', s:'ssss', l:'llll', f:'ffff', r:'rrrr', z:'zzzz', h:'hhh' };
+  let text = isSingle ? (V_LONG[lc] || C_LONG[lc] || lc) : lc;
+  speakDe(text, { rate: 0.65 });
+}
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') resumeSpeech(); });
+
+/* ---------- Data ---------- */
+const GRAPHEMES = ['m','a','p','o','n','i','s','t','l','ei'];
+
+const WORDS = [
+  { id:'oma',   text:'Oma',   syll:[0,1], g:['o','m','a'],           img:'oma',   tags:['family'], stufe:1 },
+  { id:'opa',   text:'Opa',   syll:[0,1], g:['o','p','a'],           img:'opa',   tags:['family'], stufe:1 },
+  { id:'mama',  text:'Mama',  syll:[0,2], g:['m','a','m','a'],       img:'mama',  tags:['family'], stufe:1 },
+  { id:'papa',  text:'Papa',  syll:[0,2], g:['p','a','p','a'],       img:'papa',  tags:['family'], stufe:1 },
+
+  { id:'eule',  text:'Eule',  syll:[0,2], g:['eu','l','e'],          img:'eule',  tags:['animal'], stufe:1 },
+  { id:'igel',  text:'Igel',  syll:[0,1], g:['i','g','e','l'],       img:'igel',  tags:['animal'], stufe:1 },
+  { id:'rabe',  text:'Rabe',  syll:[0,2], g:['r','a','b','e'],       img:'rabe',  tags:['animal'], stufe:1 },
+
+  { id:'erde',  text:'Erde',  syll:[0,2], g:['e','r','d','e'],       img:'erde',  tags:['nature'], stufe:1 },
+  { id:'kette', text:'Kette', syll:[0,3], g:['k','e','tt','e'],      img:'kette', tags:['object'], stufe:1 },
+  { id:'ohren', text:'Ohren', syll:[0,2], g:['o','h','r','e','n'],   img:'ohren', tags:['body'],   stufe:1 },
+  { id:'baden', text:'Baden', syll:[0,2], g:['b','a','d','e','n'],   img:'baden', tags:['verb'],   stufe:1 },
+  { id:'garten',text:'Garten',syll:[0,3], g:['g','a','rt','e','n'],  img:'garten',tags:['place'],  stufe:1 },
+];
+
+/* ---------- Rainbow highlight helpers (incl. verb inflections) ---------- */
+const EXACT_WORDS = new Set(WORDS.map(w => w.text.toLowerCase()));
+const EXTRA_LEMMAS = ['heulen'];
+const VERB_STEMS = (() => {
+  const lemmas = [
+    ...WORDS
+      .filter(w => (w.tags||[]).includes('verb') || /(?:eln|ern|en)$/i.test(w.text))
+      .map(w => w.text.toLowerCase()),
+    ...EXTRA_LEMMAS.map(s => s.toLowerCase())
+  ];
+  const stemLemma = s => {
+    if (s.endsWith('eln') || s.endsWith('ern')) return s.slice(0, -1);
+    if (s.endsWith('en')) return s.slice(0, -2);
+    if (s.endsWith('n'))  return s.slice(0, -1);
+    return s;
+  };
+  return new Set(lemmas.map(stemLemma));
+})();
+const FLEX_SUFFIXES = ['enden','endes','ender','endem','ende','end','test','tet','ten','est','st','te','t','en','et','e','n'];
+function stemTokenForMatch(s) {
+  s = s.toLowerCase();
+  for (const suf of FLEX_SUFFIXES) {
+    if (s.length > suf.length + 1 && s.endsWith(suf)) return s.slice(0, -suf.length);
+  }
+  return s;
+}
+function isRainbowWord(token) {
+  const lower = token.toLowerCase();
+  if (EXACT_WORDS.has(lower)) return true;
+  const stem = stemTokenForMatch(lower);
+  return VERB_STEMS.has(stem);
+}
+function rainbowFillForSpan(x, w) {
+  const g = ctx.createLinearGradient(x, 0, x + w, 0);
+  g.addColorStop(0.00,'#ff6b6b'); g.addColorStop(0.20,'#ffb86b'); g.addColorStop(0.40,'#ffd56b');
+  g.addColorStop(0.60,'#6bff95'); g.addColorStop(0.80,'#6bb8ff'); g.addColorStop(1.00,'#b06bff');
+  return g;
+}
+
+/* ---------- Story data ---------- */
+const STORY_IMAGES = {
+  story1: '/images/games/heuleeule/story1.webp',
+  story2: '/images/games/heuleeule/story2.webp',
+  story3: '/images/games/heuleeule/story3.webp',
+  story4: '/images/games/heuleeule/story4.webp',
+  story5: '/images/games/heuleeule/story5.webp',
+};
+const STORY_HEULE_EULE_PAGES = [
+  { img:'story1', text:'Im Garten hört der Igel ein Heulen. Der Igel sagt: „Da ist eine Eule.“ Die Eule sagt: „Ich heule!“' },
+  { img:'story2', text:'Der Rabe kommt. Der Rabe sagt: „Willst du spielen?“ Die Eule sagt: „Nein, ich heule.“' },
+  { img:'story3', text:'Der Maulwurf kommt aus der Erde. Der Maulwurf macht eine Kette. Der Maulwurf sagt: „Hier ist eine Kette.“ Die Eule sagt: „Nein, ich heule.“' },
+  { img:'story4', text:'Oma, Opa, Mama und Papa kommen. Alle spitzen die Ohren. Die kleine Eule fliegt zu Mama.' },
+  { img:'story5', text:'Mama sagt: „Warum heulst du?“ Die kleine Eule sagt: „Ich habe es vergessen.“' },
+];
+const STORIES = [
+  { id:'heule-eule', title:'Die Heule Eule', cover:'story1', pages: STORY_HEULE_EULE_PAGES }
+];
+
+/* ---------- Assets ---------- */
+const IMAGES = {};
+let assetsLoaded=0, assetsTotal=WORDS.length + STORIES.reduce((n,s)=> n + s.pages.length, 0);
+function loadImages(){
+  return new Promise(resolve=>{
+    WORDS.forEach(w=>{
+      const img=new Image(); img.crossOrigin='anonymous';
+      img.onload=()=>{ assetsLoaded++; if(assetsLoaded===assetsTotal) resolve(); };
+      img.onerror=()=>{ assetsLoaded++; if(assetsLoaded===assetsTotal) resolve(); };
+      img.src=PHOTO_URLS[w.img]; IMAGES[w.img]=img;
+    });
+    STORIES.forEach(st=>{
+      st.pages.forEach(p=>{
+        const key=p.img, src=STORY_IMAGES[key];
+        const img=new Image(); img.crossOrigin='anonymous';
+        img.onload=()=>{ assetsLoaded++; if(assetsLoaded===assetsTotal) resolve(); };
+        img.onerror=()=>{ assetsLoaded++; if(assetsLoaded===assetsTotal) resolve(); };
+        img.src=src; IMAGES[key]=img;
+      });
+    });
+  });
+}
+
+/* ---------- Word images (URLs) ---------- */
+const PHOTO_URLS = {
+  oma:'https://images.unsplash.com/photo-1577048982771-1960014bde8b?q=80&w=776&auto=format&fit=crop',
+  opa:'https://images.unsplash.com/photo-1586498024141-1940debde48d?q=80&w=774&auto=format&fit=crop',
+  mama:'https://images.unsplash.com/photo-1542385151-efd9000785a0?q=80&w=778&auto=format&fit=crop',
+  papa:'https://images.unsplash.com/photo-1593323925814-253c803de3a5?q=80&w=770&auto=format&fit=crop',
+  eule:'https://images.unsplash.com/photo-1553264701-d138db4fd5d4?q=80&w=1740&auto=format&fit=crop',
+  igel:'https://images.unsplash.com/photo-1512742282398-91d6f0580591?q=80&w=1548&auto=format&fit=crop',
+  rabe:'https://images.unsplash.com/photo-1433888376991-1297486ba3f5?q=80&w=1740&auto=format&fit=crop',
+  erde:'https://images.unsplash.com/photo-1492496913980-501348b61469?q=80&w=774&auto=format&fit=crop',
+  kette:'https://images.unsplash.com/photo-1611085583191-a3b181a88401?q=80&w=774&auto=format&fit=crop',
+  ohren:'https://images.unsplash.com/photo-1516726283839-a493d9f167aa?q=80&w=1740&auto=format&fit=crop',
+  baden:'https://images.unsplash.com/photo-1616641179518-fddb553e18df?q=80&w=760&auto=format&fit=crop',
+  garten:'https://images.unsplash.com/photo-1594498653385-d5172c532c00?q=80&w=1548&auto=format&fit=crop',
+};
+
+/* ---------- Progress ---------- */
+const STORAGE_KEY='lesespass_progress_v1';
+let PROGRESS = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+if (!PROGRESS.g) PROGRESS.g = GRAPHEMES;
+if (!PROGRESS.mastered) PROGRESS.mastered = [];
+function saveProgress(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(PROGRESS)); }
+
+/* ---------- Syllables ---------- */
+function syllChunks(word, starts){
+  const chunks=[]; for(let i=0;i<starts.length;i++){ const start=starts[i]; const end=(i+1<starts.length? starts[i+1]:word.length); chunks.push(word.slice(start,end)); }
+  return chunks;
+}
+function drawSyllables(x,y, word, starts, colorA='#e6ebf2', colorB='#34d399', font='36px system-ui'){
+  ctx.save(); const prevFont=ctx.font; ctx.font=font; let cursor=x;
+  for(let i=0;i<starts.length;i++){
+    const start=starts[i], end=(i+1<starts.length? starts[i+1]: word.length);
+    const chunk=word.slice(start,end);
+    ctx.fillStyle=(i%2===0)?colorA:colorB; ctx.fillText(chunk,cursor,y);
+    cursor += ctx.measureText(chunk).width;
+  }
+  ctx.font=prevFont; ctx.restore();
+}
+
+/* ---------- Scenes base ---------- */
+class Scene{ update(dt){} draw(){} onPointer(t,p){} onKey(k){} layout(){} get id(){return 'scene'} }
+
+/* ---------- Home ---------- */
+class HomeScene extends Scene{
+  get id(){return 'home';}
+  constructor(){ super(); this.buttons=[]; this.layout(); }
+  layout(){
+    const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth-sbw, H=canvas.clientHeight;
+    const bw=Math.min(380,W*0.8), bh=56; let y=H*0.34; const X=sbw+(W-bw)/2;
+    this.buttons=[
+      new Button('Word Lab','🧱',X,y,bw,bh,()=> setScene(new WordLabStufenScene())),
+      new Button('Quiz','🧠',X,y+=bh+16,bw,bh,()=> setScene(new QuizScene())),
+      new Button('Story','📖',X,y+=bh+16,bw,bh,()=> setScene(new StoryOverviewScene()))
+    ];
+  }
+  draw(){
+    drawSidebar(this.id);
+    const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const CW=W-sbw;
+    ctx.fillStyle='rgba(255,255,255,0.96)'; ctx.font=(CW>520? 'bold 46px' : 'bold 34px')+' system-ui';
+    const title='LeseSpaß Deutsch'; ctx.fillText(title, sbw+(CW-ctx.measureText(title).width)/2, H*0.18);
+    ctx.font='18px system-ui'; ctx.fillStyle='var(--ink-dim)'; const sub='Lerne Lesen mit Silben — kurz, spielerisch, persönlich.';
+    ctx.fillText(sub, sbw+(CW-ctx.measureText(sub).width)/2, H*0.18+28);
+    drawBadge(sbw+16,16,'🎯 Ziel: Silben bauen • Wörter lesen • Hören');
+    this.buttons.forEach(b=>{ b.hover=b.contains(pointer.x,pointer.y); b.draw(); });
+    drawBurgerMenu();
+  }
+  onPointer(type,p){ if(type!=='down') return; const b=this.buttons.find(b=>b.contains(p.x,p.y)); if(b) b.onClick(); }
+}
+
+/* =================== STORY =================== */
+/* 0) Overview */
+class StoryOverviewScene extends Scene{
+  get id(){ return 'story'; }
+  constructor(){ super(); this.tiles=[]; }
+  draw(){
+    drawSidebar(this.id);
+    const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth,H=canvas.clientHeight; const CW=W-sbw;
+    ctx.fillStyle='var(--ink-dim)'; ctx.font='14px system-ui'; ctx.fillText('📖 Geschichte auswählen', sbw+16, 48);
+
+    const gap=16, cols=Math.max(1, Math.floor(CW/320)), tileW=Math.min(300,(CW-(cols+1)*gap)/cols), tileH=200;
+    let x=sbw+gap, y=80; this.tiles=[];
+    STORIES.forEach(st=>{
+      if(x+tileW>sbw+CW-gap){ x=sbw+gap; y+=tileH+gap; }
+      shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,tileW,tileH,18); ctx.fill(); });
+      const img=IMAGES[st.cover];
+      if(img&&img.complete){
+        const ar=img.naturalWidth/img.naturalHeight; let dw=tileW, dh=dw/ar; if(dh>tileH-58){ dh=tileH-58; dw=dh*ar; }
+        const ix=x+(tileW-dw)/2, iy=y+8; ctx.drawImage(img,ix,iy,dw,dh);
+      }
+      ctx.fillStyle='#e6ebf2'; ctx.font='18px system-ui'; ctx.fillText(st.title, x+12, y+tileH-16);
+      this.tiles.push({x,y,w:tileW,h:tileH, id:st.id});
+      x+=tileW+gap;
+    });
+    drawBurgerMenu();
+  }
+  onPointer(type,p){
+    if(type!=='down') return;
+    const hit=this.tiles.find(t=> p.x>=t.x && p.x<=t.x+t.w && p.y>=t.y && p.y<=t.y+t.h);
+    if(hit){
+      const story = STORIES.find(s=>s.id===hit.id);
+      if(story) setScene(new StoryReaderScene(story));
+    }
+  }
+}
+
+/* 1) Reader */
+const WORDSET_ALL = new Set(WORDS.map(w=> w.text.toLowerCase()));
+const RAINBOW = ['#ff3b30','#ff9500','#ffcc00','#34c759','#007aff','#5856d6','#af52de'];
+
+/* =================== STORY READER (drop-in) =================== */
+class StoryReaderScene extends Scene{
+  get id(){ return 'story'; }
+
+  constructor(story){
+    super();
+    this.story = story;
+    this.i = 0;
+    this.wordBoxes = [];
+    this.highlightIndex = -1;
+    this.readTimers = [];
+
+    // ---- Tunables (adjust anytime) ----
+    this.btnWidth     = 180;
+    this.btnHeight    = 44;
+    this.gapBelowImage= 16;   // image → button
+    this.btnBottomPad = 50;   // button → text
+    this.textLineH    = 60;   // text line height
+    this.textMaxWidth = 900;  // max text block width
+    this.readRate     = 0.45; // full-page read speed
+    this.tapRate      = 0.10; // single-word read speed
+
+    this.playBtn = new Button('Vorlesen','🔊',0,0,this.btnWidth,this.btnHeight,()=>this.readCurrent());
+  }
+
+  page(){ return this.story.pages[this.i]; }
+
+  tokenize(text){
+    // words, punctuation, spaces
+    const tokens=[]; const re=/[\p{L}ÄÖÜäöüß]+|[^\s\p{L}]+|\s+/gu; let m;
+    while((m=re.exec(text))){ tokens.push({t:m[0], isWord:/[\p{L}ÄÖÜäöüß]/u.test(m[0][0])}); }
+    return tokens;
+  }
+
+  readCurrent(){
+    // clear previous timers + highlight
+    this.readTimers.forEach(id=>clearTimeout(id));
+    this.readTimers.length=0;
+    this.highlightIndex=-1;
+
+    const text=this.page().text;
+
+    // Use tunable read rate
+    speakDe(text,{rate:this.readRate});
+
+    // simple read-along highlight timing
+    const words=this.tokenize(text).filter(x=>x.isWord).map(x=>x.t);
+    let t=0;
+    words.forEach((w,idx)=>{
+      const dur=Math.max(280, w.length*110);
+      this.readTimers.push(setTimeout(()=>{ this.highlightIndex=idx; }, t));
+      t+=dur;
+    });
+    this.readTimers.push(setTimeout(()=>{ this.highlightIndex=-1; }, t+60));
+  }
+
+  draw(){
+    drawSidebar(this.id);
+    const sbw=getActiveSidebarWidth();
+    const W=canvas.clientWidth,H=canvas.clientHeight;
+    const CW=W-sbw;
+
+    // header
+    ctx.fillStyle='var(--ink-dim)'; ctx.font='14px system-ui';
+    ctx.fillText(`📖 ${this.story.title} — Seite ${this.i+1}/${this.story.pages.length}`, sbw+16, 48);
+
+    // image card
+    const cardW=Math.min(700,(W-sbw)*0.74);
+    const cardH=Math.min(400,H*0.48);
+    const x=sbw+(CW-cardW)/2, y=70;
+    shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,cardW,cardH,26); ctx.fill();});
+    const img=IMAGES[this.page().img];
+    if(img&&img.complete&&img.naturalWidth>0){
+      const ar=img.naturalWidth/img.naturalHeight;
+      let dw=cardW, dh=dw/ar; if(dh>cardH-40){ dh=cardH-40; dw=dh*ar; }
+      const ix=x+(cardW-dw)/2, iy=y+(cardH-40-dh)/2; ctx.drawImage(img,ix,iy,dw,dh);
+    }
+
+    // centered play button (uses tunables)
+    this.playBtn.x = sbw + (CW - this.playBtn.w)/2;
+    this.playBtn.y = y + cardH + this.gapBelowImage;
+    this.playBtn.hover=this.playBtn.contains(pointer.x,pointer.y);
+    this.playBtn.draw();
+
+    // text block (uses tunables)
+    const text=this.page().text;
+    const blockW=Math.min(this.textMaxWidth, CW-80);
+    const tx=sbw+(CW-blockW)/2;
+    const ty=this.playBtn.y + this.playBtn.h + this.btnBottomPad;
+    const prev=ctx.font; ctx.font='30px system-ui';
+
+    const tokens=this.tokenize(text);
+    this.wordBoxes=[]; let cx=tx, cy=ty; const lineH=this.textLineH;
+
+    tokens.forEach((tok)=>{
+      const w=ctx.measureText(tok.t).width;
+
+      // wrap to next line when needed
+      if(tok.t!=='\n' && cx+w>tx+blockW){ cx=tx; cy+=lineH; }
+
+      if(tok.isWord){
+        const wordIndex=this.wordBoxes.length;
+        const lower = tok.t.toLowerCase();
+
+        // choose rainbow match method (supports your verb-stem helper if present)
+        const isRainbow = (typeof isRainbowWord==='function')
+          ? isRainbowWord(tok.t)
+          : (typeof WORDSET_ALL!=='undefined' && WORDSET_ALL.has(lower));
+
+        // read-along glow
+        if(this.highlightIndex===wordIndex){
+          ctx.fillStyle='rgba(52,211,153,0.20)';
+          rrect(cx-4,cy-(lineH-8),w+8,(lineH-12),8); ctx.fill();
+        }
+
+        // draw word (rainbow if match)
+        if(isRainbow){
+          const grad=ctx.createLinearGradient(cx,0,cx+w,0);
+          RAINBOW.forEach((c,j)=> grad.addColorStop(j/(RAINBOW.length-1), c));
+          ctx.save();
+          ctx.fillStyle=grad;
+          ctx.shadowColor='rgba(0,0,0,0.35)'; ctx.shadowBlur=4; ctx.shadowOffsetY=2;
+          ctx.fillText(tok.t,cx,cy);
+          ctx.restore();
+        } else {
+          ctx.fillStyle='#e6ebf2'; ctx.fillText(tok.t,cx,cy);
+        }
+
+        // tappable hitbox
+        this.wordBoxes.push({x:cx-2,y:cy-(lineH-6),w:w+4,h:(lineH-10),word:tok.t});
+      } else {
+        // punctuation / spaces
+        ctx.fillStyle='var(--ink-dim)'; ctx.fillText(tok.t,cx,cy);
+      }
+
+      cx+=w;
+
+      // sentence break → line break (readability)
+      if(!tok.isWord && /[.!?]/.test(tok.t)){
+        cx = tx; cy += lineH;
+      }
+    });
+
+    ctx.font=prev;
+
+    // on-screen arrows (left/right of content)
+    const midY = y + cardH/2;
+    this.leftHit  = IconCircle(tx-50,      midY, '⬅');
+    this.rightHit = IconCircle(tx+blockW+50,midY, '⮕');
+
+    drawBurgerMenu();
+  }
+
+  onPointer(type,p){
+    if(type!=='down') return;
+
+    if(this.playBtn.contains(p.x,p.y)){ this.readCurrent(); return; }
+    if(p.x>=this.leftHit.x && p.x<=this.leftHit.x+this.leftHit.w && p.y>=this.leftHit.y && p.y<=this.leftHit.y+this.leftHit.h){ this.prev(); return; }
+    if(p.x>=this.rightHit.x&& p.x<=this.rightHit.x+this.rightHit.w&& p.y>=this.rightHit.y&& p.y<=this.rightHit.y+this.rightHit.h){ this.next(); return; }
+
+    const hit=this.wordBoxes.find(b=> p.x>=b.x&&p.x<=b.x+b.w&&p.y>=b.y&&p.y<=b.y+b.h);
+    if(hit){
+      // Use tunable tap (single-word) rate
+      speakDe(hit.word,{rate:this.tapRate});
+      emitConfetti(p.x,p.y,'#34d399',10);
+    }
+  }
+
+  next(){ this.i=(this.i+1)%this.story.pages.length; this.highlightIndex=-1; this.readTimers.forEach(id=>clearTimeout(id)); }
+  prev(){ this.i=(this.i-1+this.story.pages.length)%this.story.pages.length; this.highlightIndex=-1; this.readTimers.forEach(id=>clearTimeout(id)); }
+  onKey(key){ if(key==='ArrowRight'){ this.next(); } if(key==='ArrowLeft'){ this.prev(); } if(key===' '){ this.readCurrent(); } if(key==='Escape'){ setScene(new StoryOverviewScene()); } }
+}
+
+
+/* =============== QUIZ (Text → Bild) =============== */
+function getAvailableStufen(){
+  const m=new Map();
+  WORDS.forEach(w=>{ const s=w.stufe||1; m.set(s,(m.get(s)||0)+1); });
+  return Array.from(m.entries()).sort((a,b)=>a[0]-b[0]).map(([num,count])=>({num,count}));
+}
+
+class QuizScene extends Scene{
+  get id(){return 'quiz';}
+  constructor(){
+    super();
+    // Tunables
+    this.steps = 10;        // progress steps to win
+    this.gridGap = 18;      // space between image options
+    this.negTimer = 0;      // red flash timer
+
+    // State
+    this.correct=0;
+    this.progress=0;
+    this.selectedStufe = null; // null = all stufen
+
+    // UI
+    this.playBtn = new Button('Vorlesen','🔊',0,0,180,44,()=> this.speakWord());
+    this.dd = { x:0,y:0,w:220,h:40, open:false, items:null };
+
+    this.prepareQuestion();
+    this.layout();
+    this.qFontPx     = 100; // your big word size
+    this.qTopPad     = 40;  // <— top padding you can tweak
+    this.qBottomGap  = 26;  // gap between big word and the image grid
+    this.qBottomPad  = 50;  // gap between image grid and bottom controls
+  }
+
+  pool(){
+    const list = this.selectedStufe ? WORDS.filter(w => (w.stufe||1)===this.selectedStufe) : WORDS;
+    return (list && list.length) ? list : WORDS;
+  }
+
+  safePickRand(except, excludeSet){
+    const base = this.pool();
+    const choices = base.filter(w=> w && w!==except && !excludeSet.has(w));
+    if(choices.length) return choices[Math.floor(Math.random()*choices.length)];
+    const fallback = WORDS.filter(w=> w && w!==except && !excludeSet.has(w));
+    return fallback.length ? fallback[Math.floor(Math.random()*fallback.length)] : null;
+  }
+
+  prepareQuestion(){
+    const p=this.pool();
+    this.current = p[Math.floor(Math.random()*p.length)];
+    const chosen = [this.current];
+    const set = new Set(chosen);
+    while(chosen.length<4){
+      const next=this.safePickRand(this.current, set);
+      if(!next) break;
+      chosen.push(next); set.add(next);
+    }
+    if(chosen.length<4){
+      for(const w of WORDS){ if(!set.has(w)){ chosen.push(w); set.add(w); if(chosen.length>=4) break; } }
+    }
+    this.options = chosen.slice(0,4).sort(()=>Math.random()-0.5);
+  }
+
+  speakWord(){ speakDe(this.current.text, {rate:0.8}); }
+
+  layout(){
+    const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth,H=canvas.clientHeight; const CW=W-sbw;
+    this.dd.x = sbw + 16; this.dd.y = 56; this.dd.w = Math.min(260, CW-32);
+    const bottomY = H - 64;
+    const centerX = sbw + CW/2;
+    this.playBtn.x = centerX - this.playBtn.w/2;
+    this.playBtn.y = bottomY;
+  }
+
+  draw(){
+    drawSidebar(this.id);
+    const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth,H=canvas.clientHeight; const CW=W-sbw;
+
+    // Header
+    ctx.fillStyle='var(--ink-dim)'; ctx.font='14px system-ui';
+    ctx.fillText('🧠 Quiz — Lies das Wort und wähle das passende Bild', sbw+16, 48);
+
+    // Dropdown (Stufe)
+    const dd=this.dd;
+    const label = this.selectedStufe ? `📚 Stufe ${this.selectedStufe}` : '🌐 Alle Stufen';
+    shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.08)'; rrect(dd.x,dd.y,dd.w,dd.h,10); ctx.fill();});
+    ctx.fillStyle='#e6ebf2'; ctx.font='16px system-ui'; ctx.fillText(label, dd.x+12, dd.y+26);
+    ctx.fillText('▾', dd.x+dd.w-24, dd.y+26);
+
+    if(dd.open && dd.items){
+      const itemH=36; const x=dd.x, y=dd.y+dd.h+6, w=dd.w; const h=dd.items.length*itemH;
+      shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.08)'; rrect(x,y,w,h,10); ctx.fill();});
+      ctx.fillStyle='#e6ebf2'; ctx.font='15px system-ui';
+      dd.items.forEach((it,idx)=>{ const iy=y+idx*itemH+24; ctx.fillText(it.label, x+12, iy); });
+    }
+
+    // Question (big word)
+    const q = this.current.text;
+    ctx.fillStyle = '#e6ebf2';
+    ctx.font = `${this.qFontPx}px system-ui`;
+    const qY = 100 + this.qTopPad;
+    ctx.fillText(q, sbw + (CW - ctx.measureText(q).width) / 2, qY);
+
+    // Options grid (2x2)
+    const gap = 40;
+    const gridW = Math.min(CW - 48, 800);
+    const tileW = (gridW - gap) / 2;
+    const tileH = Math.min(260, tileW * 0.66);
+    const gx = sbw + (CW - gridW) / 2;
+
+    const gy = qY + this.qBottomGap;
+
+    this.options.forEach((opt,i)=>{
+      const row=(i/2)|0, col=i%2;
+      const x=gx + col*(tileW+gap), y=gy + row*(tileH+gap);
+      shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,tileW,tileH,18); ctx.fill(); });
+      const img=IMAGES[opt.img];
+      if(img&&img.complete&&img.naturalWidth>0){
+        const ar=img.naturalWidth/img.naturalHeight;
+        let dw=tileW, dh=dw/ar; if(dh>tileH){ dh=tileH; dw=dh*ar; }
+        const ix=x+(tileW-dw)/2, iy=y+(tileH-dh)/2;
+        ctx.drawImage(img,ix,iy,dw,dh);
+      }
+      opt._box={x,y,w:tileW,h:tileH};
+    });
+
+    // Progress bar
+    const gridBottom = gy + 2*tileH + gap;
+    const trackY = gridBottom + 40;
+    const trackX = sbw + 60;
+    const trackW = CW - 120;
+    const trackH = 18;
+
+    shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.08)'; rrect(trackX,trackY,trackW,trackH,12); ctx.fill();});
+    const stepW = trackW/this.steps;
+    ctx.fillStyle='#34d399';
+    rrect(trackX, trackY, Math.max(0, this.progress*stepW), trackH, 12); ctx.fill();
+    ctx.font='28px system-ui';
+    ctx.fillText('🐭', trackX + Math.max(0,(this.progress-0.9))*stepW, trackY+trackH+4);
+    ctx.fillText('🧀', trackX + trackW-6, trackY+trackH+4);
+
+    // Bottom controls + stats
+    this.playBtn.hover=this.playBtn.contains(pointer.x,pointer.y); this.playBtn.draw();
+    ctx.fillStyle='#AFB6C3'; ctx.font='16px system-ui';
+    ctx.fillText(`✅ ${this.correct} richtig`, sbw+16, H-16);
+
+    // Wrong flash overlay
+    if(this.negTimer>0){
+      ctx.globalAlpha=Math.min(0.25,this.negTimer/20);
+      ctx.fillStyle='#ef4444';
+      rrect(gx-10, gy-10, gridW+20, gridBottom-gy+10, 24); ctx.fill();
+      ctx.globalAlpha=1; this.negTimer--;
+    }
+
+    drawParticles();
+    drawBurgerMenu();
+  }
+
+  onPointer(type,p){
+    if(type!=='down') return;
+
+    // Vorlesen
+    if(this.playBtn.contains(p.x,p.y)){ this.playBtn.onClick(); return; }
+
+    // Dropdown toggle / select
+    const dd=this.dd;
+    if(p.x>=dd.x && p.x<=dd.x+dd.w && p.y>=dd.y && p.y<=dd.y+dd.h){
+      dd.open = !dd.open;
+      if(dd.open){
+        const items = [{id:null,label:'🌐 Alle Stufen'}]
+          .concat(getAvailableStufen().map(s=>({id:s.num,label:`📚 Stufe ${s.num}`})));
+        dd.items = items;
+      } else dd.items=null;
+      return;
+    }
+    if(dd.open && dd.items){
+      const itemH=36; const x=dd.x, y=dd.y+dd.h+6, w=dd.w;
+      const idx=Math.floor((p.y - y)/itemH);
+      if(p.x>=x && p.x<=x+w && p.y>=y && idx>=0 && idx<dd.items.length){
+        const choice=dd.items[idx];
+        this.selectedStufe = choice.id || null;
+        dd.open=false; dd.items=null;
+        this.correct=0; this.progress=0;
+        this.prepareQuestion();
+        return;
+      }
+      // Click outside closes
+      dd.open=false; dd.items=null;
+    }
+
+    // Pick option
+    const hit=this.options.find(o=> p.x>=o._box.x && p.x<=o._box.x+o._box.w && p.y>=o._box.y && p.y<=o._box.y+o._box.h );
+    if(!hit) return;
+
+    if(hit===this.current){
+      this.correct++;
+      this.progress=Math.min(this.steps, this.progress+1);
+      const cx=hit._box.x+hit._box.w/2, cy=hit._box.y+hit._box.h/2;
+      emitConfetti(cx,cy,'#22c55e',42);
+      emitConfetti(cx,cy,'#34d399',28);
+      fxPositive();
+      if(this.progress>=this.steps){ this.showWin(); }
+      else { setTimeout(()=>this.prepareQuestion(), 280); }
+    } else {
+      this.progress=Math.max(0, this.progress-1);
+      this.negTimer=14;
+      fxNegative();
+      emitConfetti(p.x,p.y,'#ef4444',10);
+    }
+  }
+
+  onKey(key){
+    if(key===' '){ this.speakWord(); }
+    if(key==='Escape'){ setScene(new HomeScene()); }
+  }
+
+  showWin(){
+    const W=canvas.clientWidth, H=canvas.clientHeight; const sbw=getActiveSidebarWidth();
+    for(let i=0;i<120;i++){
+      emitConfetti(sbw+Math.random()*(W-sbw), 140+Math.random()*(H-240), ['#34d399','#22c55e','#6ee7b7'][i%3],1);
+    }
+    fxPositive(); fxPositive();
+    setTimeout(()=>{
+      alert('Super! 🎉 Du hast die Lese-Bild-Runde geschafft!');
+      this.correct=0; this.progress=0; this.prepareQuestion();
+    }, 900);
+  }
+}
+
+/* =============== WORD LAB FLOW =============== */
+/* 1) Stufen overview */
+class WordLabStufenScene extends Scene{
+  get id(){return 'lab';}
+  constructor(){ super(); this.tiles=[]; this.layout(); }
+  stufen(){
+    const map = new Map();
+    WORDS.forEach(w=>{ const s=w.stufe||1; map.set(s,(map.get(s)||0)+1); });
+    return Array.from(map.entries()).sort((a,b)=>a[0]-b[0]).map(([num,count])=>({num,count}));
+  }
+  layout(){ /* none */ }
+  draw(){
+    drawSidebar(this.id);
+    const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const CW=W-sbw;
+    ctx.fillStyle='var(--ink-dim)'; ctx.font='14px system-ui'; ctx.fillText('🧱 Word Lab — Stufe auswählen', sbw+16, 48);
+    const items=this.stufen();
+    const cols=Math.max(1, Math.floor(CW/300)), gap=16, tileW=Math.min(280,(CW-(cols+1)*gap)/cols), tileH=86;
+    let x=sbw+gap, y=80; this.tiles=[];
+    items.forEach(s=>{
+      if(x+tileW>sbw+CW-gap){ x=sbw+gap; y+=tileH+gap; }
+      shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,tileW,tileH,16); ctx.fill(); });
+      ctx.fillStyle='#e6ebf2'; ctx.font='20px system-ui'; const label=`📚 Stufe ${s.num}`; ctx.fillText(label,x+16,y+36);
+      ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText(`${s.count} Wörter`,x+16,y+60);
+      this.tiles.push({x,y,w:tileW,h:tileH, stufe:s.num}); x+=tileW+gap;
+    });
+    drawBurgerMenu();
+  }
+  onPointer(type,p){
+    if(type!=='down') return;
+    const hit=this.tiles.find(b=> p.x>=b.x && p.x<=b.x+b.w && p.y>=b.y && p.y<=b.y+b.h);
+    if(hit) setScene(new WordLabCardsScene(hit.stufe));
+  }
+}
+
+/* 2) Wörter grid */
+class WordLabCardsScene extends Scene{
+  get id(){return 'lab';}
+  constructor(stufe){ super(); this.stufe=stufe; this.wordList=WORDS.filter(w=> (w.stufe||1)===stufe); this.tileBoxes=[]; this.scrollY=0; this.pointerStart=null; this.backBtn=new Button('Zur Übersicht','📚',0,0,180,44,()=> setScene(new WordLabStufenScene())); this.layout(); }
+  layout(){ const W=canvas.clientWidth, H=canvas.clientHeight; this.backBtn.x=W-196; this.backBtn.y=16; }
+  draw(){
+    drawSidebar(this.id);
+    const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const CW=W-sbw;
+    ctx.fillStyle='var(--ink-dim)'; ctx.font='14px system-ui'; ctx.fillText(`📚 Stufe ${this.stufe}`, sbw+16, 48);
+    this.backBtn.hover=this.backBtn.contains(pointer.x,pointer.y); this.backBtn.draw();
+
+    const gap=16, cols=Math.max(1, Math.floor(CW/260)), rawTileW=(CW-(cols+1)*gap)/cols;
+    const tileW=Math.max(120, Math.min(240, Number.isFinite(rawTileW)?rawTileW:240));
+    const tileH=Math.max(100, tileW*0.72+60);
+    let x=sbw+gap, y=76; this.tileBoxes=[];
+    ctx.save(); ctx.beginPath(); rrect(sbw,0,CW,H,0); ctx.clip(); ctx.translate(0,-this.scrollY);
+
+    this.wordList.forEach((w,i)=>{
+      if(x+tileW>sbw+CW-gap){ x=sbw+gap; y+=tileH+gap; }
+      shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,tileW,tileH,18); ctx.fill(); });
+      const img=IMAGES[w.img];
+      if(img&&img.complete&&img.naturalWidth>0){
+        const ar=img.naturalWidth/img.naturalHeight;
+        let dw=tileW, dh=dw/ar; if(dh>tileH-60){ dh=tileH-60; dw=dh*ar; }
+        const ix=x+(tileW-dw)/2, iy=y+(tileH-60-dh)/2; ctx.drawImage(img,ix,iy,dw,dh);
+      }
+      ctx.fillStyle='#e6ebf2'; ctx.font='18px system-ui'; ctx.fillText(w.text, x+12, y+tileH-14);
+      this.tileBoxes.push({x,y,w:tileW,h:tileH,index:i});
+      x+=tileW+gap;
+    });
+
+    this.contentH = y + tileH + gap;
+    ctx.restore();
+    drawBurgerMenu();
+  }
+  onPointer(type,p){
+    const H=canvas.clientHeight;
+    if(type==='down'){ this.pointerStart={x:p.x,y:p.y,scroll:this.scrollY}; }
+    else if(type==='move' && pointer.down && this.pointerStart){
+      const dy=p.y - this.pointerStart.y; this.scrollY=this.pointerStart.scroll - dy; if(this.scrollY<0) this.scrollY=0; const max=Math.max(0,(this.contentH||H)-H); if(this.scrollY>max) this.scrollY=max;
+    }
+    else if(type==='up' && this.pointerStart){
+      const dist=Math.hypot(p.x-this.pointerStart.x, p.y-this.pointerStart.y);
+      if(dist<10){
+        const hit=this.tileBoxes.find(b=> p.x>=b.x && p.x<=b.x+b.w && p.y>=b.y-this.scrollY && p.y<=b.y+b.h-this.scrollY );
+        if(hit) setScene(new WordLabDetailScene(this.wordList, hit.index, this.stufe));
+      }
+      this.pointerStart=null;
+    }
+    if(type==='down' && this.backBtn.contains(p.x,p.y)) this.backBtn.onClick();
+  }
+}
+
+/* 3) Word-Lab detail */
+class WordLabDetailScene extends Scene{
+  get id(){ return 'lab'; }
+  constructor(wordList, index=0, stufe=1){
+    super();
+    this.queue = wordList;
+    this.i     = index;
+    this.stufe = stufe;
+    this.tiles=[]; this.slots=[]; this.nextIndex=0;
+    this.deBtn   = new Button('Vorlesen','🔊',0,0,180,44,()=> this.speakCurrent());
+    this.skipBtn = new Button('Weiter','➡️',0,0,140,44,()=> this.nextWord());
+    this.backBtn = new Button('Zur Wörter-Übersicht','📚',0,0,220,44,()=> setScene(new WordLabCardsScene(this.stufe)));
+    this.layout(); this.prepareWord();
+  }
+  layout(){ const W=canvas.clientWidth, H=canvas.clientHeight; this.deBtn.x= getActiveSidebarWidth()+20; this.deBtn.y=H-60; this.skipBtn.x=W-160; this.skipBtn.y=H-60; this.backBtn.x=W-260; this.backBtn.y=16; }
+  current(){ return this.queue[this.i % this.queue.length]; }
+  speakCurrent(){ speakDe(this.current().text); }
+
+  prepareWord(){
+    this.nextIndex=0; this.tiles=[]; this.slots=[];
+    const w=this.current(); const chunks=syllChunks(w.text, w.syll);
+    const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight;
+    const slotW=120, slotH=56, gap=12; const totalW=chunks.length*slotW+(chunks.length-1)*gap;
+    let sx=sbw+(W-sbw-totalW)/2, sy=Math.max(220,H*0.55);
+    for(let i=0;i<chunks.length;i++){ this.slots.push({x:sx,y:sy,w:slotW,h:slotH,filled:false}); sx+=slotW+gap; }
+    const shuffled=chunks.map((c,idx)=>({chunk:c, idx})).sort(()=>Math.random()-0.5);
+    const bankW=shuffled.length*slotW+(shuffled.length-1)*gap;
+    let bx=sbw+(W-sbw-bankW)/2, by=sy+100;
+    shuffled.forEach(t=>{ this.tiles.push({x:bx,y:by,w:slotW,h:slotH,chunk:t.chunk,idx:t.idx,chosen:false,hover:false}); bx+=slotW+gap; });
+  }
+
+  drawHeader(){
+    drawSidebar(this.id);
+    const sbw=getActiveSidebarWidth(); ctx.fillStyle='var(--ink-dim)'; ctx.font='14px system-ui';
+    ctx.fillText(`🧱 Word Lab — Stufe ${this.stufe}`, sbw+16, 48);
+    this.backBtn.hover=this.backBtn.contains(pointer.x,pointer.y); this.backBtn.draw();
+  }
+
+  drawWordCard(){
+    const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight;
+    const cardW=Math.min(640,(W-sbw)*0.7), cardH=Math.min(380,H*0.46);
+    const x=sbw + (W-sbw-cardW)/2, y=80;
+    shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,cardW,cardH,26); ctx.fill(); });
+
+    const w=this.current(); const img=IMAGES[w.img];
+    if(img&&img.complete&&img.naturalWidth>0){
+      const ar=img.naturalWidth/img.naturalHeight; let dw=cardW, dh=dw/ar; if(dh>cardH-40){ dh=cardH-40; dw=dh*ar; }
+      const ix=x+(cardW-dw)/2, iy=y+(cardH-40-dh)/2; ctx.drawImage(img,ix,iy,dw,dh);
+    }
+
+    const desiredFont='36px system-ui'; const prevFont=ctx.font; ctx.font=desiredFont;
+    const textY=y+cardH+36; const totalWidth=ctx.measureText(w.text).width; let cursor=sbw+(W-sbw-totalWidth)/2;
+    this.wordBoxes=[]; for(let i=0;i<w.syll.length;i++){ const start=w.syll[i], end=(i+1<w.syll.length?w.syll[i+1]:w.text.length); const chunk=w.text.slice(start,end); const wpx=ctx.measureText(chunk).width; this.wordBoxes.push({x:cursor,y:textY-30,w:wpx,h:36,chunk}); cursor+=wpx; }
+    drawSyllables(sbw+(W-sbw-totalWidth)/2, textY, w.text, w.syll, '#e6ebf2', '#34d399', desiredFont);
+    ctx.font=prevFont;
+  }
+
+  drawSlotsAndTiles(){
+    const slotRadius=14;
+    this.slots.forEach((s,i)=>{
+      strokeRRect(s.x,s.y,s.w,s.h,slotRadius,2,'rgba(255,255,255,0.35)',[8,6]);
+      ctx.save(); ctx.fillStyle='rgba(255,255,255,0.05)'; rrect(s.x,s.y,s.w,s.h,slotRadius); ctx.fill(); ctx.restore();
+      if(this.nextIndex===i && !s.filled){ ctx.save(); ctx.shadowColor='rgba(16,185,129,0.65)'; ctx.shadowBlur=16; ctx.strokeStyle='rgba(52,211,153,0.9)'; ctx.lineWidth=2; ctx.setLineDash([]); rrect(s.x,s.y,s.w,s.h,slotRadius); ctx.stroke(); ctx.restore(); }
+      ctx.fillStyle='#94a3b8'; ctx.font='14px system-ui'; const label=s.filled?'':(i===this.nextIndex?'❓':'❓❓'); const tw=ctx.measureText(label).width; if(label) ctx.fillText(label,s.x+(s.w-tw)/2,s.y+s.h/2+5);
+    });
+
+    const hoveringTile=this.tiles.some(t=>!t.chosen && t.hover); canvas.style.cursor = hoveringTile ? 'pointer' : 'default';
+    this.tiles.forEach(t=>{
+      const isNext=(t.idx===this.nextIndex)&&!t.chosen;
+      shadow(()=>{ const c1=isNext?'#10b981':'#334155', c2=isNext?'#34d399':'#475569'; ctx.fillStyle=gradient(t.x,t.y,t.w,t.h,c1,c2); rrect(t.x,t.y,t.w,t.h,14); ctx.fill(); });
+      if(t.hover && !t.chosen){ ctx.save(); ctx.globalAlpha=0.12; ctx.fillStyle='#34d399'; rrect(t.x-3,t.y-3,t.w+6,t.h+6,16); ctx.fill(); ctx.restore(); }
+      ctx.fillStyle=t.chosen ? '#c7f9e9' : '#e6ebf2'; ctx.font='30px system-ui'; const tw=ctx.measureText(t.chunk).width; ctx.fillText(t.chunk, t.x+(t.w-tw)/2, t.y+t.h/2+7);
+      if(isNext && !t.chosen){ ctx.fillStyle='#34d399'; ctx.font='16px system-ui'; const hint='👆🏻'; const tw2=ctx.measureText(hint).width; ctx.fillText(hint, t.x+(t.w-tw2)/2, t.y+t.h+20); }
+    });
+  }
+
+  drawFooter(){ this.deBtn.hover=this.deBtn.contains(pointer.x,pointer.y); this.deBtn.draw(); this.skipBtn.hover=this.skipBtn.contains(pointer.x,pointer.y); this.skipBtn.draw(); }
+
+  draw(){ this.drawHeader(); this.drawWordCard(); this.drawSlotsAndTiles(); this.drawFooter(); drawBurgerMenu(); }
+
+  onPointer(type,p){
+    if(type==='move'){ this.tiles.forEach(t=>{ t.hover = (!t.chosen && p.x>=t.x && p.x<=t.x+t.w && p.y>=t.y && p.y<=t.y+t.h); }); return; }
+    if(type!=='down') return;
+    if(this.backBtn.contains(p.x,p.y)) { this.backBtn.onClick(); return; }
+    if(this.deBtn.contains(p.x,p.y))   { this.deBtn.onClick(); return; }
+    if(this.skipBtn.contains(p.x,p.y)) { this.skipBtn.onClick(); return; }
+
+    const hit=this.tiles.find(t=> p.x>=t.x && p.x<=t.x+t.w && p.y>=t.y && p.y<=t.y+t.h && !t.chosen);
+    if(hit){
+      speakChunk(hit.chunk);
+      if(hit.idx===this.nextIndex){
+        const slot=this.slots[this.nextIndex];
+        hit.x=slot.x; hit.y=slot.y; hit.chosen=true; slot.filled=true; this.nextIndex++; fxPositive(); emitConfetti(hit.x+hit.w/2, hit.y, '#34d399', 22);
+        if(this.nextIndex>=this.slots.length){
+          const id=this.current().id; if(!PROGRESS.mastered.includes(id)) PROGRESS.mastered.push(id); saveProgress();
+          setTimeout(()=>{ this.nextWord(); }, 500); speakDe(this.current().text);
+        }
+      } else { fxNegative(); emitConfetti(p.x,p.y,'#ef4444',10); }
+      return;
+    }
+    const filled=this.tiles.find(t=> t.chosen && p.x>=t.x && p.x<=t.x+t.w && p.y>=t.y && p.y<=t.y+t.h);
+    if(filled){ speakChunk(filled.chunk); return; }
+    if(this.wordBoxes){ const hitWord=this.wordBoxes.find(b=> p.x>=b.x && p.x<=b.x+b.w && p.y>=b.y && p.y<=b.y+b.h); if(hitWord){ speakChunk(hitWord.chunk); return; } }
+    fxNegative();
+  }
+
+  nextWord(){ this.i = (this.i+1) % this.queue.length; this.prepareWord(); }
+  prevWord(){ this.i = (this.i-1+this.queue.length) % this.queue.length; this.prepareWord(); }
+  onKey(key){
+    if(key===' '){ this.speakCurrent(); }
+    if(key==='Escape'){ setScene(new WordLabCardsScene(this.stufe)); }
+    if(key==='ArrowRight'){ this.nextWord(); }
+    if(key==='ArrowLeft'){ this.prevWord(); }
+  }
+}
+
+/* ---------- App loop ---------- */
+function setScene(s){ activeScene=s; activeScene?.layout?.(); }
+let last=0;
+function loop(ts){
+  const dt=(ts-last)/1000; last=ts;
+  ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+  const W=canvas.clientWidth,H=canvas.clientHeight;
+  const g=ctx.createRadialGradient(W*0.5,H*0.1,120,W*0.5,H*0.6,Math.max(W,H));
+  g.addColorStop(0,'rgba(16,185,129,0.06)'); g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  activeScene?.draw?.(dt);
+  updateParticles(); drawParticles();
+  requestAnimationFrame(loop);
+}
+
+/* ---------- Start ---------- */
+(async function start(){
+  await Promise.all([loadImages(), ensureVoicesReady()]);
+  setScene(new HomeScene());
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

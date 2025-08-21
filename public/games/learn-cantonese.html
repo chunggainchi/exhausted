@@ -21,6 +21,7 @@
   </style>
 </head>
 <body>
+  
 <canvas id="app"></canvas>
 <script>
 // ========= Data provided by Sharon =========
@@ -564,7 +565,7 @@ class CardsOverviewScene extends Scene{ get id(){return 'cards';}
 }
 
 class CardDetailScene extends Scene{ get id(){return 'cards';}
-  constructor(index, wordList, themeId=null){ super(); this.i=index; this.wordList=wordList||WORDS; this.themeId=themeId; this.hkBtn=new Button('中文 🇭🇰','',0,0,150,44,()=>speakYue(this.current().yue)); this.deBtn=new Button('Deutsch 🇩🇪','',0,0,170,44,()=>speakDe(this.current().de)); this.enBtn=new Button('English 🇬🇧','',0,0,170,44,()=>speakEn(this.current().en || this.current().de)); this.prevBtn=new Button('⬅️','',0,0,56,56,()=>this.prev()); this.nextBtn=new Button('➡️','',0,0,56,56,()=>this.next()); this.homeBtn=new Button('Zur Übersicht','📚',0,0,180,44,()=>setScene(new CardsOverviewScene(this.themeId))); this.layout(); speakYue(this.current().yue); }
+  constructor(index, wordList, themeId=null){ super(); this.i=index; this.wordList=wordList||WORDS; this.themeId=themeId; this.hkBtn=new Button('中文 🇭🇰','',0,0,150,44,()=>speakYue(this.current().yue)); this.deBtn=new Button('Deutsch 🇩🇪','',0,0,170,44,()=>speakDe(this.current().de)); this.enBtn=new Button('English 🇬🇧','',0,0,170,44,()=>speakEn(this.current().en || this.current().de)); this.prevBtn=new Button('⬅','',0,0,56,56,()=>this.prev()); this.nextBtn=new Button('⮕','',0,0,56,56,()=>this.next()); this.homeBtn=new Button('Zur Übersicht','📚',0,0,180,44,()=>setScene(new CardsOverviewScene(this.themeId))); this.layout(); speakYue(this.current().yue); }
   current(){ return this.wordList[this.i]; }
   layout(){
     const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const CW=W-sbw;
@@ -752,7 +753,7 @@ class MouseCheeseScene extends Scene{ get id(){return 'game';}
   drawDpad(){
     Object.entries(this.dpad).forEach(([key, box])=>{
       if (key === 'bounds') return;
-      const labels = { up: '⬆️', left: '⬅️', right: '➡️', down: '⬇️' };
+      const labels = { up: '⬆', left: '⬅', right: '⮕', down: '⬇' };
       shadow(()=>{ ctx.fillStyle=gradient(box.x,box.y,box.w,box.h,'#334155','#475569'); rrect(box.x,box.y,box.w,box.h,16); ctx.fill();});
       ctx.fillStyle='#fff'; ctx.font='34px system-ui'; const tw=ctx.measureText(labels[key]).width; ctx.fillText(labels[key], box.x+(box.w-tw)/2, box.y+box.h/2+12);
     });
