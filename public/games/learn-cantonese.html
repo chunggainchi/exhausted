@@ -211,6 +211,8 @@ let burgerBox = { x: 12, y: 12, w: 48, h: 48 };
 // ========= Canvas + GFX helpers =========
 const canvas = document.getElementById('app');
 const ctx = canvas.getContext('2d');
+const LOGO = new Image();
+LOGO.src = '/images/logo.svg';
 let DPR = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
 
 function resize() {
@@ -439,8 +441,42 @@ function drawSidebar(activeId){
   if (sbw <= 0) return;
   
   shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(12,12,sbw-24,H-24,22); ctx.fill();});
-  ctx.fillStyle='#e6ebf2'; ctx.font='20px system-ui'; ctx.fillText('CantoPlay', 26, 44);
-  let y=76; NAV.forEach(item=>{ const isActive=item.id===activeId; const h=54, x=22, w=sbw-44; const c1=isActive?'#22d3ee':'#334155', c2=isActive?'#8b5cf6':'#475569'; shadow(()=>{ ctx.fillStyle=gradient(x,y,w,h,c1,c2); rrect(x,y,w,h,14); ctx.fill();}); ctx.fillStyle='white'; ctx.font='18px system-ui'; const txt=`${item.emoji?item.emoji+' ':''}${item.label}`; const tw=ctx.measureText(txt).width; ctx.fillText(txt, x+Math.max(14,(w-tw)/2), y+34); navBoxes.push({x,y,w,h,id:item.id}); y+=h+12; });
+
+  // --- Draw logo on top ---
+  let logoBottom = 76;
+  if (LOGO.complete && LOGO.naturalWidth > 0) {
+    const logoW = 80;
+    const logoH = logoW * (LOGO.naturalHeight / LOGO.naturalWidth);
+    const logoX = (sbw - logoW) / 2;
+    const logoY = 20;
+    ctx.drawImage(LOGO, logoX, logoY, logoW, logoH);
+    logoBottom = logoY + logoH + 20;
+
+    // Make logo clickable
+    if (pointer.down &&
+        pointer.x >= logoX && pointer.x <= logoX + logoW &&
+        pointer.y >= logoY && pointer.y <= logoY + logoH) {
+      window.location.href = "https://exhaustedrocket.com"; // Change this URL
+    }
+  } else {
+     // Fallback text title if logo fails to load
+     ctx.fillStyle='#e6ebf2'; ctx.font='20px system-ui'; ctx.fillText('CantoPlay', 26, 44);
+  }
+
+  // --- Draw nav items below logo ---
+  let y=logoBottom; 
+  NAV.forEach(item=>{ 
+    const isActive=item.id===activeId; 
+    const h=54, x=22, w=sbw-44; 
+    const c1=isActive?'#22d3ee':'#334155', c2=isActive?'#8b5cf6':'#475569'; 
+    shadow(()=>{ ctx.fillStyle=gradient(x,y,w,h,c1,c2); rrect(x,y,w,h,14); ctx.fill();}); 
+    ctx.fillStyle='white'; ctx.font='18px system-ui'; 
+    const txt=`${item.emoji?item.emoji+' ':''}${item.label}`; 
+    const tw=ctx.measureText(txt).width; 
+    ctx.fillText(txt, x+Math.max(14,(w-tw)/2), y+34); 
+    navBoxes.push({x,y,w,h,id:item.id}); 
+    y+=h+12; 
+  });
 }
 
 function handleNavClick(p){
