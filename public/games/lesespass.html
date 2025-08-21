@@ -117,6 +117,7 @@ let navBoxes=[];
 const SIDEBAR_W=230;
 const NAV=[
   {id:'home',  label:'Home',     emoji:'🏠', scene:()=>new HomeScene()},
+  {id:'soundboard', label:'Soundboard', emoji:'🎛️', scene:()=>new SoundboardScene() },
   {id:'lab',   label:'Word Lab', emoji:'🧱', scene:()=>new WordLabStufenScene()},
   {id:'quiz',  label:'Quiz',     emoji:'🧠', scene:()=>new QuizScene()},
   {id:'story', label:'Story',    emoji:'📖', scene:()=>new StoryOverviewScene()},
@@ -125,7 +126,7 @@ function getActiveSidebarWidth(){ return (!isMobileView)? SIDEBAR_W : (isNavOpen
 function drawSidebar(activeId){
   const H=canvas.clientHeight, sbw=getActiveSidebarWidth(); if(sbw<=0) return;
   shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(12,12,sbw-24,H-24,22); ctx.fill(); });
-  ctx.fillStyle='var(--ink)'; ctx.font='20px system-ui'; ctx.fillText('LeseSpaß Deutsch',26,44);
+  ctx.fillStyle='var(--ink)'; ctx.font='20px system-ui'; ctx.fillText('LeseSpaß',26,44);
   let y=76; navBoxes=[];
   NAV.forEach(item=>{
     const isActive=item.id===activeId; const h=54, x=22, w=sbw-44;
@@ -222,7 +223,7 @@ function speakChunk(chunk){
   const lc = chunk.toLowerCase();
   const isSingle = chunk.length === 1;
   const V_LONG = { a:'ah', e:'eh', i:'ih', o:'oh', u:'uh', ä:'äh', ö:'öh', ü:'üh' };
-  const C_LONG = { m:'mmmm', n:'nnnn', s:'ssss', l:'llll', f:'ffff', r:'rrrr', z:'zzzz', h:'hhh' };
+  const C_LONG = { m:'m', n:'n', s:'s', l:'l', f:'f', r:'r', z:'z', h:'h' };
   let text = isSingle ? (V_LONG[lc] || C_LONG[lc] || lc) : lc;
   speakDe(text, { rate: 0.65 });
 }
@@ -247,6 +248,24 @@ const WORDS = [
   { id:'baden', text:'Baden', syll:[0,2], g:['b','a','d','e','n'],   img:'baden', tags:['verb'],   stufe:1 },
   { id:'garten',text:'Garten',syll:[0,3], g:['g','a','rt','e','n'],  img:'garten',tags:['place'],  stufe:1 },
 ];
+
+/* ---------- PHONICS: keys + helpers (no tabs, no examples) ---------- */
+const PHONEME_SAY = {
+  a:'ah', e:'eh', i:'ih', o:'oh', u:'uh',
+  m:'m', n:'n', s:'s', l:'l', f:'f', r:'r', h:'h',
+  p:'p', t:'t', k:'k', b:'b', d:'d', g:'g',
+  eu:'eu',
+};
+
+// two rows we’ll show at once
+const VOWELS = ['a','e','i','o','u','eu'];
+const CONSONANTS = ['m','p','r','b','g','k','t','l','n','d','h','s'];
+
+function speakPhoneme(key, rate=0.6){
+  const say = PHONEME_SAY[key] || key;
+  speakDe(say, { rate });
+}
+
 
 /* ---------- Rainbow highlight helpers (incl. verb inflections) ---------- */
 const EXACT_WORDS = new Set(WORDS.map(w => w.text.toLowerCase()));
@@ -379,7 +398,8 @@ class HomeScene extends Scene{
     const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth-sbw, H=canvas.clientHeight;
     const bw=Math.min(380,W*0.8), bh=56; let y=H*0.34; const X=sbw+(W-bw)/2;
     this.buttons=[
-      new Button('Word Lab','🧱',X,y,bw,bh,()=> setScene(new WordLabStufenScene())),
+      new Button('Soundboard','🎛️',X,y,bw,bh,()=> setScene(new SoundboardScene())),
+      new Button('Word Lab','🧱',X,y+=bh+16,bw,bh,()=> setScene(new WordLabStufenScene())),
       new Button('Quiz','🧠',X,y+=bh+16,bw,bh,()=> setScene(new QuizScene())),
       new Button('Story','📖',X,y+=bh+16,bw,bh,()=> setScene(new StoryOverviewScene()))
     ];
@@ -388,7 +408,7 @@ class HomeScene extends Scene{
     drawSidebar(this.id);
     const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const CW=W-sbw;
     ctx.fillStyle='rgba(255,255,255,0.96)'; ctx.font=(CW>520? 'bold 46px' : 'bold 34px')+' system-ui';
-    const title='LeseSpaß Deutsch'; ctx.fillText(title, sbw+(CW-ctx.measureText(title).width)/2, H*0.18);
+    const title='LeseSpaß'; ctx.fillText(title, sbw+(CW-ctx.measureText(title).width)/2, H*0.18);
     ctx.font='18px system-ui'; ctx.fillStyle='var(--ink-dim)'; const sub='Lerne Lesen mit Silben — kurz, spielerisch, persönlich.';
     ctx.fillText(sub, sbw+(CW-ctx.measureText(sub).width)/2, H*0.18+28);
     drawBadge(sbw+16,16,'🎯 Ziel: Silben bauen • Wörter lesen • Hören');
@@ -1040,6 +1060,199 @@ class WordLabDetailScene extends Scene{
     if(key==='Escape'){ setScene(new WordLabCardsScene(this.stufe)); }
     if(key==='ArrowRight'){ this.nextWord(); }
     if(key==='ArrowLeft'){ this.prevWord(); }
+  }
+}
+
+// ======== Soundboard tunables (adjust here) ========
+const SOUNDBOARD_RATE = 0.2;   // overall speaking rate (slower = smaller)
+const KEY_MIN_W       = 92;     // min key width
+const KEY_H           = 72;     // key height
+const KEY_GAP         = 16;     // gap between keys
+const FORMULA_W       = 140;    // width of each formula slot
+const FORMULA_H       = 56;     // height of each formula slot
+const FORMULA_GAP     = 18;     // gap between L and R slot
+const FORMULA_TOP_PAD = 30;     // gap below the keys
+const BUTTON_TOP_PAD  = 28;     // gap below the formula row before the buttons
+
+// ======== Soundboard (all keys visible) ========
+class SoundboardScene extends Scene{
+  get id(){ return 'soundboard'; }
+
+  constructor(){
+    super();
+    // Visible keys (use your Stufe-1 base; added umlauts + EU)
+    this.vowels     = ['A','E','I','O','U','Ä','Ö','Ü','EU'];
+    this.consonants = ['M','P','R','B','G','K','T','L','N','D','H','S'];
+
+    this.keys = [];             // {x,y,w,h,label,type}
+    this.formula = [null, null];// selected labels (e.g. 'M','A' or 'EU')
+    this.slotBoxL = null;       // geometry of formula slots
+    this.slotBoxR = null;
+
+    this.btnHear = new Button('Hören','🔊',0,0,160,44,()=>this.playNow());
+    this.btnNew  = new Button('Neu','🧹',  0,0,140,44,()=>this.clear());
+
+    this.layout();
+  }
+
+layout(){
+  const sbw = getActiveSidebarWidth();
+  const W   = canvas.clientWidth, H = canvas.clientHeight;
+  const CW  = W - sbw;
+
+  const topY   = 70;
+  const innerX = sbw + 16;
+  const innerW = CW  - 32;
+
+  const colsFor = (w) => Math.max(3, Math.floor((w + KEY_GAP) / (KEY_MIN_W + KEY_GAP)));
+
+  this.keys = [];
+
+  // VOWELS (wrapping grid)
+  const vCount = this.vowels.length;
+  const vCols  = Math.min(vCount, colsFor(innerW));
+  const vKeyW  = Math.max(KEY_MIN_W, (innerW - (vCols + 1) * KEY_GAP) / vCols);
+
+  let vx = innerX + KEY_GAP;
+  let vy = topY;
+  this.vowels.forEach((lab, i) => {
+    if (i > 0 && i % vCols === 0) { vx = innerX + KEY_GAP; vy += KEY_H + KEY_GAP; }
+    this.keys.push({ x:vx, y:vy, w:vKeyW, h:KEY_H, label:lab, type:'vowel' });
+    vx += vKeyW + KEY_GAP;
+  });
+  const vRows = Math.ceil(vCount / vCols);
+  let y = topY + vRows * KEY_H + (vRows - 1) * KEY_GAP + KEY_GAP;
+
+  // CONSONANTS (wrapping grid, unchanged logic)
+  const cCount = this.consonants.length;
+  const cCols  = Math.max(4, colsFor(innerW));
+  const cKeyW  = Math.max(KEY_MIN_W, (innerW - (cCols + 1) * KEY_GAP) / cCols);
+
+  let x = innerX + KEY_GAP;
+  this.consonants.forEach((lab, i) => {
+    if (i > 0 && i % cCols === 0) { x = innerX + KEY_GAP; y += KEY_H + KEY_GAP; }
+    this.keys.push({ x, y, w:cKeyW, h:KEY_H, label:lab, type:'con' });
+    x += cKeyW + KEY_GAP;
+  });
+
+  // FORMULA row below the last key row
+  const rowBottom = y + KEY_H;
+  const fx = sbw + (CW - (FORMULA_W * 2 + FORMULA_GAP)) / 2;
+  const fy = rowBottom + FORMULA_TOP_PAD;
+
+  this.slotBoxL = { x: fx,                      y: fy, w: FORMULA_W, h: FORMULA_H };
+  this.slotBoxR = { x: fx + FORMULA_W + FORMULA_GAP, y: fy, w: FORMULA_W, h: FORMULA_H };
+
+  // Buttons centered below
+  const buttonsY = fy + FORMULA_H + BUTTON_TOP_PAD;
+  const totalW   = this.btnHear.w + 16 + this.btnNew.w;
+  const startX   = sbw + (CW - totalW)/2;
+
+  this.btnHear.x = startX;                 this.btnHear.y = buttonsY;
+  this.btnNew.x  = startX + this.btnHear.w + 16; this.btnNew.y  = buttonsY;
+
+  this.contentBottom = buttonsY + this.btnHear.h;
+}
+
+
+  // Simple rendering helpers
+  drawKey(k){
+    const isV = k.type==='vowel';
+    shadow(()=>{ ctx.fillStyle = gradient(k.x,k.y,k.w,k.h, isV?'#e5edf6':'#334155', isV?'#f5f9ff':'#475569'); rrect(k.x,k.y,k.w,k.h,18); ctx.fill(); });
+    ctx.fillStyle = isV? '#0b1320' : '#e6ebf2';
+    ctx.font='28px system-ui';
+    const tw=ctx.measureText(k.label).width;
+    ctx.fillText(k.label, k.x+(k.w-tw)/2, k.y+k.h/2+10);
+  }
+  drawSlot(b, text){
+    strokeRRect(b.x,b.y,b.w,b.h,14,2,'rgba(255,255,255,0.35)',[8,6]);
+    ctx.save(); ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(b.x,b.y,b.w,b.h,14); ctx.fill(); ctx.restore();
+    if(text){
+      ctx.fillStyle='#e6ebf2'; ctx.font='28px system-ui';
+      const tw=ctx.measureText(text).width;
+      ctx.fillText(text, b.x+(b.w-tw)/2, b.y+b.h/2+10);
+    }
+  }
+
+  draw(){
+    drawSidebar(this.id);
+    const sbw=getActiveSidebarWidth();
+    ctx.fillStyle='var(--ink-dim)'; ctx.font='14px system-ui';
+    ctx.fillText('🧩 Soundboard — alle Laute sichtbar (Tippen zum Hören, unten verbinden)', sbw+16, 48);
+
+    // Keys
+    this.keys.forEach(k=> this.drawKey(k));
+
+    // Formula area
+    this.drawSlot(this.slotBoxL, this.formula[0]||'');
+    ctx.fillStyle='#AFB6C3'; ctx.font='12px system-ui'; ctx.fillText('+', this.slotBoxL.x+this.slotBoxL.w+6, this.slotBoxL.y+this.slotBoxL.h/2+9);
+    this.drawSlot(this.slotBoxR, this.formula[1]||'');
+   // ctx.fillStyle='#AFB6C3'; ctx.font='26px system-ui'; ctx.fillText('=', this.slotBoxR.x+this.slotBoxR.w+6, this.slotBoxR.y+this.slotBoxR.h/2+9);
+
+    // Buttons
+    this.btnHear.hover = this.btnHear.contains(pointer.x,pointer.y);
+    this.btnNew.hover  = this.btnNew.contains(pointer.x,pointer.y);
+    this.btnHear.draw(); this.btnNew.draw();
+
+    drawBurgerMenu();
+  }
+
+  speakLetter(label){
+    // Use speakChunk for single letters (long sound), fall back to TTS for digraphs like EU
+    if (label.length===1) { speakChunk(label.toLowerCase()); }
+    else { speakDe(label.toLowerCase(), { rate: SOUNDBOARD_RATE }); }
+  }
+
+  playNow(){
+    const left  = this.formula[0];
+    const right = this.formula[1];
+    if(!left && !right) return;
+
+    const combo = `${left||''}${right||''}`.toLowerCase();
+    // Slight cadence: speak both, then whole
+    const centerX = (this.slotBoxL.x + this.slotBoxR.x + this.slotBoxR.w)/2;
+    const centerY = this.slotBoxL.y + this.slotBoxL.h/2;
+    if(left)  this.speakLetter(left);
+    setTimeout(()=>{ if(right) this.speakLetter(right); }, 250);
+    setTimeout(()=>{ speakDe(combo, { rate: SOUNDBOARD_RATE }); emitConfetti(centerX, centerY, '#34d399', 22); }, 520);
+  }
+
+  clear(){ this.formula=[null,null]; }
+
+  handlePick(label, px, py){
+    // play the letter’s sound immediately
+    this.speakLetter(label);
+
+    // fill into first empty slot
+    if(!this.formula[0])      this.formula[0]=label;
+    else if(!this.formula[1]) this.formula[1]=label;
+    else { this.formula=[label,null]; } // start a new pair if both were filled
+
+    // If we now have a pair → success ping + auto play + glitter
+    if(this.formula[0] && this.formula[1]){
+      fxPositive();
+      const cx = (this.slotBoxL.x + this.slotBoxR.x + this.slotBoxR.w)/2;
+      const cy = this.slotBoxL.y + this.slotBoxL.h/2;
+      emitConfetti(cx, cy, '#34d399', 32);
+      setTimeout(()=> this.playNow(), 160);
+    }
+  }
+
+  onPointer(type,p){
+    if(type!=='down') return;
+
+    // Key hits
+    const hit = this.keys.find(k=> p.x>=k.x && p.x<=k.x+k.w && p.y>=k.y && p.y<=k.y+k.h);
+    if(hit){ this.handlePick(hit.label, p.x, p.y); return; }
+
+    // Buttons
+    if(this.btnHear.contains(p.x,p.y)){ this.btnHear.onClick(); return; }
+    if(this.btnNew.contains(p.x,p.y)){  this.btnNew.onClick();  return; }
+  }
+
+  onKey(key){
+    if(key==='Escape') setScene(new HomeScene());
+    if(key===' ') this.playNow();
   }
 }
 

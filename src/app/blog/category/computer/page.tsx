@@ -42,7 +42,15 @@ const computerPosts: BlogPostCardProps[] = [
     href: "/blog/computer/toddler-types",
     imageAlt: "Toddler Types! game interface"
   },
-  // Add more computer posts here
+  {
+    title: "LeseSpaß (Reading Fun)",
+    subtitle: "(a German reading game)",
+    description: "A simple, no-pressure reading game for young children, built with plain HTML/CSS/JS to practice phonics and sight words recognition.",
+    imageUrl: "/images/blog/lesespass.webp",
+    href: "/blog/computer/reading-fun",
+    imageAlt: "LeseSpaß Deutsch game interface"
+  },
+    // Add more computer posts here
 ];
 
 export default function ComputerCategoryPage() {
