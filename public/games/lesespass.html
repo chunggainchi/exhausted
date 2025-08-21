@@ -185,32 +185,47 @@ function handleNavClick(p){
 /* ---------- Input ---------- */
 let pointer={x:0,y:0,down:false};
 let audioUnlocked=false;
-function primeAudio(){ if(audioUnlocked) return; audioUnlocked=true; ensureAC(); try{ speechSynthesis.speak(new SpeechSynthesisUtterance('')); }catch(e){} }
+
+function primeAudio() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  ensureAC();
+  try {
+    const primingUtterance = new SpeechSynthesisUtterance('');
+    speechSynthesis.speak(primingUtterance);
+  } catch (e) {}
+}
 
 canvas.addEventListener('pointerdown',e=>{
   primeAudio();
-  warmSpeechOnce(); // This is the key addition from CantoPlay
+  warmSpeechOnce(); // Crucial call on first interaction
   pointer.down=true;
-  const rect=canvas.getBoundingClientRect(); pointer.x=(e.clientX-rect.left); pointer.y=(e.clientY-rect.top);
-  if(isMobileView){
-    if(pointer.x >= burgerBox.x && pointer.x <= burgerBox.x + burgerBox.w && pointer.y >= burgerBox.y && pointer.y <= burgerBox.y + burgerBox.h){ isNavOpen=!isNavOpen; return; }
-    if(isNavOpen && pointer.x > getActiveSidebarWidth()){ isNavOpen=false; return; }
+  const rect=canvas.getBoundingClientRect();
+  pointer.x=(e.clientX-rect.left);
+  pointer.y=(e.clientY-rect.top);
+
+  if (isMobileView) {
+    if (pointer.x >= burgerBox.x && pointer.x <= burgerBox.x + burgerBox.w && pointer.y >= burgerBox.y && pointer.y <= burgerBox.y + burgerBox.h) {
+      isNavOpen = !isNavOpen;
+      return;
+    }
+    if (isNavOpen && pointer.x > getActiveSidebarWidth()) {
+      isNavOpen = false;
+      return;
+    }
   }
+
   if(handleNavClick(pointer)) return;
-  activeScene?.onPointer?.('down', pointer);
+  activeScene?.onPointer('down', pointer);
   canvas.setPointerCapture(e.pointerId);
 });
-canvas.addEventListener('pointermove',e=>{
-  const rect=canvas.getBoundingClientRect();
-  pointer.x=(e.clientX-rect.left); pointer.y=(e.clientY-rect.top);
-  activeScene?.onPointer?.('move', pointer);
-});
-canvas.addEventListener('pointerup',()=>{ pointer.down=false; activeScene?.onPointer?.('up', pointer); });
-window.addEventListener('keydown',e=>{
-  primeAudio();
-  warmSpeechOnce(); // Also add it here for keyboard users
-  if(e.key==='h'){ setScene(new HomeScene()); return; }
-  activeScene?.onKey?.(e.key);
+canvas.addEventListener('pointermove',e=>{ const rect=canvas.getBoundingClientRect(); pointer.x=(e.clientX-rect.left); pointer.y=(e.clientY-rect.top); activeScene?.onPointer('move', pointer); });
+canvas.addEventListener('pointerup',e=>{ pointer.down=false; activeScene?.onPointer('up', pointer); });
+window.addEventListener('keydown',e=>{ 
+    primeAudio(); 
+    warmSpeechOnce(); // Also call on keydown
+    if(e.key==='h') { setScene(new HomeScene()); return; }
+    activeScene?.onKey(e.key); 
 });
 
 /* ---------- Tiny audio FX ---------- */
@@ -225,8 +240,7 @@ function emitConfetti(x,y,color='#22c55e',n=18){ for(let i=0;i<n;i++){ particles
 function updateParticles(){ for(let i=particles.length-1;i>=0;i--){ const p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.12; p.a-=0.02; if(p.a<=0) particles.splice(i,1);} }
 function drawParticles(){ particles.forEach(p=>{ ctx.globalAlpha=Math.max(0,p.a); ctx.fillStyle=p.c; rrect(p.x,p.y,5,5,2); ctx.fill(); ctx.globalAlpha=1; }); }
 
-/* ---------- Speech Engine (from CantoPlay, adapted for German) ---------- */
-const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent || "");
+/* ---------- Speech Engine (Proven CantoPlay Logic) ---------- */
 let voiceDE = null;
 let voicesReady = false;
 let speechWarmed = false;
@@ -234,7 +248,6 @@ let speechWarmed = false;
 function waitForVoices() {
   return new Promise(resolve => {
     const tryLoad = () => {
-      // Use getVoices() which is standard, unlike the old getVoicesSafe()
       const vs = speechSynthesis.getVoices();
       if (vs && vs.length) { resolve(vs); }
       else { setTimeout(tryLoad, 120); }
@@ -247,35 +260,32 @@ function waitForVoices() {
 }
 
 function pickVoices(voices) {
-  // Use the more robust voice selection logic from CantoPlay
   const deVoices = voices.filter(v => /^de([-_]|$)/i.test(v.lang || "") || /Deutsch|German/i.test(v.name || ""));
+  // Prioritize local, high-quality voices first to avoid network lag
   const deLocal = deVoices.filter(v => v.localService && !/online|cloud|natural/i.test((v.name || "")));
-  const preferByName = ['Anna','Katja','Google Deutsch','Conrad','Siri'];
-  const pickByName = (list) => {
+  const preferByName = ['Anna','Katja','Google Deutsch','Conrad', 'Siri'];
+  const pickByName = (list)=>{
     for (const n of preferByName) {
       const f = list.find(v => (v.name || "").includes(n));
       if (f) return f;
     }
     return null;
   };
+  // The selection cascade: try preferred local, any local, preferred network, any network.
   voiceDE = pickByName(deLocal) || deLocal[0] || pickByName(deVoices) || deVoices[0] || null;
   voicesReady = true;
 }
 
 async function ensureVoicesReady() {
   if (voicesReady) return;
-  try {
-    const voices = await waitForVoices();
-    pickVoices(voices);
-  } catch (e) {
-    console.error("Could not initialize voices:", e);
-  }
+  const voices = await waitForVoices();
+  pickVoices(voices);
 }
 
 function warmSpeechOnce(){
   if (speechWarmed || !voicesReady) return;
   speechWarmed = true;
-  // Speak a short, quiet German word to reduce first-utterance latency on iOS
+  // This silent, tiny utterance is crucial for "waking up" the iOS speech engine.
   try {
     speak('ja', { voice: voiceDE, lang: 'de-DE', rate: 1, pitch: 1, volume: 0.001 });
   } catch(_) {}
@@ -285,43 +295,28 @@ function resumeEngineIfNeeded() {
   try { if (speechSynthesis.paused) speechSynthesis.resume(); } catch (_) {}
 }
 
-async function speak(text, { voice, lang, rate = 1, pitch = 1, volume = 1 } = {}) {
+async function speak(text, { voice, lang, rate = 0.92, pitch = 1, volume = 1 } = {}) {
   if (!('speechSynthesis' in window) || !voicesReady) return;
   resumeEngineIfNeeded();
   const u = new SpeechSynthesisUtterance(text);
-  if (voice) {
-    u.voice = voice;
-    u.lang = voice.lang || lang || u.lang;
-  } else if (lang) {
-    u.lang  = lang;
-  }
+  if (voice) { u.voice = voice; u.lang = voice.lang || lang || u.lang; }
+  else if (lang)  { u.lang  = lang; }
   u.rate = rate;
   u.pitch = pitch;
   u.volume = volume;
-
   try {
-    if (speechSynthesis.speaking) {
-      speechSynthesis.cancel();
-      // On some browsers, a cancelled speak needs a moment before a new one
-      setTimeout(() => speechSynthesis.speak(u), 50);
-    } else {
-      speechSynthesis.speak(u);
-    }
+    if (speechSynthesis.speaking) speechSynthesis.cancel();
+    speechSynthesis.speak(u);
   } catch (_) {}
 }
 
-function speakDe(text, opts = {}) {
-  const desiredRate = opts.rate ?? 0.7;
-  // Use the robust iOS rate clamping from your original code
-  const safeRate = Math.max(IS_IOS ? 0.35 : 0.25, Math.min(1.6, desiredRate));
-  speak(text, {
-    voice: voiceDE,
-    lang: 'de-DE',
-    rate: safeRate,
+const speakDe = (t, opts = {})=> speak(t, { 
+    voice: voiceDE, 
+    lang: (voiceDE && voiceDE.lang) || 'de-DE', 
+    rate: opts.rate ?? 0.85,
     pitch: opts.pitch ?? 1,
-    volume: opts.volume ?? 1
-  });
-}
+    volume: opts.volume ?? 1,
+});
 
 function speakChunk(chunk){
   if (!chunk) return;
@@ -330,7 +325,7 @@ function speakChunk(chunk){
   const V_LONG = { a:'ah', e:'eh', i:'ih', o:'oh', u:'uh', ä:'äh', ö:'öh', ü:'üh' };
   const C_LONG = { m:'m', n:'n', s:'s', l:'l', f:'f', r:'r', z:'z', h:'h' };
   let text = isSingle ? (V_LONG[lc] || C_LONG[lc] || lc) : lc;
-  speakDe(text, { rate: 0.65 });
+  speakDe(text, { rate: 0.75 });
 }
 
 document.addEventListener('visibilitychange', () => {
@@ -1353,7 +1348,7 @@ class SoundboardScene extends Scene {
 }
 
 
-/* ---------- App loop ---------- */
+/* ---------- App Loop & Start ---------- */
 function setScene(s){ activeScene=s; activeScene?.layout?.(); }
 let last=0;
 function loop(ts){
@@ -1368,9 +1363,8 @@ function loop(ts){
   requestAnimationFrame(loop);
 }
 
-/* ---------- Start ---------- */
 (async function start(){
-  // This robust startup sequence waits for images AND voices before showing the scene
+  // This robust startup sequence is critical. It waits for voices BEFORE starting the app.
   await Promise.all([loadImages(), ensureVoicesReady()]);
   setScene(new HomeScene());
   requestAnimationFrame(loop);
