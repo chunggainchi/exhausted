@@ -203,6 +203,7 @@ function unlockAudio() {
 
 canvas.addEventListener('pointerdown',e=>{
   unlockAudio(); // The new, single, reliable call
+  warmSpeechOnce();
   
   pointer.down=true;
   const rect=canvas.getBoundingClientRect();
@@ -227,8 +228,10 @@ canvas.addEventListener('pointerdown',e=>{
 
 canvas.addEventListener('pointermove',e=>{ const rect=canvas.getBoundingClientRect(); pointer.x=(e.clientX-rect.left); pointer.y=(e.clientY-rect.top); activeScene?.onPointer('move', pointer); });
 canvas.addEventListener('pointerup',e=>{ pointer.down=false; activeScene?.onPointer('up', pointer); });
+
 window.addEventListener('keydown',e=>{ 
-    unlockAudio(); // The new, single, reliable call
+    unlockAudio();
+    warmSpeechOnce();
     if(e.key==='h') { setScene(new HomeScene()); return; }
     activeScene?.onKey(e.key); 
 });
@@ -279,6 +282,20 @@ function pickVoices(voices) {
   // The selection cascade: try preferred local, any local, preferred network, any network.
   voiceDE = pickByName(deLocal) || deLocal[0] || pickByName(deVoices) || deVoices[0] || null;
   voicesReady = true;
+}
+
+function warmSpeechOnce(){
+  if (speechWarmed || !voicesReady || !voiceDE) return;
+  speechWarmed = true;
+  // Speak a very short, quiet snippet to reduce first-utterance latency.
+  // This forces the browser to load the voice data.
+  try { 
+    speak('ja', { 
+      voice: voiceDE, 
+      lang: (voiceDE && voiceDE.lang) || 'de-DE', 
+      volume: 0.001 
+    }); 
+  } catch(_) {}
 }
 
 async function ensureVoicesReady() {
@@ -800,6 +817,7 @@ class QuizScene extends Scene{
       for(const w of WORDS){ if(!set.has(w)){ chosen.push(w); set.add(w); if(chosen.length>=4) break; } }
     }
     this.options = chosen.slice(0,4).sort(()=>Math.random()-0.5);
+    speakDe(this.current.text, {rate:0.8});
   }
 
   speakWord(){ speakDe(this.current.text, {rate:0.8}); }
@@ -922,20 +940,19 @@ class QuizScene extends Scene{
     if(!hit) return;
 
     if(hit===this.current){
-      this.correct++;
-      this.progress=Math.min(this.steps, this.progress+1);
-      const cx=hit._box.x+hit._box.w/2, cy=hit._box.y+hit._box.h/2;
-      emitConfetti(cx,cy,'#22c55e',42);
-      emitConfetti(cx,cy,'#34d399',28);
-      fxPositive();
-      if(this.progress>=this.steps){ this.showWin(); }
-      else { setTimeout(()=>this.prepareQuestion(), 280); }
-    } else {
-      this.progress=Math.max(0, this.progress-1);
-      this.negTimer=14;
-      fxNegative();
-      emitConfetti(p.x,p.y,'#ef4444',10);
-    }
+  this.correct++;
+  this.progress=Math.min(this.steps, this.progress+1);
+  const cx=hit._box.x+hit._box.w/2, cy=hit._box.y+hit._box.h/2;
+  emitConfetti(cx,cy,'#22c55e',42);
+  emitConfetti(cx,cy,'#34d399',28);
+  fxPositive();
+  if(this.progress>=this.steps){ 
+    this.showWin(); 
+  } else { 
+    // FIX: Call prepareQuestion immediately. The visual update will happen in the next frame.
+    this.prepareQuestion(); 
+  }
+}
   }
 
   onKey(key){
