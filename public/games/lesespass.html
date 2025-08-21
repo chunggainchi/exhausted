@@ -186,10 +186,15 @@ function handleNavClick(p){
 let pointer={x:0,y:0,down:false};
 let audioUnlocked=false;
 
-function primeAudio() {
+function unlockAudio() {
   if (audioUnlocked) return;
   audioUnlocked = true;
-  ensureAC();
+  
+  // 1. Unlock Web Audio for sound effects (clicks, etc.)
+  ensureAC(); 
+  
+  // 2. Perform a single, silent utterance. This is the most reliable way 
+  // to "wake up" the speech synthesis engine on iOS/iPadOS.
   try {
     const primingUtterance = new SpeechSynthesisUtterance('');
     speechSynthesis.speak(primingUtterance);
@@ -197,8 +202,8 @@ function primeAudio() {
 }
 
 canvas.addEventListener('pointerdown',e=>{
-  primeAudio();
-  warmSpeechOnce(); // Crucial call on first interaction
+  unlockAudio(); // The new, single, reliable call
+  
   pointer.down=true;
   const rect=canvas.getBoundingClientRect();
   pointer.x=(e.clientX-rect.left);
@@ -219,11 +224,11 @@ canvas.addEventListener('pointerdown',e=>{
   activeScene?.onPointer('down', pointer);
   canvas.setPointerCapture(e.pointerId);
 });
+
 canvas.addEventListener('pointermove',e=>{ const rect=canvas.getBoundingClientRect(); pointer.x=(e.clientX-rect.left); pointer.y=(e.clientY-rect.top); activeScene?.onPointer('move', pointer); });
 canvas.addEventListener('pointerup',e=>{ pointer.down=false; activeScene?.onPointer('up', pointer); });
 window.addEventListener('keydown',e=>{ 
-    primeAudio(); 
-    warmSpeechOnce(); // Also call on keydown
+    unlockAudio(); // The new, single, reliable call
     if(e.key==='h') { setScene(new HomeScene()); return; }
     activeScene?.onKey(e.key); 
 });
@@ -280,15 +285,6 @@ async function ensureVoicesReady() {
   if (voicesReady) return;
   const voices = await waitForVoices();
   pickVoices(voices);
-}
-
-function warmSpeechOnce(){
-  if (speechWarmed || !voicesReady) return;
-  speechWarmed = true;
-  // This silent, tiny utterance is crucial for "waking up" the iOS speech engine.
-  try {
-    speak('ja', { voice: voiceDE, lang: 'de-DE', rate: 1, pitch: 1, volume: 0.001 });
-  } catch(_) {}
 }
 
 function resumeEngineIfNeeded() {
