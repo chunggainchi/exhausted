@@ -38,6 +38,8 @@
 /* ---------- Canvas + globals ---------- */
 const canvas = document.getElementById('app');
 const ctx = canvas.getContext('2d');
+const LOGO = new Image();
+LOGO.src = 'public/images/logo.svg';
 let DPR = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
 
 const MOBILE_BREAKPOINT = 850;
@@ -124,10 +126,33 @@ const NAV=[
 ];
 function getActiveSidebarWidth(){ return (!isMobileView)? SIDEBAR_W : (isNavOpen? SIDEBAR_W : 0); }
 function drawSidebar(activeId){
-  const H=canvas.clientHeight, sbw=getActiveSidebarWidth(); if(sbw<=0) return;
+  const H=canvas.clientHeight, sbw=getActiveSidebarWidth(); if(sbw<=0) return 0;
+
   shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(12,12,sbw-24,H-24,22); ctx.fill(); });
+
+  // --- draw logo on top ---
+  let logoBottom = 76;
+  if (LOGO.complete && LOGO.naturalWidth > 0){
+    const logoW = 80;
+    const logoH = logoW * (LOGO.naturalHeight / LOGO.naturalWidth);
+    const logoX = (sbw - logoW) / 2;
+    const logoY = 20;
+    ctx.drawImage(LOGO, logoX, logoY, logoW, logoH);
+    logoBottom = logoY + logoH + 20;
+
+    // clickable area → back to blog (change URL)
+    if (pointer.down &&
+        pointer.x >= logoX && pointer.x <= logoX + logoW &&
+        pointer.y >= logoY && pointer.y <= logoY + logoH) {
+      window.location.href = "https://yourblog.com";
+    }
+  }
+
+  // small title in sidebar
   ctx.fillStyle='var(--ink)'; ctx.font='20px system-ui'; ctx.fillText('LeseSpaß',26,44);
-  let y=76; navBoxes=[];
+
+  // nav
+  let y=Math.max(logoBottom, 76); navBoxes=[];
   NAV.forEach(item=>{
     const isActive=item.id===activeId; const h=54, x=22, w=sbw-44;
     const c1=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#10b981';
@@ -137,6 +162,8 @@ function drawSidebar(activeId){
     const tw=ctx.measureText(txt).width; ctx.fillText(txt,x+Math.max(14,(w-tw)/2),y+34);
     navBoxes.push({x,y,w,h,id:item.id}); y+=h+12;
   });
+
+  return logoBottom;
 }
 function drawBurgerMenu(){
   if(!isMobileView) return;
@@ -195,29 +222,108 @@ function emitConfetti(x,y,color='#22c55e',n=18){ for(let i=0;i<n;i++){ particles
 function updateParticles(){ for(let i=particles.length-1;i>=0;i--){ const p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.12; p.a-=0.02; if(p.a<=0) particles.splice(i,1);} }
 function drawParticles(){ particles.forEach(p=>{ ctx.globalAlpha=Math.max(0,p.a); ctx.fillStyle=p.c; rrect(p.x,p.y,5,5,2); ctx.fill(); ctx.globalAlpha=1; }); }
 
-/* ---------- Speech (DE) ---------- */
-let voiceDE=null, voicesReady=false, speechWarmed=false;
-function waitForVoices(){
-  return new Promise(resolve=>{
-    const tryLoad=()=>{ const vs=speechSynthesis.getVoices(); if(vs&&vs.length){ resolve(vs);} else { setTimeout(tryLoad,120);} };
-    if(speechSynthesis.onvoiceschanged!==undefined){ speechSynthesis.onvoiceschanged=tryLoad; }
-    tryLoad();
-  });
+/* ---------- Speech (DE) — iPad-safe ---------- */
+const IS_IOS = (() => {
+  const ua = navigator.userAgent || "";
+  const iOS = /iPad|iPhone|iPod/.test(ua);
+  const iPadOS = navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+  return iOS || iPadOS;
+})();
+
+let voiceDE = null;
+let ttsReady = false;
+let ttsWarmed = false;
+
+function getVoicesSafe() {
+  try { return speechSynthesis.getVoices() || []; }
+  catch { return []; }
 }
-function pickDE(voices){
-  const de = voices.filter(v=> /^de([-_]|$)/i.test(v.lang||"") || /Deutsch|German/i.test(v.name||""));
-  const local = de.filter(v=> v.localService && !/online|cloud|natural/i.test(v.name||""));
-  const prefer = ['Anna','Katja','Conrad','Sabine','Google Deutsch','Microsoft Karsten','Microsoft Katja'];
-  voiceDE = (local.find(v=> prefer.some(n=> (v.name||"").includes(n))) || local[0] || de[0] || null);
+
+function pickDE(voices) {
+  const de = voices.filter(v =>
+    /^de([-_]|$)/i.test(v.lang || "") || /Deutsch|German/i.test(v.name || "")
+  );
+  // prefer common local names if present
+  const prefer = ['Anna','Katja','Conrad','Sabine','Microsoft','Google','Siri'];
+  voiceDE = (de.find(v => prefer.some(n => (v.name||"").includes(n))) || de[0] || null);
 }
+
+/** Warm TTS once on a real user gesture (iOS requires this) */
+function initTTSOnce() {
+  if (ttsWarmed) return;
+  ttsWarmed = true;
+
+  // 1) speak a tiny utterance so iOS populates voices
+  const u = new SpeechSynthesisUtterance(".");
+  u.lang = "de-DE";
+  u.rate = 0.75;
+  u.volume = 0.001; // nearly silent
+
+  u.onend = () => {
+    const vs = getVoicesSafe();
+    if (vs.length) { pickDE(vs); ttsReady = true; }
+  };
+
+  try { speechSynthesis.speak(u); } catch (_) {}
+
+  // 2) also poll once more shortly in case onend doesn't fire
+  setTimeout(() => {
+    if (!ttsReady) {
+      const vs = getVoicesSafe();
+      if (vs.length) { pickDE(vs); ttsReady = true; }
+    }
+  }, 400);
+
+  // iOS sometimes fires onvoiceschanged late—hook it too
+  try {
+    speechSynthesis.onvoiceschanged = () => {
+      const vs = getVoicesSafe();
+      if (vs.length) { pickDE(vs); ttsReady = true; }
+    };
+  } catch (_) {}
+}
+
 function resumeSpeech(){ try{ if(speechSynthesis.paused) speechSynthesis.resume(); }catch(_){ } }
-async function ensureVoicesReady(){ if(voicesReady) return; const vs = await waitForVoices(); pickDE(vs); voicesReady=true; }
-function warmSpeechOnce(){ if(speechWarmed||!voicesReady) return; speechWarmed=true; speakDe('ja',{volume:0.001}); }
-function speakDe(text, opts={}){ if(!('speechSynthesis' in window) || !voicesReady) return;
-  resumeSpeech(); const u=new SpeechSynthesisUtterance(text); if(voiceDE){u.voice=voiceDE; u.lang=voiceDE.lang||'de-DE'; } else {u.lang='de-DE';}
-  u.rate=opts.rate ?? 0.7; u.pitch=opts.pitch ?? 1; u.volume=opts.volume ?? 1;
-  try{ if(speechSynthesis.speaking) speechSynthesis.cancel(); speechSynthesis.speak(u);}catch(_){}
+
+/** Main speak helper — robust on iPad */
+function speakDe(text, opts = {}) {
+  if (!('speechSynthesis' in window) || !text) return;
+
+  // iOS bug: very low rates can drop audio. Clamp to safe range.
+  const desiredRate = opts.rate ?? 0.7;
+  const safeRate = Math.max(IS_IOS ? 0.35 : 0.25, Math.min(1.6, desiredRate));
+
+  const runSpeak = () => {
+    const u = new SpeechSynthesisUtterance(text);
+    if (voiceDE) { u.voice = voiceDE; u.lang = voiceDE.lang || 'de-DE'; }
+    else { u.lang = 'de-DE'; }
+
+    u.rate   = safeRate;
+    u.pitch  = opts.pitch ?? 1;
+    u.volume = opts.volume ?? 1;
+
+    // iOS quirk: if we just cancelled, speak on next tick
+    if (speechSynthesis.speaking) {
+      try { speechSynthesis.cancel(); } catch (_){}
+      setTimeout(() => { try { speechSynthesis.speak(u); } catch(_){ } }, 0);
+    } else {
+      try { speechSynthesis.speak(u); } catch(_){ }
+    }
+  };
+
+  // don't block on ttsReady—try to speak; the voice will be picked when ready
+  resumeSpeech();
+  runSpeak();
 }
+
+/** Keep your existing primeAudio() call but let it warm TTS reliably */
+function primeAudio(){
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  ensureAC(); // your WebAudio unlock
+  initTTSOnce();
+}
+
 function speakChunk(chunk){
   if (!chunk) return;
   const lc = chunk.toLowerCase();
@@ -225,9 +331,13 @@ function speakChunk(chunk){
   const V_LONG = { a:'ah', e:'eh', i:'ih', o:'oh', u:'uh', ä:'äh', ö:'öh', ü:'üh' };
   const C_LONG = { m:'m', n:'n', s:'s', l:'l', f:'f', r:'r', z:'z', h:'h' };
   let text = isSingle ? (V_LONG[lc] || C_LONG[lc] || lc) : lc;
-  speakDe(text, { rate: 0.65 });
+  speakDe(text, { rate: 0.65 }); // will be clamped on iOS if too low
 }
-document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') resumeSpeech(); });
+
+document.addEventListener('visibilitychange', ()=> {
+  if (document.visibilityState==='visible') resumeSpeech();
+});
+
 
 /* ---------- Data ---------- */
 const GRAPHEMES = ['m','a','p','o','n','i','s','t','l','ei'];
@@ -424,6 +534,8 @@ class HomeScene extends Scene{
   draw(){
     drawSidebar(this.id);
     const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const CW=W-sbw;
+    
+    ctx.fillStyle='#e6ebf2'; ctx.font='20px system-ui'; ctx.fillText('LeseSpaß', 26, 44);
     ctx.fillStyle='rgba(255,255,255,0.96)'; ctx.font=(CW>520? 'bold 46px' : 'bold 34px')+' system-ui';
     const title='LeseSpaß'; ctx.fillText(title, sbw+(CW-ctx.measureText(title).width)/2, H*0.18);
     ctx.font='18px system-ui'; ctx.fillStyle='var(--ink-dim)'; const sub='Lerne Lesen mit Silben — kurz, spielerisch, persönlich.';
