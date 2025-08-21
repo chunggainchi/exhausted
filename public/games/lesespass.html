@@ -310,50 +310,59 @@ function resumeEngineIfNeeded() {
 
 async function speak(text, { voice, lang, rate = 0.92, pitch = 1, volume = 1 } = {}) {
   if (!('speechSynthesis' in window) || !voicesReady) return;
-  
-  // 1. STOP the rendering loop immediately.
-  // This gives the browser's speech engine a clear run.
+
+  // 1. STOP the rendering loop to prevent interference.
   if (animationFrameId) {
     cancelAnimationFrame(animationFrameId);
-    animationFrameId = null; // Clear the ID
+    animationFrameId = null;
   }
 
-  resumeEngineIfNeeded();
-  
-  const utterance = new SpeechSynthesisUtterance(text);
-  if (voice) { 
-    utterance.voice = voice; 
-    utterance.lang = voice.lang || lang || utterance.lang; 
-  } else if (lang) { 
-    utterance.lang  = lang; 
-  }
-  utterance.rate = rate;
-  utterance.pitch = pitch;
-  utterance.volume = volume;
+  // A flag to ensure the loop is resumed only ONCE.
+  let hasResumed = false;
 
-  // 2. Define a function to RESUME the loop.
-  // This will be called when the speech is done or fails.
+  // The function that will restart our game loop.
   const resumeLoop = () => {
-    // Ensure we don't start multiple loops by accident
+    if (hasResumed) return; // Prevent this from running multiple times
+    hasResumed = true;
     if (!animationFrameId) {
       animationFrameId = requestAnimationFrame(loop);
     }
   };
 
-  // 3. Attach the resume function to the utterance events.
-  utterance.onend = resumeLoop;
+  // 2. THE SAFETY NET: If the browser's speech engine gets stuck and never
+  // fires onend/onerror, this timer will forcefully resume the game
+  // loop after 2 seconds to prevent the app from freezing.
+  const safetyNetTimer = setTimeout(resumeLoop, 2000);
+
+  // Set up the utterance
+  resumeEngineIfNeeded();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.voice = voice;
+  utterance.lang = voice ? voice.lang : lang;
+  utterance.rate = rate;
+  utterance.pitch = pitch;
+  utterance.volume = volume;
+
+  // 3. For good browsers, the onend event will fire quickly.
+  // It will resume the loop and also clear the safety net timer.
+  utterance.onend = () => {
+    clearTimeout(safetyNetTimer); // The safety net is no longer needed
+    resumeLoop();
+  };
+
   utterance.onerror = (e) => {
     console.error("Speech Synthesis Utterance Error:", e);
-    resumeLoop(); // Always resume the loop, even if speech fails.
+    clearTimeout(safetyNetTimer); // The safety net is no longer needed
+    resumeLoop();
   };
 
   try {
-    // Still good practice to cancel any prior utterance
-    speechSynthesis.cancel(); 
+    speechSynthesis.cancel();
     speechSynthesis.speak(utterance);
   } catch (e) {
     console.error("Speech Synthesis Error:", e);
-    resumeLoop(); // If the .speak() call itself throws an error, resume the loop.
+    clearTimeout(safetyNetTimer); // The safety net is no longer needed
+    resumeLoop(); // If the speak call itself fails, resume immediately.
   }
 }
 
