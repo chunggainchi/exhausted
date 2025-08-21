@@ -310,17 +310,29 @@ function resumeEngineIfNeeded() {
 
 async function speak(text, { voice, lang, rate = 0.92, pitch = 1, volume = 1 } = {}) {
   if (!('speechSynthesis' in window) || !voicesReady) return;
+  
   resumeEngineIfNeeded();
+  
   const u = new SpeechSynthesisUtterance(text);
-  if (voice) { u.voice = voice; u.lang = voice.lang || lang || u.lang; }
-  else if (lang)  { u.lang  = lang; }
+  if (voice) { 
+    u.voice = voice; 
+    u.lang = voice.lang || lang || u.lang; 
+  } else if (lang) { 
+    u.lang  = lang; 
+  }
   u.rate = rate;
   u.pitch = pitch;
   u.volume = volume;
+
   try {
-    if (speechSynthesis.speaking) speechSynthesis.cancel();
+    // CRUCIAL CHANGE: Always cancel before speaking.
+    // This provides a hard reset to the speech queue, fixing the silent
+    // failure state seen on iOS where .speaking is false but the queue is blocked.
+    speechSynthesis.cancel(); 
     speechSynthesis.speak(u);
-  } catch (_) {}
+  } catch (e) {
+    console.error("Speech Synthesis Error:", e);
+  }
 }
 
 const speakDe = (t, opts = {})=> speak(t, { 
