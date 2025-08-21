@@ -233,20 +233,25 @@ document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==
 const GRAPHEMES = ['m','a','p','o','n','i','s','t','l','ei'];
 
 const WORDS = [
-  { id:'oma',   text:'Oma',   syll:[0,1], g:['o','m','a'],           img:'oma',   tags:['family'], stufe:1 },
-  { id:'opa',   text:'Opa',   syll:[0,1], g:['o','p','a'],           img:'opa',   tags:['family'], stufe:1 },
-  { id:'mama',  text:'Mama',  syll:[0,2], g:['m','a','m','a'],       img:'mama',  tags:['family'], stufe:1 },
-  { id:'papa',  text:'Papa',  syll:[0,2], g:['p','a','p','a'],       img:'papa',  tags:['family'], stufe:1 },
+{ id:'du',  text:'du',  syll:[0,1], g:['d','u'],   img:'du',  tags:['pronoun'], stufe:1 },
+{ id:'im',  text:'im',  syll:[0,1], g:['i','m'],   img:'im',  tags:['preposition'], stufe:1 },
+{ id:'da',  text:'da',  syll:[0,1], g:['d','a'],   img:'da',  tags:['adverb'], stufe:1 },
+{ id:'zu',  text:'zu',  syll:[0,1], g:['z','u'],   img:'zu',  tags:['preposition'], stufe:1 },
+{ id:'ab',  text:'ab',  syll:[0,1], g:['a','b'],   img:'ab',  tags:['preposition'], stufe:1 },
+{ id:'ei',  text:'Ei',  syll:[0,1], g:['E','i'],   img:'ei',  tags:['noun','food'], stufe:1 },
 
-  { id:'eule',  text:'Eule',  syll:[0,2], g:['eu','l','e'],          img:'eule',  tags:['animal'], stufe:1 },
-  { id:'igel',  text:'Igel',  syll:[0,1], g:['i','g','e','l'],       img:'igel',  tags:['animal'], stufe:1 },
-  { id:'rabe',  text:'Rabe',  syll:[0,2], g:['r','a','b','e'],       img:'rabe',  tags:['animal'], stufe:1 },
-
-  { id:'erde',  text:'Erde',  syll:[0,2], g:['e','r','d','e'],       img:'erde',  tags:['nature'], stufe:1 },
-  { id:'kette', text:'Kette', syll:[0,3], g:['k','e','tt','e'],      img:'kette', tags:['object'], stufe:1 },
-  { id:'ohren', text:'Ohren', syll:[0,2], g:['o','h','r','e','n'],   img:'ohren', tags:['body'],   stufe:1 },
-  { id:'baden', text:'Baden', syll:[0,2], g:['b','a','d','e','n'],   img:'baden', tags:['verb'],   stufe:1 },
-  { id:'garten',text:'Garten',syll:[0,3], g:['g','a','rt','e','n'],  img:'garten',tags:['place'],  stufe:1 },
+  { id:'oma',   text:'Oma',   syll:[0,1], g:['o','m','a'],           img:'oma',   tags:['family'], stufe:2 },
+  { id:'opa',   text:'Opa',   syll:[0,1], g:['o','p','a'],           img:'opa',   tags:['family'], stufe:2 },
+  { id:'mama',  text:'Mama',  syll:[0,2], g:['m','a','m','a'],       img:'mama',  tags:['family'], stufe:2 },
+  { id:'papa',  text:'Papa',  syll:[0,2], g:['p','a','p','a'],       img:'papa',  tags:['family'], stufe:2 },
+  { id:'eule',  text:'Eule',  syll:[0,2], g:['eu','l','e'],          img:'eule',  tags:['animal'], stufe:2 },
+  { id:'igel',  text:'Igel',  syll:[0,1], g:['i','g','e','l'],       img:'igel',  tags:['animal'], stufe:2 },
+  { id:'rabe',  text:'Rabe',  syll:[0,2], g:['r','a','b','e'],       img:'rabe',  tags:['animal'], stufe:2 },
+  { id:'erde',  text:'Erde',  syll:[0,2], g:['e','r','d','e'],       img:'erde',  tags:['nature'], stufe:2 },
+  { id:'kette', text:'Kette', syll:[0,3], g:['k','e','tt','e'],      img:'kette', tags:['object'], stufe:2 },
+  { id:'ohren', text:'Ohren', syll:[0,2], g:['o','h','r','e','n'],   img:'ohren', tags:['body'],   stufe:2 },
+  { id:'baden', text:'Baden', syll:[0,2], g:['b','a','d','e','n'],   img:'baden', tags:['verb'],   stufe:2 },
+  { id:'garten',text:'Garten',syll:[0,3], g:['g','a','rt','e','n'],  img:'garten',tags:['place'],  stufe:2 },
 ];
 
 /* ---------- PHONICS: keys + helpers (no tabs, no examples) ---------- */
@@ -350,6 +355,13 @@ function loadImages(){
 
 /* ---------- Word images (URLs) ---------- */
 const PHOTO_URLS = {
+  du: 'https://images.unsplash.com/photo-1532348904171-919f8b2b7e62?q=80&w=1740&auto=format&fit=crop',
+  im: 'https://www.shutterstock.com/image-vector/boy-playing-hide-seek-box-600nw-762258736.jpg',
+  da: 'https://plus.unsplash.com/premium_photo-1729860559950-da4570b34e21?q=80&w=774&auto=format&fit=crop',
+  zu: 'https://www.shutterstock.com/image-illustration/elegantly-designed-home-entry-featuring-600nw-2434581389.jpg',
+  ab: 'https://bestlifeonline.com/wp-content/uploads/sites/3/2023/05/woman-taking-off-shoes-places-where-take-off.jpg',
+  ei: 'https://images.unsplash.com/photo-1607690424560-35d967d6ad7c?q=80&w=774&auto=format&fit=crop',
+  
   oma:'https://images.unsplash.com/photo-1577048982771-1960014bde8b?q=80&w=776&auto=format&fit=crop',
   opa:'https://images.unsplash.com/photo-1586498024141-1940debde48d?q=80&w=774&auto=format&fit=crop',
   mama:'https://images.unsplash.com/photo-1542385151-efd9000785a0?q=80&w=778&auto=format&fit=crop',
@@ -362,6 +374,7 @@ const PHOTO_URLS = {
   ohren:'https://images.unsplash.com/photo-1516726283839-a493d9f167aa?q=80&w=1740&auto=format&fit=crop',
   baden:'https://images.unsplash.com/photo-1616641179518-fddb553e18df?q=80&w=760&auto=format&fit=crop',
   garten:'https://images.unsplash.com/photo-1594498653385-d5172c532c00?q=80&w=1548&auto=format&fit=crop',
+
 };
 
 /* ---------- Progress ---------- */
