@@ -311,27 +311,49 @@ function resumeEngineIfNeeded() {
 async function speak(text, { voice, lang, rate = 0.92, pitch = 1, volume = 1 } = {}) {
   if (!('speechSynthesis' in window) || !voicesReady) return;
   
+  // 1. STOP the rendering loop immediately.
+  // This gives the browser's speech engine a clear run.
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null; // Clear the ID
+  }
+
   resumeEngineIfNeeded();
   
-  const u = new SpeechSynthesisUtterance(text);
+  const utterance = new SpeechSynthesisUtterance(text);
   if (voice) { 
-    u.voice = voice; 
-    u.lang = voice.lang || lang || u.lang; 
+    utterance.voice = voice; 
+    utterance.lang = voice.lang || lang || utterance.lang; 
   } else if (lang) { 
-    u.lang  = lang; 
+    utterance.lang  = lang; 
   }
-  u.rate = rate;
-  u.pitch = pitch;
-  u.volume = volume;
+  utterance.rate = rate;
+  utterance.pitch = pitch;
+  utterance.volume = volume;
+
+  // 2. Define a function to RESUME the loop.
+  // This will be called when the speech is done or fails.
+  const resumeLoop = () => {
+    // Ensure we don't start multiple loops by accident
+    if (!animationFrameId) {
+      animationFrameId = requestAnimationFrame(loop);
+    }
+  };
+
+  // 3. Attach the resume function to the utterance events.
+  utterance.onend = resumeLoop;
+  utterance.onerror = (e) => {
+    console.error("Speech Synthesis Utterance Error:", e);
+    resumeLoop(); // Always resume the loop, even if speech fails.
+  };
 
   try {
-    // CRUCIAL CHANGE: Always cancel before speaking.
-    // This provides a hard reset to the speech queue, fixing the silent
-    // failure state seen on iOS where .speaking is false but the queue is blocked.
+    // Still good practice to cancel any prior utterance
     speechSynthesis.cancel(); 
-    speechSynthesis.speak(u);
+    speechSynthesis.speak(utterance);
   } catch (e) {
     console.error("Speech Synthesis Error:", e);
+    resumeLoop(); // If the .speak() call itself throws an error, resume the loop.
   }
 }
 
@@ -1400,6 +1422,7 @@ class SoundboardScene extends Scene {
 /* ---------- App Loop & Start ---------- */
 function setScene(s){ activeScene=s; activeScene?.layout?.(); }
 let last=0;
+let animationFrameId = null; // <<< ADD THIS LINE
 function loop(ts){
   const dt=(ts-last)/1000; last=ts;
   ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
@@ -1420,7 +1443,7 @@ function loop(ts){
   ctx.fillText(`Is Speaking: ${speechSynthesis.speaking}`, 10, canvas.clientHeight - 10);
   ctx.restore();
 
-  requestAnimationFrame(loop);
+  animationFrameId = requestAnimationFrame(loop);
 }
 
 (async function start(){
