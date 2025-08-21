@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>LeseSpaß Deutsch (Rebuild)</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Main App Shell Styles */
+        :root { --bg: #0d1117; --ink: #e6ebf2; --ink-dim: #AFB6C3; --accent: #10b981; --accent-2: #34d399; --success: #22c55e; }
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: var(--bg); color: var(--ink); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+        #app-container { display: flex; width: 100%; height: 100%; }
+        #sidebar { width: 230px; height: 100%; background-color: rgba(255, 255, 255, 0.06); padding: 20px 10px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; transition: margin-left 0.3s ease; }
+        #sidebar .nav-btn { width: 100%; padding: 15px; font-size: 18px; color: white; background-image: linear-gradient(to right, #334155, #475569); border: none; border-radius: 14px; cursor: pointer; text-align: left; }
+        #sidebar .nav-btn.active { background-image: linear-gradient(to right, var(--accent), var(--accent-2)); font-weight: bold; }
+        #main-content { flex-grow: 1; height: 100%; position: relative; }
+        .scene { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: none; flex-direction: column; justify-content: flex-start; align-items: center; padding: 20px; box-sizing: border-box; gap: 20px; overflow-y: auto; }
+        .scene.active { display: flex; }
+        @media (max-width: 850px) { #sidebar { position: fixed; z-index: 1000; margin-left: -230px; } #sidebar.open { margin-left: 0; } #burger-btn { display: block; position: fixed; top: 15px; left: 15px; z-index: 1001; width: 48px; height: 48px; background-color: rgba(255,255,0.1); border: none; border-radius: 12px; color: white; font-size: 24px; } #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; } #overlay.active { display: block; } }
+        #burger-btn { display: none; }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <nav id="sidebar"></nav>
+        <main id="main-content">
+            <div id="home-scene" class="scene"><h1>LeseSpaß Deutsch</h1></div>
+            <div id="wordlab-scene" class="scene"></div>
+            <!-- Other scenes can be added here later -->
+        </main>
+    </div>
+    <button id="burger-btn">☰</button>
+    <div id="overlay"></div>
+
+    <!-- Main App Logic -->
+    <script src="app.js"></script>
+    <!-- Scene-Specific Logic -->
+    <script src="wordlab.js"></script>
+</body>
+</html>
