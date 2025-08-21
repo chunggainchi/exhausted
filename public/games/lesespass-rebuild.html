@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>LeseSpaß Rebuild Test</title>
+  <style>
+    :root {
+      --bg: #0d1117; --ink: #e6ebf2; --ink-dim: #AFB6C3; --accent: #10b981; --accent-2: #34d399;
+    }
+    html, body { margin: 0; height: 100%; background: var(--bg); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color: var(--ink); }
+    canvas { display: block; width: 100vw; height: 100vh; touch-action: none; background: radial-gradient(1200px 800px at 70% 20%, rgba(16,185,129,0.12), transparent 50%), radial-gradient(900px 600px at 30% 80%, rgba(52,211,153,0.1), transparent 50%), var(--bg); }
+    #debug-log { position: fixed; bottom: 0; left: 0; right: 0; max-height: 25vh; overflow-y: auto; background: rgba(0,0,0,0.7); color: #fff; font-family: monospace; font-size: 12px; padding: 5px; pointer-events: none; }
+    #debug-log p { margin: 2px 5px; }
+    #debug-log .error { color: #ff6b6b; }
+    #debug-log .success { color: #6bff95; }
+  </style>
+</head>
+<body>
+<canvas id="app"></canvas>
+<div id="debug-log"></div>
+
+<script>
+/* ===========================================================
+   LeseSpaß Rebuild - Test 1: Home + Soundboard
+   Built on the proven TTS Test foundation.
+   =========================================================== */
+
+/* ---------- Debug Logger ---------- */
+const logDiv = document.getElementById('debug-log');
+function log(message, type = '') {
+    const p = document.createElement('p');
+    p.textContent = `> ${new Date().toLocaleTimeString()}: ${message}`;
+    if (type) p.className = type;
+    logDiv.prepend(p);
+    console.log(message);
+}
+
+/* ---------- Speech Engine (from TTS Test) ---------- */
+let voiceDE = null;
+let voicesReady = false;
+
+function waitForVoices() {
+    return new Promise(resolve => {
+        const checkVoices = () => {
+            const voices = speechSynthesis.getVoices();
+            if (voices.length > 0) {
+                resolve(voices);
+                return;
+            }
+        };
+        speechSynthesis.onvoiceschanged = checkVoices;
+        checkVoices(); // Initial check
+    });
+}
+
+async function initializeSpeech() {
+    if (!('speechSynthesis' in window)) {
+        log('FATAL: Web Speech API not supported.', 'error');
+        return;
+    }
+    log('Speech engine initializing...');
+    
+    // This silent utterance is critical on mobile to "wake up" the API.
+    speechSynthesis.speak(new SpeechSynthesisUtterance(''));
+
+    const allVoices = await waitForVoices();
+    log(`Found ${allVoices.length} total voices.`);
+    
+    const germanVoices = allVoices.filter(v => v.lang.startsWith('de'));
+    if (germanVoices.length === 0) {
+        log('FATAL: No German voices found on this device.', 'error');
+        return;
+    }
+    
+    log(`Found ${germanVoices.length} German voices.`);
+    // Prioritize a local voice if available
+    voiceDE = germanVoices.find(v => v.localService) || germanVoices[0];
+    log(`Selected German voice: ${voiceDE.name} (${voiceDE.lang})`, 'success');
+    
+    voicesReady = true;
+}
+
+function speak(text, options = {}) {
+    if (!voicesReady || !voiceDE) {
+        log('Speak called but engine is not ready or no voice is selected.', 'error');
+        return;
+    }
+
+    // Always cancel to prevent a stuck queue, a known iOS issue.
+    speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.voice = voiceDE;
+    utterance.lang = voiceDE.lang;
+    utterance.rate = options.rate || 0.85;
+    utterance.pitch = options.pitch || 1;
+    utterance.volume = options.volume || 1;
+    
+    utterance.onstart = () => log(`Speaking: "${text}"`, 'success');
+    utterance.onerror = (e) => log(`Utterance error: ${e.error}`, 'error');
+    utterance.onend = () => log(`Finished: "${text}"`);
+    
+    try {
+        speechSynthesis.speak(utterance);
+    } catch (e) {
+        log(`speechSynthesis.speak() threw an error: ${e.message}`, 'error');
+    }
+}
+
+// Helper for the soundboard
+function speakChunk(chunk) {
+    if (!chunk) return;
+    const lc = chunk.toLowerCase();
+    const isSingle = chunk.length === 1;
+    // Simplified pronunciation map for testing
+    const PRONUNCIATION_MAP = { a:'ah', e:'eh', i:'ih', o:'oh', u:'uh', ä:'äh', ö:'öh', ü:'üh' };
+    let textToSpeak = isSingle ? (PRONUNCIATION_MAP[lc] || lc) : lc;
+    speak(textToSpeak, { rate: 0.75 });
+}
+
+/* ---------- Canvas + Globals ---------- */
+const canvas = document.getElementById('app');
+const ctx = canvas.getContext('2d');
+let DPR = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
+const MOBILE_BREAKPOINT = 850;
+let isMobileView = window.innerWidth <= MOBILE_BREAKPOINT;
+let isNavOpen = false;
+let burgerBox = { x: 12, y: 12, w: 48, h: 48 };
+let activeScene = null;
+
+function resize(){
+    DPR = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
+    canvas.width = Math.floor(window.innerWidth * DPR);
+    canvas.height = Math.floor(window.innerHeight * DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    isMobileView = window.innerWidth <= MOBILE_BREAKPOINT;
+    if(!isMobileView) isNavOpen = false;
+    activeScene?.layout?.();
+}
+window.addEventListener('resize', resize);
+
+/* ---------- UI Helpers ---------- */
+function rrect(x,y,w,h,r){ const rr=Math.min(r,Math.min(w,h)/2); ctx.beginPath(); ctx.moveTo(x+rr,y); ctx.arcTo(x+w,y,x+w,y+h,rr); ctx.arcTo(x+w,y+h,x,y+h,rr); ctx.arcTo(x,y+h,x,y,rr); ctx.arcTo(x,y,x+w,y,rr); ctx.closePath(); }
+function gradient(x,y,w,h,c1,c2){ const g=ctx.createLinearGradient(x,y,x+w,y+h); g.addColorStop(0,c1); g.addColorStop(1,c2); return g; }
+function shadow(fn){ ctx.save(); ctx.shadowColor='rgba(0,0,0,0.45)'; ctx.shadowBlur=18; ctx.shadowOffsetY=8; fn(); ctx.restore(); }
+class Button { constructor(label, emoji, x,y,w,h, onClick){ Object.assign(this, {label, emoji, x, y, w, h, onClick, hover:false}); } contains(px,py){ return px>=this.x && py>=this.y && px<=this.x+this.w && py<=this.y+this.h; } draw(){ const c1=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(); const c2=getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim(); shadow(()=>{ ctx.fillStyle=gradient(this.x,this.y,this.w,this.h,this.hover?c2:c1,this.hover?c1:c2); rrect(this.x,this.y,this.w,this.h,20); ctx.fill(); }); ctx.fillStyle='rgba(255,255,255,0.95)'; ctx.font='20px system-ui'; const txt=`${this.emoji?this.emoji+'  ':''}${this.label}`; const tw=ctx.measureText(txt).width; ctx.fillText(txt, this.x+(this.w-tw)/2, this.y+this.h/2+6); } }
+
+/* ---------- Sidebar / Nav ---------- */
+let navBoxes=[];
+const SIDEBAR_W=230;
+const NAV=[
+    {id:'home',  label:'Home',     emoji:'🏠', scene:()=>new HomeScene()},
+    {id:'soundboard', label:'Soundboard', emoji:'🎛️', scene:()=>new SoundboardScene() },
+];
+function getActiveSidebarWidth(){ return (!isMobileView)? SIDEBAR_W : (isNavOpen? SIDEBAR_W : 0); }
+function drawSidebar(activeId){ const H=canvas.clientHeight, sbw=getActiveSidebarWidth(); if(sbw<=0) return; shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(12,12,sbw-24,H-24,22); ctx.fill(); }); let y=76; navBoxes=[]; NAV.forEach(item=>{ const isActive=item.id===activeId; const h=54, x=22, w=sbw-44; const c1=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(); const c2=getComputedStyle(document.documentElement).getPropertyValue('--accent-2').trim(); shadow(()=>{ ctx.fillStyle=gradient(x,y,w,h,isActive?c1:'#334155',isActive?c2:'#475569'); rrect(x,y,w,h,14); ctx.fill(); }); ctx.fillStyle='white'; ctx.font='18px system-ui'; const txt=`${item.emoji?item.emoji+' ':''}${item.label}`; const tw=ctx.measureText(txt).width; ctx.fillText(txt,x+Math.max(14,(w-tw)/2),y+34); navBoxes.push({x,y,w,h,id:item.id}); y+=h+12; }); }
+function drawBurgerMenu(){ if(!isMobileView) return; if(isNavOpen){ ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(getActiveSidebarWidth(),0,canvas.clientWidth,canvas.clientHeight); } const {x,y,w,h}=burgerBox; shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.08)'; rrect(x,y,w,h,12); ctx.fill(); }); ctx.fillStyle='#e6ebf2'; const lineH=3,lineW=22; const lineX=x+(w-lineW)/2; let lineY=y+(h-lineH)/2-7; rrect(lineX,lineY,lineW,lineH,1.5); ctx.fill(); lineY+=7; rrect(lineX,lineY,lineW,lineH,1.5); ctx.fill(); lineY+=7; rrect(lineX,lineY,lineW,lineH,1.5); ctx.fill(); }
+function handleNavClick(p){ const sbw=getActiveSidebarWidth(); if(sbw<=0) return false; const hit=navBoxes.find(b=> p.x>=b.x && p.x<=b.x+b.w && p.y>=b.y && p.y<=b.y+b.h); if(hit){ const nav=NAV.find(n=>n.id===hit.id); if(nav){ setScene(nav.scene()); if(isMobileView) isNavOpen=false; } return true; } return false; }
+
+/* ---------- Input ---------- */
+let pointer={x:0,y:0,down:false};
+canvas.addEventListener('pointerdown',e=>{ const rect=canvas.getBoundingClientRect(); pointer.x=(e.clientX-rect.left); pointer.y=(e.clientY-rect.top); pointer.down=true; if (isMobileView) { if (pointer.x >= burgerBox.x && pointer.x <= burgerBox.x + burgerBox.w && pointer.y >= burgerBox.y && pointer.y <= burgerBox.y + burgerBox.h) { isNavOpen = !isNavOpen; return; } if (isNavOpen && pointer.x > getActiveSidebarWidth()) { isNavOpen = false; return; } } if(handleNavClick(pointer)) return; activeScene?.onPointer('down', pointer); canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointermove',e=>{ const rect=canvas.getBoundingClientRect(); pointer.x=(e.clientX-rect.left); pointer.y=(e.clientY-rect.top); activeScene?.onPointer('move', pointer); });
+canvas.addEventListener('pointerup',e=>{ pointer.down=false; activeScene?.onPointer('up', pointer); });
+
+/* ---------- Scenes ---------- */
+class Scene{ update(dt){} draw(){} onPointer(t,p){} onKey(k){} layout(){} get id(){return 'scene'} }
+class HomeScene extends Scene{
+    get id(){return 'home';}
+    constructor(){ super(); this.buttons=[]; this.layout(); }
+    layout(){ const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth-sbw, H=canvas.clientHeight; const bw=Math.min(380,W*0.8), bh=56; let y=H*0.4; const X=sbw+(W-bw)/2; this.buttons=[ new Button('Soundboard','🎛️',X,y,bw,bh,()=> setScene(new SoundboardScene())) ]; }
+    draw(){ drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const CW=W-sbw; ctx.fillStyle='rgba(255,255,255,0.96)'; ctx.font=(CW>520? 'bold 46px' : 'bold 34px')+' system-ui'; const title='LeseSpaß'; ctx.fillText(title, sbw+(CW-ctx.measureText(title).width)/2, H*0.25); this.buttons.forEach(b=>{ b.hover=b.contains(pointer.x,pointer.y); b.draw(); }); drawBurgerMenu(); }
+    onPointer(type,p){ if(type!=='down') return; const b=this.buttons.find(b=>b.contains(p.x,p.y)); if(b) b.onClick(); }
+}
+class SoundboardScene extends Scene {
+    get id() { return 'soundboard'; }
+    constructor() { super(); this.keys = []; this.layout(); }
+    layout() {
+        this.keys = [];
+        const VOWELS = ['A','E','I','O','U','Ä','Ö','Ü','EU'];
+        const CONSONANTS = ['M','P','R','B','G','K','T','L','N','D','H','S'];
+        const sbw = getActiveSidebarWidth(); const CW = canvas.clientWidth - sbw;
+        const KEY_MIN_W=92, KEY_H=72, KEY_GAP=16; let x=sbw+KEY_GAP, y=80;
+        const cols = Math.max(3, Math.floor((CW + KEY_GAP) / (KEY_MIN_W + KEY_GAP)));
+        const keyW = (CW - (cols + 1) * KEY_GAP) / cols;
+        const allKeys = VOWELS.concat(CONSONANTS);
+        allKeys.forEach((label, i) => {
+            if (x + keyW > sbw + CW) { x = sbw + KEY_GAP; y += KEY_H + KEY_GAP; }
+            const isVowel = VOWELS.includes(label);
+            this.keys.push({ x, y, w: keyW, h: KEY_H, label, isVowel });
+            x += keyW + KEY_GAP;
+        });
+    }
+    draw() {
+        drawSidebar(this.id);
+        ctx.fillStyle = 'var(--ink-dim)'; ctx.font = '14px system-ui'; ctx.fillText('🎛️ Soundboard — Tippe auf einen Buchstaben zum Hören', getActiveSidebarWidth() + 16, 48);
+        this.keys.forEach(k => {
+            shadow(() => { const c1=k.isVowel?'#e5edf6':'#334155', c2=k.isVowel?'#f5f9ff':'#475569'; ctx.fillStyle = gradient(k.x, k.y, k.w, k.h, c1, c2); rrect(k.x, k.y, k.w, k.h, 18); ctx.fill(); });
+            ctx.fillStyle = k.isVowel ? '#0b1320' : '#e6ebf2'; ctx.font = '28px system-ui'; const tw = ctx.measureText(k.label).width; ctx.fillText(k.label, k.x + (k.w - tw) / 2, k.y + k.h / 2 + 10);
+        });
+        drawBurgerMenu();
+    }
+    onPointer(type, p) {
+        if (type !== 'down') return;
+        const hit = this.keys.find(k => p.x >= k.x && p.x <= k.x + k.w && p.y >= k.y && p.y <= k.y + k.h);
+        if (hit) {
+            log(`Key pressed: ${hit.label}`);
+            speakChunk(hit.label);
+        }
+    }
+}
+
+/* ---------- App Loop & Start ---------- */
+function setScene(s){ activeScene = s; activeScene?.layout?.(); }
+function loop(ts){
+    ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+    activeScene?.draw?.();
+    requestAnimationFrame(loop);
+}
+(async function start(){
+    // First, user must interact with the page. We show a "Click to Start" screen.
+    ctx.fillStyle = 'var(--bg)';
+    ctx.fillRect(0,0,window.innerWidth, window.innerHeight);
+    ctx.fillStyle = 'var(--ink)';
+    ctx.font = '24px system-ui';
+    const msg = 'Klicken zum Starten';
+    ctx.fillText(msg, (window.innerWidth - ctx.measureText(msg).width)/2, window.innerHeight/2);
+    
+    // The app will only fully initialize after the first click.
+    const startHandler = async () => {
+        window.removeEventListener('pointerdown', startHandler);
+        
+        log('User interaction detected. Initializing app...');
+        await initializeSpeech(); // Initialize speech based on the test file
+        resize(); // Initial resize
+        setScene(new HomeScene()); // Set the initial scene
+        requestAnimationFrame(loop); // Start the main game loop
+    };
+    
+    window.addEventListener('pointerdown', startHandler);
+})();
+</script>
+</body>
+</html>
