@@ -341,6 +341,28 @@ function speakChunk(chunk){
   speakDe(text, { rate: 0.75 });
 }
 
+function inspectVoices() {
+  const voices = speechSynthesis.getVoices();
+  if (!voices || !voices.length) {
+    alert('No voices are available yet. The browser might still be loading them. Try clicking again in a moment.');
+    return;
+  }
+  
+  let report = 'Available Voices (' + voices.length + '):\n\n';
+  voices.forEach((v, i) => {
+    report += `${i}: ${v.name} (${v.lang}) ${v.localService ? '[Local]' : '[Network]'}\n`;
+  });
+
+  report += '\n-------------------\n';
+  report += `Your Selected DE Voice: ${voiceDE ? voiceDE.name + ` (${voiceDE.lang})` : 'Not Found!'}\n`;
+  report += `voicesReady Flag: ${voicesReady}\n`;
+  report += `speechWarmed Flag: ${speechWarmed}\n`;
+  report += `Is Speaking Now: ${speechSynthesis.speaking}\n`;
+  report += `Is Paused: ${speechSynthesis.paused}\n`;
+
+  alert(report);
+}
+
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') resumeEngineIfNeeded();
 });
@@ -552,7 +574,8 @@ class HomeScene extends Scene{
       new Button('Soundboard','🎛️',X,y,bw,bh,()=> setScene(new SoundboardScene())),
       new Button('Word Lab','🧱',X,y+=bh+16,bw,bh,()=> setScene(new WordLabStufenScene())),
       new Button('Quiz','🧠',X,y+=bh+16,bw,bh,()=> setScene(new QuizScene())),
-      new Button('Story','📖',X,y+=bh+16,bw,bh,()=> setScene(new StoryOverviewScene()))
+      new Button('Story','📖',X,y+=bh+16,bw,bh,()=> setScene(new StoryOverviewScene())),
+      new Button('Debug Voices', '🐞', X, y += bh + 24, bw, bh, () => inspectVoices())
     ];
   }
   draw(){
@@ -766,6 +789,7 @@ function getAvailableStufen(){
   WORDS.forEach(w=>{ const s=w.stufe||1; m.set(s,(m.get(s)||0)+1); });
   return Array.from(m.entries()).sort((a,b)=>a[0]-b[0]).map(([num,count])=>({num,count}));
 }
+
 
 class QuizScene extends Scene{
   get id(){return 'quiz';}
@@ -1373,6 +1397,17 @@ function loop(ts){
   ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
   activeScene?.draw?.(dt);
   updateParticles(); drawParticles();
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(0, canvas.clientHeight - 55, 250, 55);
+  ctx.fillStyle = '#fff';
+  ctx.font = '12px monospace';
+  ctx.fillText(`Voices Ready: ${voicesReady}`, 10, canvas.clientHeight - 40);
+  ctx.fillText(`Engine Warmed: ${speechWarmed}`, 10, canvas.clientHeight - 25);
+  ctx.fillText(`Is Speaking: ${speechSynthesis.speaking}`, 10, canvas.clientHeight - 10);
+  ctx.restore();
+
   requestAnimationFrame(loop);
 }
 
