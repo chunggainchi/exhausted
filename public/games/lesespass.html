@@ -185,10 +185,11 @@ function handleNavClick(p){
 /* ---------- Input ---------- */
 let pointer={x:0,y:0,down:false};
 let audioUnlocked=false;
+function primeAudio(){ if(audioUnlocked) return; audioUnlocked=true; ensureAC(); try{ speechSynthesis.speak(new SpeechSynthesisUtterance('')); }catch(e){} }
 
 canvas.addEventListener('pointerdown',e=>{
-  // FIX: warm iOS voices on gesture
   primeAudio();
+  warmSpeechOnce(); // This is the key addition from CantoPlay
   pointer.down=true;
   const rect=canvas.getBoundingClientRect(); pointer.x=(e.clientX-rect.left); pointer.y=(e.clientY-rect.top);
   if(isMobileView){
@@ -206,8 +207,8 @@ canvas.addEventListener('pointermove',e=>{
 });
 canvas.addEventListener('pointerup',()=>{ pointer.down=false; activeScene?.onPointer?.('up', pointer); });
 window.addEventListener('keydown',e=>{
-  // FIX: same here
   primeAudio();
+  warmSpeechOnce(); // Also add it here for keyboard users
   if(e.key==='h'){ setScene(new HomeScene()); return; }
   activeScene?.onKey?.(e.key);
 });
@@ -224,97 +225,102 @@ function emitConfetti(x,y,color='#22c55e',n=18){ for(let i=0;i<n;i++){ particles
 function updateParticles(){ for(let i=particles.length-1;i>=0;i--){ const p=particles[i]; p.x+=p.vx; p.y+=p.vy; p.vy+=0.12; p.a-=0.02; if(p.a<=0) particles.splice(i,1);} }
 function drawParticles(){ particles.forEach(p=>{ ctx.globalAlpha=Math.max(0,p.a); ctx.fillStyle=p.c; rrect(p.x,p.y,5,5,2); ctx.fill(); ctx.globalAlpha=1; }); }
 
-/* ---------- Speech (DE) — iPad-safe ---------- */
-const IS_IOS = (() => {
-  const ua = navigator.userAgent || "";
-  const iOS = /iPad|iPhone|iPod/.test(ua);
-  const iPadOS = navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
-  return iOS || iPadOS;
-})();
-
+/* ---------- Speech Engine (from CantoPlay, adapted for German) ---------- */
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent || "");
 let voiceDE = null;
-let ttsReady = false;
-let ttsWarmed = false;
+let voicesReady = false;
+let speechWarmed = false;
 
-function getVoicesSafe() {
-  try { return speechSynthesis.getVoices() || []; }
-  catch { return []; }
-}
-
-function pickDE(voices) {
-  const de = voices.filter(v =>
-    /^de([-_]|$)/i.test(v.lang || "") || /Deutsch|German/i.test(v.name || "")
-  );
-  const prefer = ['Anna','Katja','Conrad','Sabine','Microsoft','Google','Siri'];
-  voiceDE = (de.find(v => prefer.some(n => (v.name||"").includes(n))) || de[0] || null);
-}
-
-function initTTSOnce() {
-  if (ttsWarmed) return;
-  ttsWarmed = true;
-
-  const u = new SpeechSynthesisUtterance(".");
-  u.lang = "de-DE";
-  u.rate = 0.75;
-  u.volume = 0.001;
-
-  u.onend = () => {
-    const vs = getVoicesSafe();
-    if (vs.length) { pickDE(vs); ttsReady = true; }
-  };
-
-  try { speechSynthesis.speak(u); } catch (_) {}
-
-  setTimeout(() => {
-    if (!ttsReady) {
-      const vs = getVoicesSafe();
-      if (vs.length) { pickDE(vs); ttsReady = true; }
+function waitForVoices() {
+  return new Promise(resolve => {
+    const tryLoad = () => {
+      // Use getVoices() which is standard, unlike the old getVoicesSafe()
+      const vs = speechSynthesis.getVoices();
+      if (vs && vs.length) { resolve(vs); }
+      else { setTimeout(tryLoad, 120); }
+    };
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = tryLoad;
     }
-  }, 400);
+    tryLoad();
+  });
+}
+
+function pickVoices(voices) {
+  // Use the more robust voice selection logic from CantoPlay
+  const deVoices = voices.filter(v => /^de([-_]|$)/i.test(v.lang || "") || /Deutsch|German/i.test(v.name || ""));
+  const deLocal = deVoices.filter(v => v.localService && !/online|cloud|natural/i.test((v.name || "")));
+  const preferByName = ['Anna','Katja','Google Deutsch','Conrad','Siri'];
+  const pickByName = (list) => {
+    for (const n of preferByName) {
+      const f = list.find(v => (v.name || "").includes(n));
+      if (f) return f;
+    }
+    return null;
+  };
+  voiceDE = pickByName(deLocal) || deLocal[0] || pickByName(deVoices) || deVoices[0] || null;
+  voicesReady = true;
+}
+
+async function ensureVoicesReady() {
+  if (voicesReady) return;
+  try {
+    const voices = await waitForVoices();
+    pickVoices(voices);
+  } catch (e) {
+    console.error("Could not initialize voices:", e);
+  }
+}
+
+function warmSpeechOnce(){
+  if (speechWarmed || !voicesReady) return;
+  speechWarmed = true;
+  // Speak a short, quiet German word to reduce first-utterance latency on iOS
+  try {
+    speak('ja', { voice: voiceDE, lang: 'de-DE', rate: 1, pitch: 1, volume: 0.001 });
+  } catch(_) {}
+}
+
+function resumeEngineIfNeeded() {
+  try { if (speechSynthesis.paused) speechSynthesis.resume(); } catch (_) {}
+}
+
+async function speak(text, { voice, lang, rate = 1, pitch = 1, volume = 1 } = {}) {
+  if (!('speechSynthesis' in window) || !voicesReady) return;
+  resumeEngineIfNeeded();
+  const u = new SpeechSynthesisUtterance(text);
+  if (voice) {
+    u.voice = voice;
+    u.lang = voice.lang || lang || u.lang;
+  } else if (lang) {
+    u.lang  = lang;
+  }
+  u.rate = rate;
+  u.pitch = pitch;
+  u.volume = volume;
 
   try {
-    speechSynthesis.onvoiceschanged = () => {
-      const vs = getVoicesSafe();
-      if (vs.length) { pickDE(vs); ttsReady = true; }
-    };
+    if (speechSynthesis.speaking) {
+      speechSynthesis.cancel();
+      // On some browsers, a cancelled speak needs a moment before a new one
+      setTimeout(() => speechSynthesis.speak(u), 50);
+    } else {
+      speechSynthesis.speak(u);
+    }
   } catch (_) {}
 }
 
-function resumeSpeech(){ try{ if(speechSynthesis.paused) speechSynthesis.resume(); }catch(_){ } }
-
 function speakDe(text, opts = {}) {
-  if (!('speechSynthesis' in window) || !text) return;
-
   const desiredRate = opts.rate ?? 0.7;
+  // Use the robust iOS rate clamping from your original code
   const safeRate = Math.max(IS_IOS ? 0.35 : 0.25, Math.min(1.6, desiredRate));
-
-  const runSpeak = () => {
-    const u = new SpeechSynthesisUtterance(text);
-    if (voiceDE) { u.voice = voiceDE; u.lang = voiceDE.lang || 'de-DE'; }
-    else { u.lang = 'de-DE'; }
-
-    u.rate   = safeRate;
-    u.pitch  = opts.pitch ?? 1;
-    u.volume = opts.volume ?? 1;
-
-    if (speechSynthesis.speaking) {
-      try { speechSynthesis.cancel(); } catch (_){}
-      setTimeout(() => { try { speechSynthesis.speak(u); } catch(_){ } }, 0);
-    } else {
-      try { speechSynthesis.speak(u); } catch(_){ }
-    }
-  };
-
-  resumeSpeech();
-  runSpeak();
-}
-
-/** Keep your existing primeAudio() call but let it warm TTS reliably */
-function primeAudio(){
-  if (audioUnlocked) return;
-  audioUnlocked = true;
-  ensureAC(); // your WebAudio unlock
-  initTTSOnce();
+  speak(text, {
+    voice: voiceDE,
+    lang: 'de-DE',
+    rate: safeRate,
+    pitch: opts.pitch ?? 1,
+    volume: opts.volume ?? 1
+  });
 }
 
 function speakChunk(chunk){
@@ -327,8 +333,8 @@ function speakChunk(chunk){
   speakDe(text, { rate: 0.65 });
 }
 
-document.addEventListener('visibilitychange', ()=> {
-  if (document.visibilityState==='visible') resumeSpeech();
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') resumeEngineIfNeeded();
 });
 
 /* ---------- Data ---------- */
@@ -1364,9 +1370,8 @@ function loop(ts){
 
 /* ---------- Start ---------- */
 (async function start(){
-  // FIX: Removed the call to the undefined 'ensureVoicesReady' function.
-  // The new TTS logic initializes on user interaction, so we only need to wait for images here.
-  await loadImages();
+  // This robust startup sequence waits for images AND voices before showing the scene
+  await Promise.all([loadImages(), ensureVoicesReady()]);
   setScene(new HomeScene());
   requestAnimationFrame(loop);
 })();
