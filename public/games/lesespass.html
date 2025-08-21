@@ -239,6 +239,8 @@ const WORDS = [
 { id:'zu',  text:'zu',  syll:[0,1], g:['z','u'],   img:'zu',  tags:['preposition'], stufe:1 },
 { id:'ab',  text:'ab',  syll:[0,1], g:['a','b'],   img:'ab',  tags:['preposition'], stufe:1 },
 { id:'ei',  text:'Ei',  syll:[0,1], g:['E','i'],   img:'ei',  tags:['noun','food'], stufe:1 },
+{ id:'ja',  text:'ja',  syll:[0,1], g:['j','a'],   img:'ja',  tags:['adverb'], stufe:1 },
+{ id:'nö',  text:'nö',  syll:[0,1], g:['n','ö'],   img:'nö',  tags:['adverb'], stufe:1 },
 
   { id:'oma',   text:'Oma',   syll:[0,1], g:['o','m','a'],           img:'oma',   tags:['family'], stufe:2 },
   { id:'opa',   text:'Opa',   syll:[0,1], g:['o','p','a'],           img:'opa',   tags:['family'], stufe:2 },
@@ -361,7 +363,9 @@ const PHOTO_URLS = {
   zu: 'https://www.shutterstock.com/image-illustration/elegantly-designed-home-entry-featuring-600nw-2434581389.jpg',
   ab: 'https://bestlifeonline.com/wp-content/uploads/sites/3/2023/05/woman-taking-off-shoes-places-where-take-off.jpg',
   ei: 'https://images.unsplash.com/photo-1607690424560-35d967d6ad7c?q=80&w=774&auto=format&fit=crop',
-  
+  ja: 'https://images.unsplash.com/photo-1693168058020-fd7445ff87df?q=80&w=687&auto=format&fit=crop',
+  nö: 'https://images.unsplash.com/photo-1693168058063-f8e3474ce214?q=80&w=774&auto=format&fit=crop',
+
   oma:'https://images.unsplash.com/photo-1577048982771-1960014bde8b?q=80&w=776&auto=format&fit=crop',
   opa:'https://images.unsplash.com/photo-1586498024141-1940debde48d?q=80&w=774&auto=format&fit=crop',
   mama:'https://images.unsplash.com/photo-1542385151-efd9000785a0?q=80&w=778&auto=format&fit=crop',
@@ -1078,105 +1082,111 @@ class WordLabDetailScene extends Scene{
 
 // ======== Soundboard tunables (adjust here) ========
 const SOUNDBOARD_RATE = 0.2;   // overall speaking rate (slower = smaller)
-const KEY_MIN_W       = 92;     // min key width
-const KEY_H           = 72;     // key height
-const KEY_GAP         = 16;     // gap between keys
-const FORMULA_W       = 140;    // width of each formula slot
-const FORMULA_H       = 56;     // height of each formula slot
-const FORMULA_GAP     = 18;     // gap between L and R slot
-const FORMULA_TOP_PAD = 30;     // gap below the keys
-const BUTTON_TOP_PAD  = 28;     // gap below the formula row before the buttons
+const KEY_MIN_W       = 92;    // min key width
+const KEY_H           = 72;    // key height
+const KEY_GAP         = 16;    // gap between keys
+const FORMULA_W       = 140;   // width of each formula slot
+const FORMULA_H       = 56;    // height of each formula slot
+const FORMULA_GAP     = 18;    // gap between L and R slot
+const FORMULA_TOP_PAD = 30;    // gap below the keys
+const BUTTON_TOP_PAD  = 28;    // gap below the formula row before the buttons
 
 // ======== Soundboard (all keys visible) ========
-class SoundboardScene extends Scene{
-  get id(){ return 'soundboard'; }
+class SoundboardScene extends Scene {
+  get id() { return 'soundboard'; }
 
-  constructor(){
+  constructor() {
     super();
-    // Visible keys (use your Stufe-1 base; added umlauts + EU)
     this.vowels     = ['A','E','I','O','U','Ä','Ö','Ü','EU'];
     this.consonants = ['M','P','R','B','G','K','T','L','N','D','H','S'];
 
-    this.keys = [];             // {x,y,w,h,label,type}
-    this.formula = [null, null];// selected labels (e.g. 'M','A' or 'EU')
-    this.slotBoxL = null;       // geometry of formula slots
+    this.keys = [];
+    this.formula = [null, null];
+    this.slotBoxL = null;
     this.slotBoxR = null;
 
+    this.isLowercase = false; // 🔑 NEW toggle state
+
     this.btnHear = new Button('Hören','🔊',0,0,160,44,()=>this.playNow());
-    this.btnNew  = new Button('Neu','🧹',  0,0,140,44,()=>this.clear());
+    this.btnNew  = new Button('Neu','🧹',0,0,140,44,()=>this.clear());
+    this.btnCase = new Button('abc','⇅',0,0,100,44,()=>{ // 🔑 toggle button
+      this.isLowercase = !this.isLowercase;
+      this.btnCase.label = this.isLowercase ? 'ABC' : 'abc';
+      this.layout();
+    });
 
     this.layout();
   }
 
-layout(){
-  const sbw = getActiveSidebarWidth();
-  const W   = canvas.clientWidth, H = canvas.clientHeight;
-  const CW  = W - sbw;
+  layout() {
+    const sbw = getActiveSidebarWidth();
+    const W   = canvas.clientWidth, H = canvas.clientHeight;
+    const CW  = W - sbw;
 
-  const topY   = 70;
-  const innerX = sbw + 16;
-  const innerW = CW  - 32;
+    const topY   = 70;
+    const innerX = sbw + 16;
+    const innerW = CW  - 32;
+    const colsFor = (w) => Math.max(3, Math.floor((w + KEY_GAP) / (KEY_MIN_W + KEY_GAP)));
 
-  const colsFor = (w) => Math.max(3, Math.floor((w + KEY_GAP) / (KEY_MIN_W + KEY_GAP)));
+    this.keys = [];
 
-  this.keys = [];
+    // VOWELS
+    const vCount = this.vowels.length;
+    const vCols  = Math.min(vCount, colsFor(innerW));
+    const vKeyW  = Math.max(KEY_MIN_W, (innerW - (vCols + 1) * KEY_GAP) / vCols);
 
-  // VOWELS (wrapping grid)
-  const vCount = this.vowels.length;
-  const vCols  = Math.min(vCount, colsFor(innerW));
-  const vKeyW  = Math.max(KEY_MIN_W, (innerW - (vCols + 1) * KEY_GAP) / vCols);
+    let vx = innerX + KEY_GAP;
+    let vy = topY;
+    this.vowels.forEach((lab, i) => {
+      if (i > 0 && i % vCols === 0) { vx = innerX + KEY_GAP; vy += KEY_H + KEY_GAP; }
+      this.keys.push({ x:vx, y:vy, w:vKeyW, h:KEY_H, label:lab, type:'vowel' });
+      vx += vKeyW + KEY_GAP;
+    });
+    const vRows = Math.ceil(vCount / vCols);
+    let y = topY + vRows * KEY_H + (vRows - 1) * KEY_GAP + KEY_GAP;
 
-  let vx = innerX + KEY_GAP;
-  let vy = topY;
-  this.vowels.forEach((lab, i) => {
-    if (i > 0 && i % vCols === 0) { vx = innerX + KEY_GAP; vy += KEY_H + KEY_GAP; }
-    this.keys.push({ x:vx, y:vy, w:vKeyW, h:KEY_H, label:lab, type:'vowel' });
-    vx += vKeyW + KEY_GAP;
-  });
-  const vRows = Math.ceil(vCount / vCols);
-  let y = topY + vRows * KEY_H + (vRows - 1) * KEY_GAP + KEY_GAP;
+    // CONSONANTS
+    const cCount = this.consonants.length;
+    const cCols  = Math.max(4, colsFor(innerW));
+    const cKeyW  = Math.max(KEY_MIN_W, (innerW - (cCols + 1) * KEY_GAP) / cCols);
 
-  // CONSONANTS (wrapping grid, unchanged logic)
-  const cCount = this.consonants.length;
-  const cCols  = Math.max(4, colsFor(innerW));
-  const cKeyW  = Math.max(KEY_MIN_W, (innerW - (cCols + 1) * KEY_GAP) / cCols);
+    let x = innerX + KEY_GAP;
+    this.consonants.forEach((lab, i) => {
+      if (i > 0 && i % cCols === 0) { x = innerX + KEY_GAP; y += KEY_H + KEY_GAP; }
+      this.keys.push({ x, y, w:cKeyW, h:KEY_H, label:lab, type:'con' });
+      x += cKeyW + KEY_GAP;
+    });
 
-  let x = innerX + KEY_GAP;
-  this.consonants.forEach((lab, i) => {
-    if (i > 0 && i % cCols === 0) { x = innerX + KEY_GAP; y += KEY_H + KEY_GAP; }
-    this.keys.push({ x, y, w:cKeyW, h:KEY_H, label:lab, type:'con' });
-    x += cKeyW + KEY_GAP;
-  });
+    // FORMULA slots
+    const rowBottom = y + KEY_H;
+    const fx = sbw + (CW - (FORMULA_W * 2 + FORMULA_GAP)) / 2;
+    const fy = rowBottom + FORMULA_TOP_PAD;
+    this.slotBoxL = { x: fx, y: fy, w: FORMULA_W, h: FORMULA_H };
+    this.slotBoxR = { x: fx + FORMULA_W + FORMULA_GAP, y: fy, w: FORMULA_W, h: FORMULA_H };
 
-  // FORMULA row below the last key row
-  const rowBottom = y + KEY_H;
-  const fx = sbw + (CW - (FORMULA_W * 2 + FORMULA_GAP)) / 2;
-  const fy = rowBottom + FORMULA_TOP_PAD;
+    // Buttons row
+    const buttonsY = fy + FORMULA_H + BUTTON_TOP_PAD;
+    const totalW   = this.btnHear.w + 16 + this.btnNew.w + 16 + this.btnCase.w;
+    const startX   = sbw + (CW - totalW)/2;
 
-  this.slotBoxL = { x: fx,                      y: fy, w: FORMULA_W, h: FORMULA_H };
-  this.slotBoxR = { x: fx + FORMULA_W + FORMULA_GAP, y: fy, w: FORMULA_W, h: FORMULA_H };
+    this.btnHear.x = startX;                  this.btnHear.y = buttonsY;
+    this.btnNew.x  = startX + this.btnHear.w + 16; this.btnNew.y  = buttonsY;
+    this.btnCase.x = this.btnNew.x + this.btnNew.w + 16; this.btnCase.y = buttonsY;
 
-  // Buttons centered below
-  const buttonsY = fy + FORMULA_H + BUTTON_TOP_PAD;
-  const totalW   = this.btnHear.w + 16 + this.btnNew.w;
-  const startX   = sbw + (CW - totalW)/2;
+    this.contentBottom = buttonsY + this.btnHear.h;
+  }
 
-  this.btnHear.x = startX;                 this.btnHear.y = buttonsY;
-  this.btnNew.x  = startX + this.btnHear.w + 16; this.btnNew.y  = buttonsY;
-
-  this.contentBottom = buttonsY + this.btnHear.h;
-}
-
-
-  // Simple rendering helpers
-  drawKey(k){
+  // Rendering
+  drawKey(k) {
     const isV = k.type==='vowel';
     shadow(()=>{ ctx.fillStyle = gradient(k.x,k.y,k.w,k.h, isV?'#e5edf6':'#334155', isV?'#f5f9ff':'#475569'); rrect(k.x,k.y,k.w,k.h,18); ctx.fill(); });
     ctx.fillStyle = isV? '#0b1320' : '#e6ebf2';
     ctx.font='28px system-ui';
-    const tw=ctx.measureText(k.label).width;
-    ctx.fillText(k.label, k.x+(k.w-tw)/2, k.y+k.h/2+10);
+    const label = this.isLowercase ? k.label.toLowerCase() : k.label; // 🔑 case toggle
+    const tw=ctx.measureText(label).width;
+    ctx.fillText(label, k.x+(k.w-tw)/2, k.y+k.h/2+10);
   }
+
   drawSlot(b, text){
     strokeRRect(b.x,b.y,b.w,b.h,14,2,'rgba(255,255,255,0.35)',[8,6]);
     ctx.save(); ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(b.x,b.y,b.w,b.h,14); ctx.fill(); ctx.restore();
@@ -1193,25 +1203,23 @@ layout(){
     ctx.fillStyle='var(--ink-dim)'; ctx.font='14px system-ui';
     ctx.fillText('🧩 Soundboard — alle Laute sichtbar (Tippen zum Hören, unten verbinden)', sbw+16, 48);
 
-    // Keys
     this.keys.forEach(k=> this.drawKey(k));
 
-    // Formula area
+    // Formula
     this.drawSlot(this.slotBoxL, this.formula[0]||'');
     ctx.fillStyle='#AFB6C3'; ctx.font='12px system-ui'; ctx.fillText('+', this.slotBoxL.x+this.slotBoxL.w+6, this.slotBoxL.y+this.slotBoxL.h/2+9);
     this.drawSlot(this.slotBoxR, this.formula[1]||'');
-   // ctx.fillStyle='#AFB6C3'; ctx.font='26px system-ui'; ctx.fillText('=', this.slotBoxR.x+this.slotBoxR.w+6, this.slotBoxR.y+this.slotBoxR.h/2+9);
 
     // Buttons
-    this.btnHear.hover = this.btnHear.contains(pointer.x,pointer.y);
-    this.btnNew.hover  = this.btnNew.contains(pointer.x,pointer.y);
-    this.btnHear.draw(); this.btnNew.draw();
+    [this.btnHear, this.btnNew, this.btnCase].forEach(btn=>{
+      btn.hover = btn.contains(pointer.x,pointer.y);
+      btn.draw();
+    });
 
     drawBurgerMenu();
   }
 
   speakLetter(label){
-    // Use speakChunk for single letters (long sound), fall back to TTS for digraphs like EU
     if (label.length===1) { speakChunk(label.toLowerCase()); }
     else { speakDe(label.toLowerCase(), { rate: SOUNDBOARD_RATE }); }
   }
@@ -1222,26 +1230,18 @@ layout(){
     if(!left && !right) return;
 
     const combo = `${left||''}${right||''}`.toLowerCase();
-    // Slight cadence: speak both, then whole
     const centerX = (this.slotBoxL.x + this.slotBoxR.x + this.slotBoxR.w)/2;
     const centerY = this.slotBoxL.y + this.slotBoxL.h/2;
-    if(left)  this.speakLetter(left);
-    setTimeout(()=>{ if(right) this.speakLetter(right); }, 250);
-    setTimeout(()=>{ speakDe(combo, { rate: SOUNDBOARD_RATE }); emitConfetti(centerX, centerY, '#34d399', 22); }, 520);
+    setTimeout(()=>{ speakDe(combo, { rate: SOUNDBOARD_RATE }); emitConfetti(centerX, centerY, '#34d399', 22); }, 120);
   }
 
   clear(){ this.formula=[null,null]; }
 
   handlePick(label, px, py){
-    // play the letter’s sound immediately
     this.speakLetter(label);
-
-    // fill into first empty slot
-    if(!this.formula[0])      this.formula[0]=label;
+    if(!this.formula[0]) this.formula[0]=label;
     else if(!this.formula[1]) this.formula[1]=label;
-    else { this.formula=[label,null]; } // start a new pair if both were filled
-
-    // If we now have a pair → success ping + auto play + glitter
+    else { this.formula=[label,null]; }
     if(this.formula[0] && this.formula[1]){
       fxPositive();
       const cx = (this.slotBoxL.x + this.slotBoxR.x + this.slotBoxR.w)/2;
@@ -1253,14 +1253,11 @@ layout(){
 
   onPointer(type,p){
     if(type!=='down') return;
-
-    // Key hits
     const hit = this.keys.find(k=> p.x>=k.x && p.x<=k.x+k.w && p.y>=k.y && p.y<=k.y+k.h);
     if(hit){ this.handlePick(hit.label, p.x, p.y); return; }
-
-    // Buttons
     if(this.btnHear.contains(p.x,p.y)){ this.btnHear.onClick(); return; }
     if(this.btnNew.contains(p.x,p.y)){  this.btnNew.onClick();  return; }
+    if(this.btnCase.contains(p.x,p.y)){ this.btnCase.onClick(); return; }
   }
 
   onKey(key){
@@ -1268,6 +1265,7 @@ layout(){
     if(key===' ') this.playNow();
   }
 }
+
 
 /* ---------- App loop ---------- */
 function setScene(s){ activeScene=s; activeScene?.layout?.(); }
