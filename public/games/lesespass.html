@@ -39,7 +39,9 @@
 const canvas = document.getElementById('app');
 const ctx = canvas.getContext('2d');
 const LOGO = new Image();
-LOGO.src = 'public/images/logo.svg';
+// FIX: most hosts serve static files from root, not /public
+LOGO.src = '/images/logo.svg';
+
 let DPR = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
 
 const MOBILE_BREAKPOINT = 850;
@@ -144,12 +146,9 @@ function drawSidebar(activeId){
     if (pointer.down &&
         pointer.x >= logoX && pointer.x <= logoX + logoW &&
         pointer.y >= logoY && pointer.y <= logoY + logoH) {
-      window.location.href = "https://yourblog.com";
+      window.location.href = "https://exhaustedrocket.com/";
     }
   }
-
-  // small title in sidebar
-  ctx.fillStyle='var(--ink)'; ctx.font='20px system-ui'; ctx.fillText('LeseSpaß',26,44);
 
   // nav
   let y=Math.max(logoBottom, 76); navBoxes=[];
@@ -186,9 +185,11 @@ function handleNavClick(p){
 /* ---------- Input ---------- */
 let pointer={x:0,y:0,down:false};
 let audioUnlocked=false;
-function primeAudio(){ if(audioUnlocked) return; audioUnlocked=true; ensureAC(); try{ speechSynthesis.speak(new SpeechSynthesisUtterance('')); }catch(e){} }
+
 canvas.addEventListener('pointerdown',e=>{
-  primeAudio(); warmSpeechOnce(); pointer.down=true;
+  // FIX: warm iOS voices on gesture
+  primeAudio();
+  pointer.down=true;
   const rect=canvas.getBoundingClientRect(); pointer.x=(e.clientX-rect.left); pointer.y=(e.clientY-rect.top);
   if(isMobileView){
     if(pointer.x >= burgerBox.x && pointer.x <= burgerBox.x + burgerBox.w && pointer.y >= burgerBox.y && pointer.y <= burgerBox.y + burgerBox.h){ isNavOpen=!isNavOpen; return; }
@@ -205,7 +206,8 @@ canvas.addEventListener('pointermove',e=>{
 });
 canvas.addEventListener('pointerup',()=>{ pointer.down=false; activeScene?.onPointer?.('up', pointer); });
 window.addEventListener('keydown',e=>{
-  primeAudio(); warmSpeechOnce();
+  // FIX: same here
+  primeAudio();
   if(e.key==='h'){ setScene(new HomeScene()); return; }
   activeScene?.onKey?.(e.key);
 });
@@ -243,21 +245,18 @@ function pickDE(voices) {
   const de = voices.filter(v =>
     /^de([-_]|$)/i.test(v.lang || "") || /Deutsch|German/i.test(v.name || "")
   );
-  // prefer common local names if present
   const prefer = ['Anna','Katja','Conrad','Sabine','Microsoft','Google','Siri'];
   voiceDE = (de.find(v => prefer.some(n => (v.name||"").includes(n))) || de[0] || null);
 }
 
-/** Warm TTS once on a real user gesture (iOS requires this) */
 function initTTSOnce() {
   if (ttsWarmed) return;
   ttsWarmed = true;
 
-  // 1) speak a tiny utterance so iOS populates voices
   const u = new SpeechSynthesisUtterance(".");
   u.lang = "de-DE";
   u.rate = 0.75;
-  u.volume = 0.001; // nearly silent
+  u.volume = 0.001;
 
   u.onend = () => {
     const vs = getVoicesSafe();
@@ -266,7 +265,6 @@ function initTTSOnce() {
 
   try { speechSynthesis.speak(u); } catch (_) {}
 
-  // 2) also poll once more shortly in case onend doesn't fire
   setTimeout(() => {
     if (!ttsReady) {
       const vs = getVoicesSafe();
@@ -274,7 +272,6 @@ function initTTSOnce() {
     }
   }, 400);
 
-  // iOS sometimes fires onvoiceschanged late—hook it too
   try {
     speechSynthesis.onvoiceschanged = () => {
       const vs = getVoicesSafe();
@@ -285,11 +282,9 @@ function initTTSOnce() {
 
 function resumeSpeech(){ try{ if(speechSynthesis.paused) speechSynthesis.resume(); }catch(_){ } }
 
-/** Main speak helper — robust on iPad */
 function speakDe(text, opts = {}) {
   if (!('speechSynthesis' in window) || !text) return;
 
-  // iOS bug: very low rates can drop audio. Clamp to safe range.
   const desiredRate = opts.rate ?? 0.7;
   const safeRate = Math.max(IS_IOS ? 0.35 : 0.25, Math.min(1.6, desiredRate));
 
@@ -302,7 +297,6 @@ function speakDe(text, opts = {}) {
     u.pitch  = opts.pitch ?? 1;
     u.volume = opts.volume ?? 1;
 
-    // iOS quirk: if we just cancelled, speak on next tick
     if (speechSynthesis.speaking) {
       try { speechSynthesis.cancel(); } catch (_){}
       setTimeout(() => { try { speechSynthesis.speak(u); } catch(_){ } }, 0);
@@ -311,7 +305,6 @@ function speakDe(text, opts = {}) {
     }
   };
 
-  // don't block on ttsReady—try to speak; the voice will be picked when ready
   resumeSpeech();
   runSpeak();
 }
@@ -331,13 +324,12 @@ function speakChunk(chunk){
   const V_LONG = { a:'ah', e:'eh', i:'ih', o:'oh', u:'uh', ä:'äh', ö:'öh', ü:'üh' };
   const C_LONG = { m:'m', n:'n', s:'s', l:'l', f:'f', r:'r', z:'z', h:'h' };
   let text = isSingle ? (V_LONG[lc] || C_LONG[lc] || lc) : lc;
-  speakDe(text, { rate: 0.65 }); // will be clamped on iOS if too low
+  speakDe(text, { rate: 0.65 });
 }
 
 document.addEventListener('visibilitychange', ()=> {
   if (document.visibilityState==='visible') resumeSpeech();
 });
-
 
 /* ---------- Data ---------- */
 const GRAPHEMES = ['m','a','p','o','n','i','s','t','l','ei'];
@@ -366,15 +358,13 @@ const WORDS = [
   { id:'garten',text:'Garten',syll:[0,3], g:['g','a','rt','e','n'],  img:'garten',tags:['place'],  stufe:2 },
 ];
 
-/* ---------- PHONICS: keys + helpers (no tabs, no examples) ---------- */
+/* ---------- PHONICS helpers ---------- */
 const PHONEME_SAY = {
   a:'ah', e:'eh', i:'ih', o:'oh', u:'uh',
   m:'m', n:'n', s:'s', l:'l', f:'f', r:'r', h:'h',
   p:'p', t:'t', k:'k', b:'b', d:'d', g:'g',
   eu:'eu',
 };
-
-// two rows we’ll show at once
 const VOWELS = ['a','e','i','o','u','eu'];
 const CONSONANTS = ['m','p','r','b','g','k','t','l','n','d','h','s'];
 
@@ -383,8 +373,7 @@ function speakPhoneme(key, rate=0.6){
   speakDe(say, { rate });
 }
 
-
-/* ---------- Rainbow highlight helpers (incl. verb inflections) ---------- */
+/* ---------- Rainbow helpers ---------- */
 const EXACT_WORDS = new Set(WORDS.map(w => w.text.toLowerCase()));
 const EXTRA_LEMMAS = ['heulen'];
 const VERB_STEMS = (() => {
@@ -447,19 +436,41 @@ const IMAGES = {};
 let assetsLoaded=0, assetsTotal=WORDS.length + STORIES.reduce((n,s)=> n + s.pages.length, 0);
 function loadImages(){
   return new Promise(resolve=>{
+    let loadedCount = 0;
+    const totalCount = Object.keys(PHOTO_URLS).length + Object.keys(STORY_IMAGES).length;
+    if (totalCount === 0) {
+        resolve();
+        return;
+    }
+    const assetLoaded = () => {
+        loadedCount++;
+        if (loadedCount === totalCount) {
+            resolve();
+        }
+    };
+
     WORDS.forEach(w=>{
-      const img=new Image(); img.crossOrigin='anonymous';
-      img.onload=()=>{ assetsLoaded++; if(assetsLoaded===assetsTotal) resolve(); };
-      img.onerror=()=>{ assetsLoaded++; if(assetsLoaded===assetsTotal) resolve(); };
-      img.src=PHOTO_URLS[w.img]; IMAGES[w.img]=img;
+      if (PHOTO_URLS[w.img]) {
+        const img=new Image(); img.crossOrigin='anonymous';
+        img.onload=assetLoaded;
+        img.onerror=assetLoaded;
+        img.src=PHOTO_URLS[w.img]; IMAGES[w.img]=img;
+      } else {
+        assetLoaded(); // Count as "loaded" if no URL
+      }
     });
+
     STORIES.forEach(st=>{
       st.pages.forEach(p=>{
         const key=p.img, src=STORY_IMAGES[key];
-        const img=new Image(); img.crossOrigin='anonymous';
-        img.onload=()=>{ assetsLoaded++; if(assetsLoaded===assetsTotal) resolve(); };
-        img.onerror=()=>{ assetsLoaded++; if(assetsLoaded===assetsTotal) resolve(); };
-        img.src=src; IMAGES[key]=img;
+        if (src) {
+            const img=new Image(); img.crossOrigin='anonymous';
+            img.onload=assetLoaded;
+            img.onerror=assetLoaded;
+            img.src=src; IMAGES[key]=img;
+        } else {
+            assetLoaded();
+        }
       });
     });
   });
@@ -488,7 +499,6 @@ const PHOTO_URLS = {
   ohren:'https://images.unsplash.com/photo-1516726283839-a493d9f167aa?q=80&w=1740&auto=format&fit=crop',
   baden:'https://images.unsplash.com/photo-1616641179518-fddb553e18df?q=80&w=760&auto=format&fit=crop',
   garten:'https://images.unsplash.com/photo-1594498653385-d5172c532c00?q=80&w=1548&auto=format&fit=crop',
-
 };
 
 /* ---------- Progress ---------- */
@@ -534,8 +544,6 @@ class HomeScene extends Scene{
   draw(){
     drawSidebar(this.id);
     const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const CW=W-sbw;
-    
-    ctx.fillStyle='#e6ebf2'; ctx.font='20px system-ui'; ctx.fillText('LeseSpaß', 26, 44);
     ctx.fillStyle='rgba(255,255,255,0.96)'; ctx.font=(CW>520? 'bold 46px' : 'bold 34px')+' system-ui';
     const title='LeseSpaß'; ctx.fillText(title, sbw+(CW-ctx.measureText(title).width)/2, H*0.18);
     ctx.font='18px system-ui'; ctx.fillStyle='var(--ink-dim)'; const sub='Lerne Lesen mit Silben — kurz, spielerisch, persönlich.';
@@ -587,7 +595,6 @@ class StoryOverviewScene extends Scene{
 const WORDSET_ALL = new Set(WORDS.map(w=> w.text.toLowerCase()));
 const RAINBOW = ['#ff3b30','#ff9500','#ffcc00','#34c759','#007aff','#5856d6','#af52de'];
 
-/* =================== STORY READER (drop-in) =================== */
 class StoryReaderScene extends Scene{
   get id(){ return 'story'; }
 
@@ -599,15 +606,15 @@ class StoryReaderScene extends Scene{
     this.highlightIndex = -1;
     this.readTimers = [];
 
-    // ---- Tunables (adjust anytime) ----
+    // Tunables
     this.btnWidth     = 180;
     this.btnHeight    = 44;
-    this.gapBelowImage= 16;   // image → button
-    this.btnBottomPad = 50;   // button → text
-    this.textLineH    = 60;   // text line height
-    this.textMaxWidth = 900;  // max text block width
-    this.readRate     = 0.45; // full-page read speed
-    this.tapRate      = 0.10; // single-word read speed
+    this.gapBelowImage= 16;
+    this.btnBottomPad = 50;
+    this.textLineH    = 60;
+    this.textMaxWidth = 900;
+    this.readRate     = 0.45;
+    this.tapRate      = 0.10;
 
     this.playBtn = new Button('Vorlesen','🔊',0,0,this.btnWidth,this.btnHeight,()=>this.readCurrent());
   }
@@ -615,24 +622,19 @@ class StoryReaderScene extends Scene{
   page(){ return this.story.pages[this.i]; }
 
   tokenize(text){
-    // words, punctuation, spaces
     const tokens=[]; const re=/[\p{L}ÄÖÜäöüß]+|[^\s\p{L}]+|\s+/gu; let m;
     while((m=re.exec(text))){ tokens.push({t:m[0], isWord:/[\p{L}ÄÖÜäöüß]/u.test(m[0][0])}); }
     return tokens;
   }
 
   readCurrent(){
-    // clear previous timers + highlight
     this.readTimers.forEach(id=>clearTimeout(id));
     this.readTimers.length=0;
     this.highlightIndex=-1;
 
     const text=this.page().text;
-
-    // Use tunable read rate
     speakDe(text,{rate:this.readRate});
 
-    // simple read-along highlight timing
     const words=this.tokenize(text).filter(x=>x.isWord).map(x=>x.t);
     let t=0;
     words.forEach((w,idx)=>{
@@ -649,11 +651,9 @@ class StoryReaderScene extends Scene{
     const W=canvas.clientWidth,H=canvas.clientHeight;
     const CW=W-sbw;
 
-    // header
     ctx.fillStyle='var(--ink-dim)'; ctx.font='14px system-ui';
     ctx.fillText(`📖 ${this.story.title} — Seite ${this.i+1}/${this.story.pages.length}`, sbw+16, 48);
 
-    // image card
     const cardW=Math.min(700,(W-sbw)*0.74);
     const cardH=Math.min(400,H*0.48);
     const x=sbw+(CW-cardW)/2, y=70;
@@ -665,13 +665,11 @@ class StoryReaderScene extends Scene{
       const ix=x+(cardW-dw)/2, iy=y+(cardH-40-dh)/2; ctx.drawImage(img,ix,iy,dw,dh);
     }
 
-    // centered play button (uses tunables)
     this.playBtn.x = sbw + (CW - this.playBtn.w)/2;
     this.playBtn.y = y + cardH + this.gapBelowImage;
     this.playBtn.hover=this.playBtn.contains(pointer.x,pointer.y);
     this.playBtn.draw();
 
-    // text block (uses tunables)
     const text=this.page().text;
     const blockW=Math.min(this.textMaxWidth, CW-80);
     const tx=sbw+(CW-blockW)/2;
@@ -683,26 +681,20 @@ class StoryReaderScene extends Scene{
 
     tokens.forEach((tok)=>{
       const w=ctx.measureText(tok.t).width;
-
-      // wrap to next line when needed
       if(tok.t!=='\n' && cx+w>tx+blockW){ cx=tx; cy+=lineH; }
 
       if(tok.isWord){
         const wordIndex=this.wordBoxes.length;
         const lower = tok.t.toLowerCase();
-
-        // choose rainbow match method (supports your verb-stem helper if present)
         const isRainbow = (typeof isRainbowWord==='function')
           ? isRainbowWord(tok.t)
           : (typeof WORDSET_ALL!=='undefined' && WORDSET_ALL.has(lower));
 
-        // read-along glow
         if(this.highlightIndex===wordIndex){
           ctx.fillStyle='rgba(52,211,153,0.20)';
           rrect(cx-4,cy-(lineH-8),w+8,(lineH-12),8); ctx.fill();
         }
 
-        // draw word (rainbow if match)
         if(isRainbow){
           const grad=ctx.createLinearGradient(cx,0,cx+w,0);
           RAINBOW.forEach((c,j)=> grad.addColorStop(j/(RAINBOW.length-1), c));
@@ -715,16 +707,12 @@ class StoryReaderScene extends Scene{
           ctx.fillStyle='#e6ebf2'; ctx.fillText(tok.t,cx,cy);
         }
 
-        // tappable hitbox
         this.wordBoxes.push({x:cx-2,y:cy-(lineH-6),w:w+4,h:(lineH-10),word:tok.t});
       } else {
-        // punctuation / spaces
         ctx.fillStyle='var(--ink-dim)'; ctx.fillText(tok.t,cx,cy);
       }
 
       cx+=w;
-
-      // sentence break → line break (readability)
       if(!tok.isWord && /[.!?]/.test(tok.t)){
         cx = tx; cy += lineH;
       }
@@ -732,7 +720,6 @@ class StoryReaderScene extends Scene{
 
     ctx.font=prev;
 
-    // on-screen arrows (left/right of content)
     const midY = y + cardH/2;
     this.leftHit  = IconCircle(tx-50,      midY, '⬅');
     this.rightHit = IconCircle(tx+blockW+50,midY, '⮕');
@@ -749,7 +736,6 @@ class StoryReaderScene extends Scene{
 
     const hit=this.wordBoxes.find(b=> p.x>=b.x&&p.x<=b.x+b.w&&p.y>=b.y&&p.y<=b.y+b.h);
     if(hit){
-      // Use tunable tap (single-word) rate
       speakDe(hit.word,{rate:this.tapRate});
       emitConfetti(p.x,p.y,'#34d399',10);
     }
@@ -759,7 +745,6 @@ class StoryReaderScene extends Scene{
   prev(){ this.i=(this.i-1+this.story.pages.length)%this.story.pages.length; this.highlightIndex=-1; this.readTimers.forEach(id=>clearTimeout(id)); }
   onKey(key){ if(key==='ArrowRight'){ this.next(); } if(key==='ArrowLeft'){ this.prev(); } if(key===' '){ this.readCurrent(); } if(key==='Escape'){ setScene(new StoryOverviewScene()); } }
 }
-
 
 /* =============== QUIZ (Text → Bild) =============== */
 function getAvailableStufen(){
@@ -772,26 +757,23 @@ class QuizScene extends Scene{
   get id(){return 'quiz';}
   constructor(){
     super();
-    // Tunables
-    this.steps = 10;        // progress steps to win
-    this.gridGap = 18;      // space between image options
-    this.negTimer = 0;      // red flash timer
+    this.steps = 10;
+    this.gridGap = 18;
+    this.negTimer = 0;
 
-    // State
     this.correct=0;
     this.progress=0;
-    this.selectedStufe = null; // null = all stufen
+    this.selectedStufe = null;
 
-    // UI
     this.playBtn = new Button('Vorlesen','🔊',0,0,180,44,()=> this.speakWord());
     this.dd = { x:0,y:0,w:220,h:40, open:false, items:null };
 
     this.prepareQuestion();
     this.layout();
-    this.qFontPx     = 100; // your big word size
-    this.qTopPad     = 40;  // <— top padding you can tweak
-    this.qBottomGap  = 26;  // gap between big word and the image grid
-    this.qBottomPad  = 50;  // gap between image grid and bottom controls
+    this.qFontPx     = 100;
+    this.qTopPad     = 40;
+    this.qBottomGap  = 26;
+    this.qBottomPad  = 50;
   }
 
   pool(){
@@ -838,11 +820,9 @@ class QuizScene extends Scene{
     drawSidebar(this.id);
     const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth,H=canvas.clientHeight; const CW=W-sbw;
 
-    // Header
     ctx.fillStyle='var(--ink-dim)'; ctx.font='14px system-ui';
     ctx.fillText('🧠 Quiz — Lies das Wort und wähle das passende Bild', sbw+16, 48);
 
-    // Dropdown (Stufe)
     const dd=this.dd;
     const label = this.selectedStufe ? `📚 Stufe ${this.selectedStufe}` : '🌐 Alle Stufen';
     shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.08)'; rrect(dd.x,dd.y,dd.w,dd.h,10); ctx.fill();});
@@ -856,20 +836,17 @@ class QuizScene extends Scene{
       dd.items.forEach((it,idx)=>{ const iy=y+idx*itemH+24; ctx.fillText(it.label, x+12, iy); });
     }
 
-    // Question (big word)
     const q = this.current.text;
     ctx.fillStyle = '#e6ebf2';
     ctx.font = `${this.qFontPx}px system-ui`;
     const qY = 100 + this.qTopPad;
     ctx.fillText(q, sbw + (CW - ctx.measureText(q).width) / 2, qY);
 
-    // Options grid (2x2)
     const gap = 40;
     const gridW = Math.min(CW - 48, 800);
     const tileW = (gridW - gap) / 2;
     const tileH = Math.min(260, tileW * 0.66);
     const gx = sbw + (CW - gridW) / 2;
-
     const gy = qY + this.qBottomGap;
 
     this.options.forEach((opt,i)=>{
@@ -886,7 +863,6 @@ class QuizScene extends Scene{
       opt._box={x,y,w:tileW,h:tileH};
     });
 
-    // Progress bar
     const gridBottom = gy + 2*tileH + gap;
     const trackY = gridBottom + 40;
     const trackX = sbw + 60;
@@ -901,12 +877,10 @@ class QuizScene extends Scene{
     ctx.fillText('🐭', trackX + Math.max(0,(this.progress-0.9))*stepW, trackY+trackH+4);
     ctx.fillText('🧀', trackX + trackW-6, trackY+trackH+4);
 
-    // Bottom controls + stats
     this.playBtn.hover=this.playBtn.contains(pointer.x,pointer.y); this.playBtn.draw();
     ctx.fillStyle='#AFB6C3'; ctx.font='16px system-ui';
     ctx.fillText(`✅ ${this.correct} richtig`, sbw+16, H-16);
 
-    // Wrong flash overlay
     if(this.negTimer>0){
       ctx.globalAlpha=Math.min(0.25,this.negTimer/20);
       ctx.fillStyle='#ef4444';
@@ -921,10 +895,8 @@ class QuizScene extends Scene{
   onPointer(type,p){
     if(type!=='down') return;
 
-    // Vorlesen
     if(this.playBtn.contains(p.x,p.y)){ this.playBtn.onClick(); return; }
 
-    // Dropdown toggle / select
     const dd=this.dd;
     if(p.x>=dd.x && p.x<=dd.x+dd.w && p.y>=dd.y && p.y<=dd.y+dd.h){
       dd.open = !dd.open;
@@ -946,11 +918,9 @@ class QuizScene extends Scene{
         this.prepareQuestion();
         return;
       }
-      // Click outside closes
       dd.open=false; dd.items=null;
     }
 
-    // Pick option
     const hit=this.options.find(o=> p.x>=o._box.x && p.x<=o._box.x+o._box.w && p.y>=o._box.y && p.y<=o._box.y+o._box.h );
     if(!hit) return;
 
@@ -990,7 +960,6 @@ class QuizScene extends Scene{
 }
 
 /* =============== WORD LAB FLOW =============== */
-/* 1) Stufen overview */
 class WordLabStufenScene extends Scene{
   get id(){return 'lab';}
   constructor(){ super(); this.tiles=[]; this.layout(); }
@@ -1023,7 +992,6 @@ class WordLabStufenScene extends Scene{
   }
 }
 
-/* 2) Wörter grid */
 class WordLabCardsScene extends Scene{
   get id(){return 'lab';}
   constructor(stufe){ super(); this.stufe=stufe; this.wordList=WORDS.filter(w=> (w.stufe||1)===stufe); this.tileBoxes=[]; this.scrollY=0; this.pointerStart=null; this.backBtn=new Button('Zur Übersicht','📚',0,0,180,44,()=> setScene(new WordLabStufenScene())); this.layout(); }
@@ -1396,7 +1364,9 @@ function loop(ts){
 
 /* ---------- Start ---------- */
 (async function start(){
-  await Promise.all([loadImages(), ensureVoicesReady()]);
+  // FIX: Removed the call to the undefined 'ensureVoicesReady' function.
+  // The new TTS logic initializes on user interaction, so we only need to wait for images here.
+  await loadImages();
   setScene(new HomeScene());
   requestAnimationFrame(loop);
 })();
