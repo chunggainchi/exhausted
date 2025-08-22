@@ -2,7 +2,7 @@
 
 const soundboard = (() => {
     // --- Data and State ---
-    const VOWELS = ['A','E','I','O','U','Ä','Ö','Ü','EU'];
+    const VOWELS = ['A','E','I','O','U'];
     const CONSONANTS = ['M','P','R','B','G','K','T','L','N','D','H','S'];
     let state = {
         formula: ['', ''],
@@ -71,50 +71,53 @@ const soundboard = (() => {
     // --- Rendering Logic ---
     function render() {
         if (!soundboard.isInitialized) return;
-
+    
         // Render keys with correct case
         dom.keysContainer.querySelectorAll('.soundboard-key').forEach(key => {
-            key.textContent = state.isLowercase ? key.dataset.key.toLowerCase() : key.dataset.key;
+            // --- KEY FIX: Only update the text if it's a letter key ---
+            if (key.dataset.key) {
+                key.textContent = state.isLowercase ? key.dataset.key.toLowerCase() : key.dataset.key;
+            }
         });
-
+    
         // Update formula slots
         dom.formulaSlot1.textContent = state.isLowercase && state.formula[0] ? state.formula[0].toLowerCase() : state.formula[0];
         dom.formulaSlot2.textContent = state.isLowercase && state.formula[1] ? state.formula[1].toLowerCase() : state.formula[1];
-
+    
         // Update case toggle button text
         dom.caseBtn.textContent = state.isLowercase ? 'ABC' : 'abc';
+
+        // The button is disabled if either slot is empty.
+        const isFormulaIncomplete = state.formula[0] === '' || state.formula[1] === '';
+        dom.speakBtn.classList.toggle('disabled', isFormulaIncomplete);
     }
 
     // --- Public init function ---
     function init() {
         if (soundboard.isInitialized) return;
         
+        // KEY CHANGE: The 'sb-controls' div has been removed from the HTML structure.
         const scene = document.getElementById('soundboard-scene');
         scene.innerHTML = `
             <div class="soundboard-container">
                 <h3>🎛️ Soundboard</h3>
-                <div id="sb-keys-container" class="sb-keys-container"></div>
                 <div class="sb-formula-container">
                     <div id="sb-formula-slot-1" class="sb-formula-slot"></div>
                     <div class="sb-formula-plus">+</div>
                     <div id="sb-formula-slot-2" class="sb-formula-slot"></div>
                 </div>
-                <div class="sb-controls">
-                    <button id="sb-case-btn">abc</button>
-                    <button id="sb-speak-btn">🔊 Hören</button>
-                </div>
+                <div id="sb-keys-container" class="sb-keys-container"></div>
             </div>
         `;
         
+        // KEY CHANGE: The control buttons are no longer in the initial DOM lookup.
         dom = {
             keysContainer: document.getElementById('sb-keys-container'),
             formulaSlot1: document.getElementById('sb-formula-slot-1'),
             formulaSlot2: document.getElementById('sb-formula-slot-2'),
-            caseBtn: document.getElementById('sb-case-btn'),
-            speakBtn: document.getElementById('sb-speak-btn'),
         };
-
-        // Create keyboard keys
+    
+        // Create keyboard keys (no change here)
         const allKeys = [...VOWELS, ...CONSONANTS];
         allKeys.forEach(key => {
             const btn = document.createElement('button');
@@ -125,11 +128,26 @@ const soundboard = (() => {
             btn.onclick = () => handleKeyClick(key);
             dom.keysContainer.appendChild(btn);
         });
-
-        // Hook up controls
-        dom.caseBtn.onclick = toggleCase;
-        dom.speakBtn.onclick = playNow;
-        
+    
+        // --- KEY CHANGE: Create the control buttons and add them to the SAME container ---
+    
+        // 1. Create the 'abc' button
+        const caseBtn = document.createElement('button');
+        caseBtn.id = 'sb-case-btn';
+        caseBtn.className = 'soundboard-key'; // Inherit base styles
+        caseBtn.textContent = 'abc';
+        caseBtn.onclick = toggleCase;
+        dom.keysContainer.appendChild(caseBtn);
+        dom.caseBtn = caseBtn; // Add to dom object so render() can find it
+    
+        // 2. Create the 'Hören' button
+        const speakBtn = document.createElement('button');
+        speakBtn.id = 'sb-speak-btn';
+        speakBtn.className = 'soundboard-key'; // Inherit base styles
+        speakBtn.textContent = '🔊 Hören';
+        speakBtn.onclick = playNow;
+        dom.keysContainer.appendChild(speakBtn);
+        dom.speakBtn = speakBtn; // Add to dom object
         
         soundboard.isInitialized = true;
         render();
