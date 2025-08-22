@@ -81,14 +81,14 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
 #soundboard-scene .sb-controls { display: flex; gap: 16px; }
 #soundboard-scene .sb-controls button { font-size: 18px; padding: 12px 25px; border:none; border-radius:14px; background-image: linear-gradient(to right, var(--accent), var(--accent-2)); color: white; cursor: pointer; }
 
-/* --- STORY SCENE (CORRECTED LAYOUT) --- */
+/* --- STORY SCENE (CORRECTED & CONSTRAINED LAYOUT) --- */
 #story-scene .ss-view {
     width: 100%;
     height: 100%;
     display: none;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start; /* Aligns content to the top */
+    justify-content: flex-start;
 }
 
 #story-scene .ss-view.active {
@@ -102,7 +102,7 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
     flex-shrink: 0;
 }
 
-/* --- Overview View (No Changes) --- */
+/* --- Overview View --- */
 #story-scene #ss-overview-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -136,28 +136,35 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
     font-size: 20px;
 }
 
-/* --- Reader View (REVISED AND FIXED) --- */
+/* --- Reader View (REVISED LAYOUT) --- */
 #story-scene #ss-reader-view {
-    gap: 16px; /* Sets vertical spacing between elements */
+    gap: 16px; 
     justify-content: flex-start;
-    padding: 20px; /* Adds padding around the whole view */
+    padding: 20px;
     box-sizing: border-box;
+    width: 100%;
 }
 
-/* NEW: Gallery container for the image and side-arrows */
 #story-scene .sr-gallery {
     display: flex;
-    align-items: center; /* This is the key fix: vertically centers arrows */
+    align-items: center;
     justify-content: center;
-    gap: 16px; /* Adjusts space between arrows and image */
+    gap: 16px;
     width: 100%;
-    max-width: 950px; /* Controls the max overall width */
+    max-width: 950px;
 }
 
 #story-scene #sr-card {
-    flex-grow: 1; /* Allows the card to take available space */
-    max-width: 700px; /* But constrains its maximum size */
+    flex-grow: 1;
+    width: 100%; /* Ensures it fills the gallery space */
+    max-width: 700px;
     aspect-ratio: 16 / 10;
+    
+    /* ===== KEY FIX ===== */
+    /* This prevents the card from ever being taller than 45% of the viewport height. */
+    /* This is the line that stops it from overlapping the text. */
+    max-height: 45vh; 
+    
     background-color: rgba(255, 255, 255, 0.06);
     border-radius: 20px;
     display: flex;
@@ -171,13 +178,13 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
 #story-scene #sr-image {
     max-width: 100%;
     max-height: 100%;
-    object-fit: cover;
+    /* Use object-fit: contain to ensure the whole image is always visible */
+    object-fit: contain; 
     border-radius: 12px;
 }
 
-/* REVISED: Arrow buttons are now simple flex items, not absolutely positioned */
 #story-scene .sr-nav-btn {
-    flex-shrink: 0; /* Prevents buttons from shrinking */
+    flex-shrink: 0;
     font-size: 32px;
     font-weight: 300;
     background: rgba(30, 41, 59, 0.7);
@@ -200,9 +207,8 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
     transform: scale(1.1);
 }
 
-/* REVISED: "Vorlesen" button controls are now in the normal document flow */
 #story-scene #sr-controls {
-    margin: 0; /* Reset margin, spacing is handled by parent gap */
+    margin: 0;
 }
 
 #story-scene #sr-speak-btn {
@@ -215,7 +221,6 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
     cursor: pointer;
 }
 
-/* REVISED: Text Container now sits correctly at the bottom */
 #story-scene #sr-text-container {
     font-size: 28px;
     line-height: 1.7;
@@ -225,11 +230,11 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
 }
 
 #story-scene #sr-text-container .story-line {
-    margin-bottom: 8px; /* Adds a little space between lines */
+    margin-bottom: 8px;
 }
 
 #story-scene #sr-text-container .punctuation {
-    color: var(--ink-dim); /* Style for punctuation */
+    color: var(--ink-dim);
 }
 
 #story-scene #sr-text-container .word {

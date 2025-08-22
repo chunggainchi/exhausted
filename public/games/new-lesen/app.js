@@ -3,29 +3,62 @@
 // --- Speech Engine (Upgraded to be Promise-Based and Async) ---
 let voiceDE = null;
 let voicesReady = false;
+let isSpeechPrimed = false; // Add this flag to track the state
 
 async function initializeSpeech() {
     if (!('speechSynthesis' in window)) {
         console.error("TTS not supported");
         return;
     }
-    document.body.addEventListener('pointerdown', () => {
-        try { speechSynthesis.speak(new SpeechSynthesisUtterance('')); } catch(e) {}
-    }, { once: true });
-    
-    const voices = await new Promise(resolve => {
-        const get = () => { const v = speechSynthesis.getVoices(); if (v.length) resolve(v); };
-        speechSynthesis.onvoiceschanged = get; get();
+
+    // --- PRIMING LOGIC ---
+    // This function will be called on the first user interaction.
+    const primeSpeechEngine = () => {
+        if (isSpeechPrimed) return;
+
+        console.log('User interaction detected. Priming speech engine...');
+        try {
+            const primingUtterance = new SpeechSynthesisUtterance(' '); // Use a single space
+            primingUtterance.volume = 0; // Ensure it's completely silent
+            speechSynthesis.speak(primingUtterance);
+            isSpeechPrimed = true;
+            console.log('Speech engine successfully primed.');
+        } catch (e) {
+            console.error('Speech engine priming failed:', e);
+        }
+    };
+
+    document.body.addEventListener('pointerdown', async () => {
+        primeSpeechEngine(); // Call the priming function
+        try {
+            const voices = await new Promise(resolve => {
+                const get = () => {
+                    const v = speechSynthesis.getVoices();
+                    if (v && v.length) {
+                        resolve(v);
+                    }
+                };
+                // Check if voices are already loaded
+                const initialVoices = speechSynthesis.getVoices();
+                if (initialVoices && initialVoices.length) {
+                    resolve(initialVoices);
+                    return;
+                }
+                speechSynthesis.onvoiceschanged = get;
+            });
+            
+            const deVoices = voices.filter(v => v.lang.startsWith('de'));
+            if (deVoices.length > 0) {
+                voiceDE = deVoices.find(v => v.name.includes('Anna')) || deVoices.find(v => v.localService) || deVoices[0];
+                console.log("Selected German voice:", voiceDE.name);
+                voicesReady = true;
+            } else {
+                console.error("No German voices found.");
+            }
+        } catch (error) {
+            console.error("Could not initialize voices:", error);
+        }
     });
-    
-    const deVoices = voices.filter(v => v.lang.startsWith('de'));
-    if (deVoices.length > 0) {
-        voiceDE = deVoices.find(v => v.name.includes('Anna')) || deVoices.find(v => v.localService) || deVoices[0];
-        console.log("Selected German voice:", voiceDE.name);
-        voicesReady = true;
-    } else {
-        console.error("No German voices found.");
-    }
 }
 
 function speak(text, options = {}) {
