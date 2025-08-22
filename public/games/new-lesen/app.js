@@ -75,7 +75,7 @@ const speakChunk = async (chunk) => {
 // --- App State & Scene Management ---
 const state = { activeScene: 'home' };
 // <<< THIS IS THE ACTUAL CORRECTED ARRAY with 'soundboard' >>>
-const scenes = ['home', 'wordlab', 'quiz', 'soundboard'];
+const scenes = ['home', 'wordlab', 'quiz', 'soundboard', 'story'];
 
 function showScene(sceneId) {
     state.activeScene = sceneId;
@@ -98,6 +98,9 @@ function showScene(sceneId) {
     if (sceneId === 'soundboard' && typeof soundboard.init === 'function' && !soundboard.isInitialized) {
         soundboard.init();
     }
+    if (sceneId === 'story' && typeof story.init === 'function' && !story.isInitialized) {
+        story.init();
+    }
 
     if (window.innerWidth <= 850) {
         document.getElementById('sidebar').classList.remove('open');
@@ -107,7 +110,7 @@ function showScene(sceneId) {
 
 // --- Navigation & Initial Load ---
 document.addEventListener('DOMContentLoaded', async () => {
-    const NAV_ITEMS = [{ id: 'home', label: '🏠 Home' }, { id: 'soundboard', label: '🎛️ Soundboard' }, { id: 'wordlab', label: '🧱 Word Lab' }, { id: 'quiz', label: '🧠 Quiz' }];
+    const NAV_ITEMS = [{ id: 'home', label: '🏠 Home' }, { id: 'soundboard', label: '🎛️ Soundboard' }, { id: 'wordlab', label: '🧱 Word Lab' }, { id: 'quiz', label: '🧠 Quiz' }, { id: 'story', label: '📖 Story' }];
     const sidebar = document.getElementById('sidebar');
 
     const logo = document.createElement('img');

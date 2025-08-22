@@ -1,10 +1,10 @@
-/* style.css - The Complete, Rebuilt, and Scoped Styles */
+/* style.css (FINAL VERSION with all scenes correctly scoped) */
 
 /* --- Main App Shell Styles --- */
 :root { --bg: #0d1117; --ink: #e6ebf2; --ink-dim: #AFB6C3; --accent: #10b981; --accent-2: #34d399; --success: #22c55e; --danger: #ef4444; }
 html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: var(--bg); color: var(--ink); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
 #app-container { display: flex; width: 100%; height: 100%; }
-#sidebar { width: 230px; height: 100%; background-color: rgba(255, 255, 255, 0.06); padding: 20px 10px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; transition: margin-left 0.3s ease; }
+#sidebar { width: 230px; height: 100%; background-color: rgba(255, 255, 255, 0.06); padding: 20px 10px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; transition: margin-left 0.3s ease; z-index: 100; }
 #sidebar .nav-btn { width: 100%; padding: 15px; font-size: 18px; color: white; background-image: linear-gradient(to right, #334155, #475569); border: none; border-radius: 14px; cursor: pointer; text-align: left; }
 #sidebar .nav-btn.active { background-image: linear-gradient(to right, var(--accent), var(--accent-2)); font-weight: bold; }
 #main-content { flex-grow: 1; height: 100%; position: relative; }
@@ -14,9 +14,8 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
 @media (max-width: 850px) { #sidebar { position: fixed; z-index: 1000; margin-left: -230px; } #sidebar.open { margin-left: 0; } #burger-btn { display: block; position: fixed; top: 15px; left: 15px; z-index: 1001; width: 48px; height: 48px; background-color: rgba(255,255,0.1); border: none; border-radius: 12px; color: white; font-size: 24px; } #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; } #overlay.active { display: block; } }
 #burger-btn { display: none; }
 
-
 /* --- WORD LAB SCENE --- */
-#wordlab-scene .wl-view { width: 100%; max-width: 1200px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 20px; box-sizing: border-box; display: none; }
+#wordlab-scene .wl-view { width: 100%; max-width: 1200px; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: flex-start; padding: 20px; box-sizing: border-box; }
 #wordlab-scene .wl-view.active { display: flex; }
 #wordlab-scene .wl-back-btn { position: absolute; top: 25px; right: 25px; font-size: 18px; padding: 12px 20px; border: none; border-radius: 14px; background-image: linear-gradient(to right, var(--accent), var(--accent-2)); color: white; cursor: pointer; z-index: 10; }
 #wordlab-scene #wl-stufen-view { justify-content: center; }
@@ -45,9 +44,8 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
 #wordlab-scene #wl-controls { position: absolute; bottom: 25px; left: 25px; right: 25px; display: flex; justify-content: space-between; }
 #wordlab-scene #wl-controls button { font-size: 18px; padding: 12px 25px; border:none; border-radius:14px; background-image: linear-gradient(to right, var(--accent), var(--accent-2)); color: white; cursor: pointer; }
 
-
 /* --- QUIZ SCENE --- */
-#quiz-scene { justify-content: center; position: relative; }
+#quiz-scene { justify-content: center; }
 #quiz-scene .quiz-header { position: absolute; top: 25px; left: 25px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
 #quiz-scene h3 { margin: 0; font-weight: 500; }
 #quiz-scene .quiz-stufen-select { font-family: inherit; font-size: 16px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--ink-dim); background-color: rgba(255, 255, 255, 0.08); color: var(--ink); }
@@ -68,83 +66,44 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
 #quiz-scene .quiz-correct-counter { font-size: 16px; }
 #quiz-scene .quiz-controls button { font-size: 18px; padding: 12px 25px; border:none; border-radius:14px; background-image: linear-gradient(to right, var(--accent), var(--accent-2)); color: white; cursor: pointer; }
 
+/* --- SOUNDBOARD SCENE --- */
+#soundboard-scene { justify-content: flex-start; }
+#soundboard-scene h3 { margin-bottom: 20px; text-align: center; }
+#soundboard-scene .soundboard-container { width: 100%; max-width: 900px; display: flex; flex-direction: column; align-items: center; gap: 25px; }
+#soundboard-scene .sb-keys-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 16px; width: 100%; }
+#soundboard-scene .soundboard-key { aspect-ratio: 1.25 / 1; border: none; border-radius: 18px; font-size: 28px; font-weight: 500; color: var(--ink); cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.1s, box-shadow 0.2s; }
+#soundboard-scene .soundboard-key:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+#soundboard-scene .soundboard-key.vowel { background-image: linear-gradient(to right, #e5edf6, #f5f9ff); color: #0b1320; }
+#soundboard-scene .soundboard-key.consonant { background-image: linear-gradient(to right, #334155, #475569); color: var(--ink); }
+#soundboard-scene .sb-formula-container { display: flex; align-items: center; gap: 15px; }
+#soundboard-scene .sb-formula-slot { width: 140px; height: 56px; border: 2px dashed var(--ink-dim); border-radius: 14px; display: flex; justify-content: center; align-items: center; font-size: 28px; }
+#soundboard-scene .sb-formula-plus { font-size: 24px; color: var(--ink-dim); }
+#soundboard-scene .sb-controls { display: flex; gap: 16px; }
+#soundboard-scene .sb-controls button { font-size: 18px; padding: 12px 25px; border:none; border-radius:14px; background-image: linear-gradient(to right, var(--accent), var(--accent-2)); color: white; cursor: pointer; }
+
+/* --- STORY SCENE --- */
+#story-scene .ss-view { width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: flex-start; }
+#story-scene .ss-view.active { display: flex; }
+#story-scene h3 { font-weight: 500; }
+#story-scene #ss-overview-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; width: 100%; max-width: 1100px; }
+#story-scene .story-card { background-color: rgba(255, 255, 255, 0.06); border-radius: 18px; padding: 10px; cursor: pointer; transition: transform 0.2s; }
+#story-scene .story-card:hover { transform: scale(1.03); }
+#story-scene .story-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 12px; }
+#story-scene .story-card-title { margin-top: 10px; margin-left: 5px; font-size: 20px; }
+#story-scene #ss-reader-view { gap: 20px; justify-content: center; position: relative; }
+#story-scene #sr-card { width: 100%; max-width: 700px; aspect-ratio: 16 / 10; background-color: rgba(255,255,255,0.06); border-radius: 20px; display: flex; justify-content: center; align-items: center; padding: 15px; box-sizing: border-box; }
+#story-scene #sr-image { max-width: 100%; max-height: 100%; object-fit: cover; border-radius: 12px; }
+#story-scene #sr-text-container { font-size: 30px; line-height: 1.8; max-width: 900px; text-align: center; }
+#story-scene #sr-text-container .word { cursor: pointer; transition: background-color 0.2s; border-radius: 5px; padding: 0 2px; }
+#story-scene #sr-text-container .word:hover { background-color: rgba(255, 255, 255, 0.1); }
+#story-scene #sr-text-container .rainbow-word { font-weight: bold; background: linear-gradient(to right, #ff6b6b, #ffb86b, #ffd56b, #6bff95, #6bb8ff, #b06bff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+#story-scene #sr-controls { position: absolute; bottom: 25px; width: calc(100% - 100px); max-width: 800px; display: flex; justify-content: center; align-items: center; }
+#story-scene .sr-nav-btn { font-size: 28px; background: rgba(255,255,255,0.1); border: none; color: white; width: 52px; height: 52px; border-radius: 50%; cursor: pointer; position: absolute; }
+#story-scene #sr-prev-btn { left: 0; }
+#story-scene #sr-next-btn { right: 0; }
+#story-scene #sr-speak-btn { font-size: 18px; padding: 12px 25px; border:none; border-radius:14px; background-image: linear-gradient(to right, var(--accent), var(--accent-2)); color: white; cursor: pointer; }
 
 /* --- Universal Confetti Styles --- */
 #confetti-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; }
 .confetti { position: absolute; width: 8px; height: 8px; background-color: var(--success); border-radius: 4px; animation: fall 1.5s ease-in forwards; }
 @keyframes fall { from { transform: translateY(0) rotate(0deg); opacity: 1; } to { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
-
-/* --- SOUNDBOARD SCENE --- */
-#soundboard-scene { justify-content: flex-start; }
-#soundboard-scene h3 { margin-bottom: 20px; text-align: center; }
-
-.soundboard-container {
-    width: 100%;
-    max-width: 900px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 25px;
-}
-
-.sb-keys-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
-    gap: 16px;
-    width: 100%;
-}
-
-.soundboard-key {
-    aspect-ratio: 1.25 / 1;
-    border: none;
-    border-radius: 18px;
-    font-size: 28px;
-    font-weight: 500;
-    color: var(--ink);
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    transition: transform 0.1s, box-shadow 0.2s;
-}
-.soundboard-key:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-}
-.soundboard-key.vowel {
-    background-image: linear-gradient(to right, #e5edf6, #f5f9ff);
-    color: #0b1320;
-}
-.soundboard-key.consonant {
-    background-image: linear-gradient(to right, #334155, #475569);
-    color: var(--ink);
-}
-
-.sb-formula-container {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-.sb-formula-slot {
-    width: 140px;
-    height: 56px;
-    border: 2px dashed var(--ink-dim);
-    border-radius: 14px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 28px;
-}
-.sb-formula-plus { font-size: 24px; color: var(--ink-dim); }
-
-.sb-controls {
-    display: flex;
-    gap: 16px;
-}
-.sb-controls button {
-    font-size: 18px;
-    padding: 12px 25px;
-    border:none;
-    border-radius:14px;
-    background-image: linear-gradient(to right, var(--accent), var(--accent-2));
-    color: white;
-    cursor: pointer;
-}
