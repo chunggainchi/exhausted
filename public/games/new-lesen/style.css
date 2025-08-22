@@ -72,35 +72,56 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
 }
 #wordlab-scene .wl-view.active { display: flex; }
 
-/* --- 1. The NEW Shared Header --- */
+/* --- 1. The UNIFIED Shared Header (Right-Aligned Button) --- */
 #wordlab-scene .wl-header {
     display: flex;
     align-items: center;
-    justify-content: center; /* Center title by default */
+    justify-content: center; /* KEY: This truly centers the title */
+    position: relative;        /* KEY: This acts as an anchor for the button */
     width: 100%;
     max-width: 700px;
-    order: -1; /* This moves the header to the top */
-    position: relative; /* Container for the absolute button on desktop */
-    min-height: 50px; /* Ensures space for the title */
+    order: -1;
+    min-height: 50px;
 }
+
 #wordlab-scene .wl-header h3 {
     font-size: 24px;
     font-weight: 500;
     margin: 0;
+    /* With the parent set to justify-content: center, this is now perfectly centered */
 }
-/* THIS IS THE KEY: The back button is positioned absolutely on DESKTOP by default */
+
+/* The old ::after spacer rule can be completely REMOVED. It's no longer needed. */
+
+
+/* --- The UNIFIED Back Button Style (Right-Aligned) --- */
+/* This style now works perfectly on both desktop and mobile */
 #wordlab-scene #wl-back-btn {
+    /* KEY CHANGE: Use absolute positioning to place the button */
     position: absolute;
-    top: 0;
-    right: 0;
+    right: 0; /* Position on the far right of the header */
+    top: 50%; /* Center vertically */
+    transform: translateY(-50%);
+
+    /* The minimal style you liked remains the same */
+    background: rgba(255, 255, 255, 0.1);
     border: none;
-    border-radius: 14px;
-    background-image: linear-gradient(to right, var(--accent), var(--accent-2));
+    border-radius: 12px;
     color: white;
     cursor: pointer;
-    font-size: 18px;
-    padding: 12px 20px;
-    z-index: 10;
+    font-size: 32px;
+    font-weight: 300;
+    line-height: 1;
+    transition: background-color 0.2s;
+    
+    /* Fixed dimensions */
+    width: 48px;
+    height: 48px;
+    padding: 0;
+}
+
+#wordlab-scene #wl-back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
 
@@ -148,44 +169,15 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
 #wordlab-scene #wl-controls button { font-size: 18px; padding: 12px 25px; border:none; border-radius:14px; background-image: linear-gradient(to right, var(--accent), var(--accent-2)); color: white; cursor: pointer; flex-grow: 1; }
 
 
-/* --- 5. MOBILE OVERRIDES for Word Lab --- */
+/* --- 5. MOBILE OVERRIDES for Word Lab (SIMPLIFIED) --- */
 @media (max-width: 850px) {
-    /* Make the back button part of the normal flow */
-    #wordlab-scene #wl-back-btn {
-        position: static;
-    }
+    /*
+     KEY CHANGE: All the specific overrides for .wl-header, .cards-header,
+     .detail-header, and #wl-back-btn have been completely REMOVED.
+     The new unified style above works perfectly on mobile by default.
+    */
 
-    /* Style the header for the CARDS view on mobile */
-    #wordlab-scene .wl-header.cards-header {
-        flex-direction: column;
-        gap: 10px;
-    }
-    #wordlab-scene .wl-header.cards-header #wl-back-btn {
-        width: 100%;
-    }
-
-    /* Style the header for the DETAIL view on mobile */
-    #wordlab-scene .wl-header.detail-header {
-        justify-content: space-between;
-    }
-    #wordlab-scene .wl-header.detail-header #wl-back-btn {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        font-size: 32px;
-        font-weight: 300;
-        line-height: 1;
-        padding: 0;
-        width: 48px;
-        height: 48px;
-        flex-shrink: 0;
-    }
-    /* Invisible element to center the title */
-    #wordlab-scene .wl-header.detail-header::after {
-        content: '';
-        width: 48px;
-    }
-
-    /* General layout adjustments for mobile */
+    /* General layout adjustments for mobile (These remain unchanged) */
     #wordlab-scene #wl-cards-container { 
         grid-template-columns: repeat(3, 1fr); 
         gap: 12px; 
@@ -395,7 +387,8 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
 
 #soundboard-scene .sb-formula-slot { 
     /* KEY CHANGE: Remove the individual borders to create a unified display */
-    border: 2px solid var(--accent-2); 
+    border: 1px solid #f97316;
+    border-radius: 5px; 
     width: 100%; 
     height: 56px; 
     display: flex; 
@@ -472,7 +465,47 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
 
 /* --- 4. Mobile Optimizations (No changes needed, the reordering works perfectly) --- */
 @media (max-width: 850px) {
-    /* ... your existing mobile styles are fine ... */
+    /* Make the entire scene container fill the device's height */
+    #soundboard-scene {
+        height: 100dvh; 
+        padding: 15px;
+        box-sizing: border-box;
+    }
+
+    #soundboard-scene .soundboard-container {
+        height: 100%;
+        gap: 15px;
+        /* KEY CHANGE: Instead of stretching content, arrange it with space between */
+        justify-content: space-between; 
+    }
+
+    /* --- KEY FIX for the Keypad --- */
+    #soundboard-scene .sb-keys-container {
+        /* REMOVED flex-grow and min-height, we no longer want it to stretch */
+        
+        /* Force a 5-column grid */
+        grid-template-columns: repeat(5, 1fr);
+        /* REMOVED grid-auto-rows, the key's aspect ratio will define the row height */
+        
+        gap: 10px;
+    }
+
+    /* --- KEY FIX for the Keys --- */
+    #soundboard-scene .soundboard-key {
+        /* This is the most important change: */
+        /* Restore the aspect ratio to make the keys perfectly square */
+        aspect-ratio: 1 / 1;
+        
+        /* Use a responsive font size */
+        font-size: clamp(16px, 5vw, 24px);
+        border-radius: 12px;
+    }
+
+    /* --- KEY FIX for the Wide Button --- */
+    /* We MUST override the square aspect ratio for the button that spans two columns */
+    #soundboard-scene #sb-speak-btn {
+        aspect-ratio: auto;
+    }
 }
 
 /* --- STORY SCENE (CORRECTED & CONSTRAINED LAYOUT) --- */
