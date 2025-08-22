@@ -11,8 +11,50 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
 .scene { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: none; flex-direction: column; justify-content: flex-start; align-items: center; padding: 20px; box-sizing: border-box; gap: 20px; overflow-y: auto; }
 .scene.active { display: flex; }
 #sidebar-logo { width: 80px; height: auto; margin: 0 auto 20px auto; display: block; cursor: pointer; }
-@media (max-width: 850px) { #sidebar { position: fixed; z-index: 1000; margin-left: -230px; } #sidebar.open { margin-left: 0; } #burger-btn { display: block; position: fixed; top: 15px; left: 15px; z-index: 1001; width: 48px; height: 48px; background-color: rgba(255,255,0.1); border: none; border-radius: 12px; color: white; font-size: 24px; } #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999; } #overlay.active { display: block; } }
-#burger-btn { display: none; }
+
+/* --- Burger Menu / Mobile Responsive Styles --- */
+#burger-btn { 
+    display: none; /* Hidden by default on desktop */
+}
+
+@media (max-width: 850px) { 
+    #sidebar { 
+        position: fixed; 
+        z-index: 1000; 
+        margin-left: -230px; /* Start off-screen */
+    } 
+    #sidebar.open { 
+        margin-left: 0; /* Slide in */
+    } 
+    #burger-btn { 
+        display: block; /* Show the button on mobile */
+        position: fixed; 
+        top: 15px; 
+        left: 15px; 
+        z-index: 1001; 
+        width: 48px; 
+        height: 48px; 
+        background-color: rgba(255, 255, 255, 0.1); 
+        border: none; 
+        border-radius: 12px; 
+        color: white; 
+        font-size: 24px;
+        cursor: pointer;
+    } 
+    #overlay { 
+        display: none; /* Hidden by default */
+        position: fixed; 
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%; 
+        background: rgba(0,0,0,0.5); 
+        z-index: 999; 
+    } 
+    #overlay.active { 
+        display: block; /* Show the overlay when menu is open */
+    } 
+}
 
 /* --- WORD LAB SCENE --- */
 #wordlab-scene .wl-view { width: 100%; max-width: 1200px; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: flex-start; padding: 20px; box-sizing: border-box; }
@@ -102,7 +144,6 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
     flex-shrink: 0;
 }
 
-/* --- Overview View --- */
 #story-scene #ss-overview-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -136,7 +177,6 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
     font-size: 20px;
 }
 
-/* --- Reader View (REVISED LAYOUT) --- */
 #story-scene #ss-reader-view {
     gap: 16px; 
     justify-content: flex-start;
@@ -156,15 +196,10 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
 
 #story-scene #sr-card {
     flex-grow: 1;
-    width: 100%; /* Ensures it fills the gallery space */
+    width: 100%;
     max-width: 700px;
     aspect-ratio: 16 / 10;
-    
-    /* ===== KEY FIX ===== */
-    /* This prevents the card from ever being taller than 45% of the viewport height. */
-    /* This is the line that stops it from overlapping the text. */
     max-height: 45vh; 
-    
     background-color: rgba(255, 255, 255, 0.06);
     border-radius: 20px;
     display: flex;
@@ -178,7 +213,6 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
 #story-scene #sr-image {
     max-width: 100%;
     max-height: 100%;
-    /* Use object-fit: contain to ensure the whole image is always visible */
     object-fit: contain; 
     border-radius: 12px;
 }

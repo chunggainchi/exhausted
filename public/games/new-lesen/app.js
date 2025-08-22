@@ -112,7 +112,6 @@ const scenes = ['home', 'wordlab', 'quiz', 'soundboard', 'story'];
 
 function showScene(sceneId) {
     state.activeScene = sceneId;
-    // This will now correctly hide ALL scenes before showing the new one.
     scenes.forEach(id => {
         const el = document.getElementById(`${id}-scene`);
         if (el) el.classList.remove('active');
@@ -122,19 +121,13 @@ function showScene(sceneId) {
 
     document.querySelectorAll('#sidebar .nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.scene === sceneId));
 
-    if (sceneId === 'wordlab' && typeof wordLab.init === 'function' && !wordLab.isInitialized) {
-        wordLab.init();
-    }
-    if (sceneId === 'quiz' && typeof quiz.init === 'function' && !quiz.isInitialized) {
-        quiz.init();
-    }
-    if (sceneId === 'soundboard' && typeof soundboard.init === 'function' && !soundboard.isInitialized) {
-        soundboard.init();
-    }
-    if (sceneId === 'story' && typeof story.init === 'function' && !story.isInitialized) {
-        story.init();
-    }
+    if (sceneId === 'wordlab' && typeof wordLab.init === 'function' && !wordLab.isInitialized) { wordLab.init(); }
+    if (sceneId === 'quiz' && typeof quiz.init === 'function' && !quiz.isInitialized) { quiz.init(); }
+    if (sceneId === 'soundboard' && typeof soundboard.init === 'function' && !soundboard.isInitialized) { soundboard.init(); }
+    if (sceneId === 'story' && typeof story.init === 'function' && !story.isInitialized) { story.init(); }
 
+    // ===== ADD THIS IMPROVEMENT =====
+    // If we are on a mobile device, close the sidebar after clicking a nav item.
     if (window.innerWidth <= 850) {
         document.getElementById('sidebar').classList.remove('open');
         document.getElementById('overlay').classList.remove('active');
@@ -161,10 +154,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         sidebar.appendChild(btn);
     });
 
+    // ===== ADD THIS NEW BURGER MENU LOGIC =====
     const burgerBtn = document.getElementById('burger-btn');
     const overlay = document.getElementById('overlay');
-    burgerBtn.onclick = () => { sidebar.classList.toggle('open'); overlay.classList.toggle('active'); };
-    overlay.onclick = () => { sidebar.classList.remove('open'); overlay.classList.remove('active'); };
+
+    // When the burger is clicked, toggle the sidebar and overlay
+    burgerBtn.onclick = () => {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+    };
+
+    // When the overlay is clicked, close the sidebar
+    overlay.onclick = () => {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+    };
+    // ===== END OF NEW LOGIC =====
 
     await initializeSpeech();
     showScene('home');

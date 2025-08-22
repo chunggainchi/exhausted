@@ -1,6 +1,6 @@
 {
   "pages": {
-    "/_not-found/page": [
+    "/page": [
       "static/chunks/f3714_next_dist_6e49f801._.js",
       "static/chunks/src_app_favicon_ico_mjs_12e6e8b0._.js",
       "static/chunks/[root-of-the-server]__100e480f._.css",
