@@ -1,1 +1,6 @@
-{}
+{
+  "/blog/category/computer/page": "app/blog/category/computer/page.js",
+  "/blog/computer/canto-play/page": "app/blog/computer/canto-play/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/page": "app/page.js"
+}

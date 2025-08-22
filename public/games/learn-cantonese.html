@@ -107,6 +107,32 @@ const WORDS=[
   {id:'sand', theme:'funny', photo:'sand', yue:'沙灘', de:'Sand', en:'Sand'},
   {id:'book', theme:'funny', photo:'book', yue:'書', de:'Buch', en:'Book'},
   {id:'tree', theme:'funny', photo:'tree', yue:'樹', de:'Baum', en:'Tree'},
+
+  // Body Parts (Körperteile)
+  {id:'head', theme:'bodyparts', photo:'head', yue:'頭', de:'Kopf', en:'Head'},
+  {id:'hair', theme:'bodyparts', photo:'hair', yue:'頭髮', de:'Haare', en:'Hair'},
+  {id:'face', theme:'bodyparts', photo:'face', yue:'面', de:'Gesicht', en:'Face'},
+  {id:'forehead', theme:'bodyparts', photo:'forehead', yue:'額頭', de:'Stirn', en:'Forehead'},
+  {id:'brain', theme:'bodyparts', photo:'brain', yue:'腦', de:'Gehirn', en:'Brain'},
+  {id:'eyes', theme:'bodyparts', photo:'eyes', yue:'眼睛', de:'Augen', en:'Eyes'},
+  {id:'ears', theme:'bodyparts', photo:'ears', yue:'耳仔', de:'Ohren', en:'Ears'},
+  {id:'nose', theme:'bodyparts', photo:'nose', yue:'鼻', de:'Nase', en:'Nose'},
+  {id:'nostrils', theme:'bodyparts', photo:'nostrils', yue:'鼻哥窿', de:'Nasenlöcher', en:'Nostrils'},
+  {id:'mouth', theme:'bodyparts', photo:'mouth', yue:'嘴', de:'Mund', en:'Mouth'},
+  {id:'lips', theme:'bodyparts', photo:'lips', yue:'嘴唇', de:'Lippen', en:'Lips'},
+  {id:'teeth', theme:'bodyparts', photo:'teeth', yue:'牙齒', de:'Zähne', en:'Teeth'},
+  {id:'shoulders', theme:'bodyparts', photo:'shoulders', yue:'膊頭', de:'Schultern', en:'Shoulders'},
+  {id:'back', theme:'bodyparts', photo:'back', yue:'背脊', de:'Rücken', en:'Back'},
+  {id:'arms', theme:'bodyparts', photo:'arms', yue:'手臂', de:'Arme', en:'Arms'},
+  {id:'armpits', theme:'bodyparts', photo:'armpits', yue:'格啦底', de:'Achselhöhlen', en:'Armpits'},
+  {id:'hands', theme:'bodyparts', photo:'hands', yue:'手', de:'Hände', en:'Hands'},
+  {id:'fingers', theme:'bodyparts', photo:'fingers', yue:'手指', de:'Finger', en:'Fingers'},
+  {id:'bum', theme:'bodyparts', photo:'bum', yue:'屁股 Pat Pat', de:'Po', en:'Bum'},
+  {id:'legs', theme:'bodyparts', photo:'legs', yue:'腳', de:'Beine', en:'Legs'},
+  {id:'knees', theme:'bodyparts', photo:'knees', yue:'膝頭哥', de:'Knie', en:'Knees'},
+  {id:'ankle', theme:'bodyparts', photo:'ankle', yue:'腳踭', de:'Knöchel', en:'Ankle'},
+  {id:'toes', theme:'bodyparts', photo:'toes', yue:'腳趾', de:'Zehen', en:'Toes'},
+
 ];
 
 // Themes (categories) for organizing flashcards
@@ -115,7 +141,8 @@ const THEMES=[
   { id:'colors', label:'Farben', emoji:'🎨' },
   { id:'feelings', label:'Gefühle', emoji:'💕' },
   { id:'animals', label:'Tiere', emoji:'🐶' },
-  { id:'funny', label:'Funny', emoji:'😂' },
+  { id:'funny', label:'Lustig', emoji:'😂' },
+  { id:'bodyparts', label:'Körper', emoji:'💪🏻' },
 ];
 
 function getWordsForTheme(themeId){ return WORDS.filter(w=> (w.theme===themeId) || (Array.isArray(w.themes) && w.themes.includes(themeId))); }
@@ -198,7 +225,32 @@ const PHOTO_URLS={
   sugar:'https://images.unsplash.com/photo-1673791031093-eb8eefa60083?q=80&w=1746&auto=format&fit=crop',
   sand:'https://images.unsplash.com/photo-1468413253725-0d5181091126?q=80&w=1740&auto=format&fit=crop',
   book:'https://images.unsplash.com/photo-1491841573634-28140fc7ced7?q=80&w=1740&auto=format&fit=crop',
-  tree:'https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=1740&auto=format&fit=crop'
+  tree:'https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=1740&auto=format&fit=crop',
+  // Body Parts
+  head:'https://images.unsplash.com/photo-1542702937-506268e68902?q=80&w=1752&auto=format&fit=crop',
+  hair:'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=80&w=1738&auto=format&fit=crop',
+  face:'https://images.unsplash.com/photo-1597826322461-9b11d306d08f?q=80&w=774&auto=format&fit=crop',
+  forehead:'https://images.unsplash.com/photo-1589395937646-cc70671eca60?q=80&w=1626&auto=format&fit=crop',
+  brain:'https://images.unsplash.com/photo-1617791160536-598cf32026fb?q=80&w=1528&auto=format&fit=crop',
+  eyes:'https://images.unsplash.com/photo-1495707800306-e240c5a0d65f?q=80&w=1932&auto=format&fit=crop',
+  ears:'https://images.unsplash.com/photo-1602703651892-7f0e73a14302?q=80&w=1740&auto=format&fit=crop',
+  nose:'https://images.unsplash.com/photo-1558812375-47b2c68aafe9?q=80&w=870&auto=format&fit=crop',
+  nostrils:'https://images.unsplash.com/photo-1698522372694-7bf8500a5b63?q=80&w=772&auto=format&fit=crop',
+  mouth:'https://images.unsplash.com/photo-1605992052511-03d7c6cb9c23?q=80&w=522&auto=format&fit=crop',
+  lips:'https://images.unsplash.com/photo-1654374504608-67c4cfe65fca?q=80&w=930&auto=format&fit=crop',
+  teeth:'https://images.unsplash.com/photo-1620775997990-ee3c25938b4c?q=80&w=1740&auto=format&fit=crop',
+  shoulders:'https://images.unsplash.com/photo-1603309288253-08db72e5117d?q=80&w=1734&auto=format&fit=crop',
+  back:'https://images.unsplash.com/photo-1603309288245-c9b16e639aaf?q=80&w=1282&auto=format&fit=crop',
+  arms:'https://images.unsplash.com/photo-1586710743237-1eb35c3c881c?q=80&w=774&auto=format&fit=crop',
+  armpits:'https://images.unsplash.com/photo-1529982491805-82b594419794?q=80&w=774&auto=format&fit=crop',
+  hands:'https://images.unsplash.com/photo-1556848527-f7c548b972b2?q=80&w=1740&auto=format&fit=crop',
+  fingers:'https://images.unsplash.com/photo-1493851449704-07ee5725d916?q=80&w=1742&auto=format&fit=crop',
+  bum:'https://images.unsplash.com/photo-1503075556261-b491bd2adf25?q=80&w=1746&auto=format&fit=crop',
+  legs:'https://images.unsplash.com/photo-1523007404168-10d7bf50b5ad?q=80&w=1740&auto=format&fit=crop',
+  knees:'https://images.unsplash.com/photo-1626623936480-15fd56a295f8?q=80&w=774&auto=format&fit=crop',
+  ankle:'https://images.unsplash.com/photo-1508387104394-d13e1b497f85?q=80&w=1792&auto=format&fit=crop',
+  toes:'https://images.unsplash.com/photo-1588657974041-d092712a1904?q=80&w=1740&auto=format&fit=crop',
+
 };
 
 // ========= App State & Globals =========
