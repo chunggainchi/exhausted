@@ -92,7 +92,7 @@ const soundboard = (() => {
         const scene = document.getElementById('soundboard-scene');
         scene.innerHTML = `
             <div class="soundboard-container">
-                <h3>🎛️ Soundboard — Buchstaben zum Hören tippen</h3>
+                <h3>🎛️ Soundboard</h3>
                 <div id="sb-keys-container" class="sb-keys-container"></div>
                 <div class="sb-formula-container">
                     <div id="sb-formula-slot-1" class="sb-formula-slot"></div>
@@ -100,9 +100,8 @@ const soundboard = (() => {
                     <div id="sb-formula-slot-2" class="sb-formula-slot"></div>
                 </div>
                 <div class="sb-controls">
-                    <button id="sb-clear-btn">🧹 Neu</button>
-                    <button id="sb-speak-btn">🔊 Hören</button>
                     <button id="sb-case-btn">abc</button>
+                    <button id="sb-speak-btn">🔊 Hören</button>
                 </div>
             </div>
         `;
@@ -111,9 +110,8 @@ const soundboard = (() => {
             keysContainer: document.getElementById('sb-keys-container'),
             formulaSlot1: document.getElementById('sb-formula-slot-1'),
             formulaSlot2: document.getElementById('sb-formula-slot-2'),
-            clearBtn: document.getElementById('sb-clear-btn'),
-            speakBtn: document.getElementById('sb-speak-btn'),
             caseBtn: document.getElementById('sb-case-btn'),
+            speakBtn: document.getElementById('sb-speak-btn'),
         };
 
         // Create keyboard keys
@@ -129,9 +127,9 @@ const soundboard = (() => {
         });
 
         // Hook up controls
-        dom.clearBtn.onclick = clearFormula;
-        dom.speakBtn.onclick = playNow;
         dom.caseBtn.onclick = toggleCase;
+        dom.speakBtn.onclick = playNow;
+        
         
         soundboard.isInitialized = true;
         render();

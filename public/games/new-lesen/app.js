@@ -136,7 +136,7 @@ function showScene(sceneId) {
 
 // --- Navigation & Initial Load ---
 document.addEventListener('DOMContentLoaded', async () => {
-    const NAV_ITEMS = [{ id: 'home', label: '🏠 Home' }, { id: 'soundboard', label: '🎛️ Soundboard' }, { id: 'wordlab', label: '🧱 Word Lab' }, { id: 'quiz', label: '🧠 Quiz' }, { id: 'story', label: '📖 Story' }];
+    const NAV_ITEMS = [{ id: 'home', label: '🏠 Home' }, { id: 'soundboard', label: '🎛️ Soundboard' }, { id: 'wordlab', label: '🧪 Word Lab' }, { id: 'quiz', label: '🧠 Quiz' }, { id: 'story', label: '📖 Story' }];
     const sidebar = document.getElementById('sidebar');
 
     const logo = document.createElement('img');
@@ -152,6 +152,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.dataset.scene = item.id;
         btn.onclick = () => showScene(item.id);
         sidebar.appendChild(btn);
+    });
+
+    // This loop creates the mobile navigation buttons on the home screen
+    const mobileNavContainer = document.getElementById('home-mobile-nav');
+    NAV_ITEMS.forEach(item => {
+        // We don't need a "Home" button when we are already on the home page
+        if (item.id === 'home') return;
+
+        const btn = document.createElement('button');
+        btn.className = 'nav-btn'; // Use the same class for consistent styling
+        btn.textContent = item.label;
+        btn.onclick = () => showScene(item.id);
+        mobileNavContainer.appendChild(btn);
     });
 
     // ===== ADD THIS NEW BURGER MENU LOGIC =====

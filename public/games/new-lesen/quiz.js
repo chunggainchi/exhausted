@@ -16,8 +16,39 @@ const quiz = (() => {
 
     // --- Core Logic (Unchanged) ---
     function getWordPool() { if (state.selectedStufe === 'all') { return WORDS; } return WORDS.filter(w => w.stufe === state.selectedStufe); }
-    function prepareQuestion() { state.isAnswered = false; const pool = getWordPool(); if (pool.length === 0) { alert("Keine Wörter für diese Stufe gefunden!"); return; } const questionWord = pool[Math.floor(Math.random() * pool.length)]; state.currentWord = questionWord; const otherWords = WORDS.filter(w => w.id !== questionWord.id); otherWords.sort(() => Math.random() - 0.5); state.options = [questionWord, ...otherWords.slice(0, 3)]; state.options.sort(() => Math.random() - 0.5); speakDe(questionWord.text); render(); }
-    function handleOptionClick(selectedWord, btnElement) { if (state.isAnswered) return; state.isAnswered = true; if (selectedWord.id === state.currentWord.id) { state.correctAnswers++; state.progress = Math.min(state.steps, state.progress + 1); btnElement.classList.add('correct'); if (typeof wordLab.triggerConfetti === 'function') { wordLab.triggerConfetti(); } if (state.progress >= state.steps) { handleWin(); } else { setTimeout(prepareQuestion, 1000); } } else { state.progress = Math.max(0, state.progress - 1); btnElement.classList.add('incorrect'); speakDe("Falsch", {rate: 1.1}); setTimeout(() => { state.isAnswered = false; render(); }, 1000); } render(); }
+    function prepareQuestion() { state.isAnswered = false; const pool = getWordPool(); if (pool.length === 0) { alert("Keine Wörter für diese Stufe gefunden!"); return; } const questionWord = pool[Math.floor(Math.random() * pool.length)]; state.currentWord = questionWord; const otherWords = WORDS.filter(w => w.id !== questionWord.id); otherWords.sort(() => Math.random() - 0.5); state.options = [questionWord, ...otherWords.slice(0, 3)]; state.options.sort(() => Math.random() - 0.5); render(); }
+    function handleOptionClick(selectedWord, btnElement) {
+        if (state.isAnswered) return;
+        state.isAnswered = true;
+    
+        if (selectedWord.id === state.currentWord.id) {
+            // --- KEY ADDITION: Speak the word on a correct answer ---
+            speakDe(selectedWord.text);
+    
+            state.correctAnswers++;
+            state.progress = Math.min(state.steps, state.progress + 1);
+            btnElement.classList.add('correct');
+    
+            if (typeof wordLab.triggerConfetti === 'function') {
+                wordLab.triggerConfetti();
+            }
+    
+            if (state.progress >= state.steps) {
+                handleWin();
+            } else {
+                setTimeout(prepareQuestion, 1200); // Increased delay slightly for better feel
+            }
+        } else {
+            state.progress = Math.max(0, state.progress - 1);
+            btnElement.classList.add('incorrect');
+            speakDe("Falsch", { rate: 1.1 });
+            setTimeout(() => {
+                state.isAnswered = false;
+                render();
+            }, 1000);
+        }
+        render();
+    }
     function handleWin() { speakDe("Super! Du hast die Runde geschafft!"); setTimeout(() => { state.correctAnswers = 0; state.progress = 0; prepareQuestion(); }, 1500); }
 
     // --- Rendering Logic (Unchanged) ---
@@ -48,7 +79,7 @@ const quiz = (() => {
         const scene = document.getElementById('quiz-scene');
         scene.innerHTML = `
             <div class="quiz-header">
-                <h3>🧠 Quiz — Lies das Wort und wähle das passende Bild</h3>
+                <h3>🧠 Quiz</h3>
                 <select id="quiz-stufen-select" class="quiz-stufen-select"></select>
             </div>
             <div class="quiz-container">
