@@ -166,7 +166,26 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
 #wordlab-scene .syllable-btn:hover { transform: translateY(-3px); }
 #wordlab-scene .syllable-btn:disabled { opacity: 0.3; cursor: not-allowed; background-image: none; background-color: #222; }
 #wordlab-scene #wl-controls { width: 100%; max-width: 420px; display: flex; justify-content: space-between; gap: 10px; }
-#wordlab-scene #wl-controls button { font-size: 18px; padding: 12px 25px; border:none; border-radius:14px; background-image: linear-gradient(to right, var(--accent), var(--accent-2)); color: white; cursor: pointer; flex-grow: 1; }
+#wordlab-scene #wl-controls button {
+    font-size: 18px;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 14px;
+    color: white;
+    cursor: pointer;
+    flex-grow: 1;
+    /* The background-image is now handled by the specific rules below */
+}
+
+/* --- KEY: Add this rule for the orange "Hören" button --- */
+#wordlab-scene #wl-speak-btn {
+    background-image: linear-gradient(to right, #f97316, #fb923c); /* Orange gradient */
+}
+
+/* --- KEY: Add this rule for the green "Weiter" button --- */
+#wordlab-scene #wl-next-btn {
+    background-image: linear-gradient(to right, var(--accent), var(--accent-2)); /* Accent gradient */
+}
 
 
 /* --- 5. MOBILE OVERRIDES for Word Lab (SIMPLIFIED) --- */
@@ -331,12 +350,12 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
 
 /* Progress bar is fine, we just add flex-shrink to prevent it from shrinking */
 #quiz-scene .quiz-progress-bar { 
-    width: 100%; 
+    width: 90%; 
     max-width: 700px; 
     height: 18px; 
     background-color: rgba(255, 255, 255, 0.08); 
     border-radius: 12px; 
-    position: relative; 
+    position:relative;
     flex-shrink: 0; /* KEY CHANGE */
 }
 #quiz-scene .quiz-progress-bar .fill { height: 100%; background-color: var(--accent-2); border-radius: 12px; transition: width 0.3s ease-out; }
@@ -562,14 +581,18 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
     font-size: 20px;
 }
 
-#story-scene #ss-reader-view {
-    gap: 16px; 
-    justify-content: flex-start;
+#story-scene #ss-reader-view.active {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
     padding: 20px;
     box-sizing: border-box;
-    width: 100%;
+    gap: 16px;
 }
 
+
+/* KEY CHANGE: Allow the gallery to take up a large, flexible portion of the space */
 #story-scene .sr-gallery {
     display: flex;
     align-items: center;
@@ -577,19 +600,24 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
     gap: 16px;
     width: 100%;
     max-width: 950px;
+    
+    flex-grow: 1; /* This is the most important property! */
+    min-height: 0; /* A flexbox trick to allow proper shrinking */
 }
 
+/* KEY CHANGE: Remove max-height and let the flex parent control the size */
 #story-scene #sr-card {
-    flex-grow: 1;
-    width: 100%;
-    max-width: 700px;
-    aspect-ratio: 16 / 10;
-    max-height: 45vh; 
-    background-color: rgba(255, 255, 255, 0.06);
-    border-radius: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 100%;
+    height: 100%; /* Make the card fill its flex parent (.sr-gallery) */
+    max-width: 700px;
+    /* REMOVED: max-height: 45vh; */
+    /* REMOVED: aspect-ratio: 16 / 10; */
+    
+    background-color: rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
     padding: 15px;
     box-sizing: border-box;
     box-shadow: 0 8px 25px rgba(0,0,0,0.3);
@@ -598,7 +626,7 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
 #story-scene #sr-image {
     max-width: 100%;
     max-height: 100%;
-    object-fit: contain; 
+    object-fit: contain;
     border-radius: 12px;
 }
 
@@ -626,8 +654,9 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
     transform: scale(1.1);
 }
 
+/* KEY CHANGE: Make the controls and text containers non-flexible */
 #story-scene #sr-controls {
-    margin: 0;
+    flex-shrink: 0; /* Prevent from shrinking */
 }
 
 #story-scene #sr-speak-btn {
@@ -635,17 +664,22 @@ html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
     padding: 12px 25px;
     border: none;
     border-radius: 14px;
-    background-image: linear-gradient(to right, var(--accent), var(--accent-2));
+    background-image: linear-gradient(to right, #f97316, #fb923c);
     color: white;
     cursor: pointer;
 }
 
 #story-scene #sr-text-container {
-    font-size: 28px;
+    font-size: clamp(20px, 3vw, 28px); /* Make font size responsive */
     line-height: 1.7;
     max-width: 900px;
     width: 100%;
     text-align: center;
+    flex-shrink: 0; /* Prevent from shrinking */
+    
+    /* Add overflow behavior for very long texts on small screens */
+    overflow-y: auto;
+    max-height: 30%; /* Ensure it doesn't take up too much space */
 }
 
 #story-scene #sr-text-container .story-line {

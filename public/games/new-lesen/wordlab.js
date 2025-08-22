@@ -128,8 +128,8 @@ const wordLab = (() => {
                 <div id="wl-slots-container"></div>
                 <div id="wl-bank-container"></div>
                 <div id="wl-controls">
-                    <button id="wl-speak-btn">🔊 Vorlesen</button>
-                    <button id="wl-next-btn">Weiter ➡️</button>
+                    <button id="wl-speak-btn">🔊 Hören</button>
+                    <button id="wl-next-btn"> ⮕ </button>
                 </div>
             </div>`;
         

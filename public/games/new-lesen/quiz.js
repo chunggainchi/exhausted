@@ -69,7 +69,7 @@ const quiz = (() => {
         const progressPercent = (state.progress / state.steps) * 100;
         dom.progressBarFill.style.width = `${progressPercent}%`;
         dom.mouseEmoji.style.left = `calc(${progressPercent}% - 15px)`;
-        dom.correctCounter.textContent = `✅ ${state.correctAnswers} richtig`;
+        dom.correctCounter.textContent = `✅ ${state.correctAnswers}`;
     }
 
     // --- Public init function (CORRECTED) ---
