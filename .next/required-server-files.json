@@ -47,7 +47,7 @@
         256,
         384
       ],
-      "path": "/_next/image/",
+      "path": "/_next/image",
       "loader": "default",
       "loaderFile": "",
       "domains": [],
@@ -60,7 +60,7 @@
       "contentSecurityPolicy": "script-src 'none'; frame-src 'none'; sandbox;",
       "contentDispositionType": "attachment",
       "remotePatterns": [],
-      "unoptimized": true
+      "unoptimized": false
     },
     "devIndicators": {
       "position": "bottom-left"
@@ -74,7 +74,7 @@
     },
     "basePath": "",
     "sassOptions": {},
-    "trailingSlash": true,
+    "trailingSlash": false,
     "i18n": null,
     "productionBrowserSourceMaps": false,
     "excludeDefaultMomentLocales": true,
@@ -89,7 +89,6 @@
     "logging": {},
     "expireTime": 31536000,
     "staticPageGenerationTimeout": 60,
-    "output": "export",
     "modularizeImports": {
       "@mui/icons-material": {
         "transform": "@mui/icons-material/{{member}}"
@@ -98,7 +97,7 @@
         "transform": "lodash/{{member}}"
       }
     },
-    "outputFileTracingRoot": "/Users/sharonchung/exhausted",
+    "outputFileTracingRoot": "/Users/sharonchung/exhausted-1",
     "experimental": {
       "nodeMiddleware": false,
       "cacheLife": {
@@ -281,10 +280,28 @@
     "bundlePagesRouterDependencies": false,
     "configFileName": "next.config.ts",
     "turbopack": {
-      "root": "/Users/sharonchung/exhausted"
+      "root": "/Users/sharonchung/exhausted-1"
+    },
+    "_originalRewrites": {
+      "beforeFiles": [],
+      "afterFiles": [
+        {
+          "source": "/games/learn-cantonese",
+          "destination": "/games/learn-cantonese.html"
+        },
+        {
+          "source": "/games/toddler-types",
+          "destination": "/games/toddler-types.html"
+        },
+        {
+          "source": "/games/:path*.html",
+          "destination": "/games/:path*.html"
+        }
+      ],
+      "fallback": []
     }
   },
-  "appDir": "/Users/sharonchung/exhausted",
+  "appDir": "/Users/sharonchung/exhausted-1",
   "relativeAppDir": "",
   "files": [
     ".next/routes-manifest.json",

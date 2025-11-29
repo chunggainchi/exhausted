@@ -5,24 +5,11 @@
   "basePath": "",
   "redirects": [
     {
-      "source": "/:file((?!\\.well-known(?:/.*)?)(?:[^/]+/)*[^/]+\\.\\w+)/",
-      "destination": "/:file",
-      "internal": true,
-      "missing": [
-        {
-          "type": "header",
-          "key": "x-nextjs-data"
-        }
-      ],
-      "statusCode": 308,
-      "regex": "^(?:/((?!\\.well-known(?:/.*)?)(?:[^/]+/)*[^/]+\\.\\w+))/$"
-    },
-    {
-      "source": "/:notfile((?!\\.well-known(?:/.*)?)(?:[^/]+/)*[^/\\.]+)",
-      "destination": "/:notfile/",
+      "source": "/:path+/",
+      "destination": "/:path+",
       "internal": true,
       "statusCode": 308,
-      "regex": "^(?:/((?!\\.well-known(?:/.*)?)(?:[^/]+/)*[^/\\.]+))$"
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
     }
   ],
   "headers": [],
@@ -41,6 +28,12 @@
       "namedRegex": "^/_not\\-found(?:/)?$"
     },
     {
+      "page": "/anatomy",
+      "regex": "^/anatomy(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/anatomy(?:/)?$"
+    },
+    {
       "page": "/apple-icon.png",
       "regex": "^/apple\\-icon\\.png(?:/)?$",
       "routeKeys": {},
@@ -51,6 +44,12 @@
       "regex": "^/blog(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/blog(?:/)?$"
+    },
+    {
+      "page": "/blog/anatomy/anatomy-xray-game",
+      "regex": "^/blog/anatomy/anatomy\\-xray\\-game(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/anatomy/anatomy\\-xray\\-game(?:/)?$"
     },
     {
       "page": "/blog/anatomy/kinetic-sand-surgery",
@@ -101,10 +100,22 @@
       "namedRegex": "^/blog/category/puzzle(?:/)?$"
     },
     {
+      "page": "/blog/computer/canto-play",
+      "regex": "^/blog/computer/canto\\-play(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/computer/canto\\-play(?:/)?$"
+    },
+    {
       "page": "/blog/computer/number-playground",
       "regex": "^/blog/computer/number\\-playground(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/blog/computer/number\\-playground(?:/)?$"
+    },
+    {
+      "page": "/blog/computer/reading-fun",
+      "regex": "^/blog/computer/reading\\-fun(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/computer/reading\\-fun(?:/)?$"
     },
     {
       "page": "/blog/computer/toddler-types",
@@ -226,5 +237,21 @@
     "pathHeader": "x-nextjs-rewritten-path",
     "queryHeader": "x-nextjs-rewritten-query"
   },
-  "rewrites": []
+  "rewrites": [
+    {
+      "source": "/games/learn-cantonese",
+      "destination": "/games/learn-cantonese.html",
+      "regex": "^/games/learn-cantonese(?:/)?$"
+    },
+    {
+      "source": "/games/toddler-types",
+      "destination": "/games/toddler-types.html",
+      "regex": "^/games/toddler-types(?:/)?$"
+    },
+    {
+      "source": "/games/:path*.html",
+      "destination": "/games/:path*.html",
+      "regex": "^/games(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))?\\.html(?:/)?$"
+    }
+  ]
 }

@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { AnatomyObject } from '@/lib/anatomy-data';
-import { motion } from 'framer-motion';
 
 interface XRayViewerProps {
     object: AnatomyObject;
@@ -19,6 +18,7 @@ export default function XRayViewer({ object, onBack, onInfoTrigger }: XRayViewer
         // Placeholder for sound effects
         // const audio = new Audio(`/sounds/${type}.mp3`);
         // audio.play().catch(() => {});
+        console.log(`Sound: ${type}`); // Use 'type' to avoid unused var error
     };
 
     const handleMouseMove = useCallback((e: React.MouseEvent | MouseEvent) => {
@@ -92,8 +92,8 @@ export default function XRayViewer({ object, onBack, onInfoTrigger }: XRayViewer
             {/* Controls Hint */}
             <div className="absolute top-4 left-4 text-white/50 text-xs md:text-sm z-20 pointer-events-none">
                 <p>Bewegen: Maus / Touch</p>
-                <p className="hidden md:block">Info: 'i' Taste</p>
-                <p className="hidden md:block">Zurück: 'Esc' Taste</p>
+                <p className="hidden md:block">Info: &apos;i&apos; Taste</p>
+                <p className="hidden md:block">Zurück: &apos;Esc&apos; Taste</p>
             </div>
 
             <div className="relative w-full h-full max-w-7xl max-h-[85vh] flex items-center justify-center overflow-hidden cursor-none touch-none"
@@ -105,6 +105,7 @@ export default function XRayViewer({ object, onBack, onInfoTrigger }: XRayViewer
                 onTouchStart={() => { setIsHovering(true); playSound('hover'); }}
             >
                 {/* Outer Image (Base) */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                     src={object.outerImage}
                     alt={object.name}
@@ -120,6 +121,7 @@ export default function XRayViewer({ object, onBack, onInfoTrigger }: XRayViewer
                         WebkitMaskImage: `radial-gradient(circle 100px at ${cursorPos.x}px ${cursorPos.y}px, black 100%, transparent 100%)`,
                     }}
                 >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                         src={object.xrayImage}
                         alt={`${object.name} X-Ray`}

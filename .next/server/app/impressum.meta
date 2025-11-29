@@ -2,6 +2,6 @@
   "headers": {
     "x-nextjs-stale-time": "4294967294",
     "x-nextjs-prerender": "1",
-    "x-next-cache-tags": "_N_T_/layout,_N_T_/impressum/layout,_N_T_/impressum/page,_N_T_/impressum/"
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/(site)/layout,_N_T_/(site)/impressum/layout,_N_T_/(site)/impressum/page,_N_T_/impressum"
   }
 }

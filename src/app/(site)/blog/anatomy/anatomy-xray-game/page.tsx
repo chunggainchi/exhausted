@@ -44,16 +44,16 @@ export default function AnatomyGamePostPage() {
                     {/* Content Section */}
                     <div className="prose dark:prose-invert max-w-none md:col-span-1 order-2 md:order-1">
                         <p className="lead">
-                            Ever wondered what a cow looks like on the inside? Or how many bones are in your hand? This simple interactive game lets you use a "magic" X-Ray lens to see through the skin and explore the skeleton underneath.
+                            Ever wondered what a cow looks like on the inside? Or how many bones are in your hand? This simple interactive game lets you use a &quot;magic&quot; X-Ray lens to see through the skin and explore the skeleton underneath.
                         </p>
                         <p className="mt-4">
-                            I built this to help my daughter learn about biology and anatomy in a fun, visual way. It's designed to be simple: just choose an animal or body part, and move your mouse (or finger) to scan.
+                            I built this to help my daughter learn about biology and anatomy in a fun, visual way. It&apos;s designed to be simple: just choose an animal or body part, and move your mouse (or finger) to scan.
                         </p>
 
                         <h3 className="text-xl font-semibold mt-8 mb-4">Features</h3>
                         <ul>
                             <li><strong>Interactive X-Ray:</strong> Move the lens to reveal the skeleton.</li>
-                            <li><strong>Learn Facts:</strong> Click the "Info" button to learn interesting facts (in German).</li>
+                            <li><strong>Learn Facts:</strong> Click the &quot;Info&quot; button to learn interesting facts (in German).</li>
                             <li><strong>Simple Controls:</strong> Works with mouse, touch, or keyboard.</li>
                         </ul>
 
