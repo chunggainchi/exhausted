@@ -18,6 +18,14 @@ export const metadata: Metadata = {
 
 const anatomyPosts: BlogPostCardProps[] = [
   {
+    title: "Anatomy X-Ray Game",
+    subtitle: "(explore what is inside)",
+    description: "A simple interactive X-Ray game to explore internal anatomy of animals and humans. Perfect for curious little minds.",
+    imageUrl: "/images/anatomy/cow-outer.webp",
+    href: "/blog/anatomy/anatomy-xray-game",
+    imageAlt: "Preview of the Anatomy X-Ray Game showing a cow",
+  },
+  {
     title: "Play-Dough Surgery: Gallbladder Removal",
     subtitle: "(Gallbladder is a small organ that stores bile)",
     description: "Learn how to perform a toddler-safe play-dough cholecystectomy, exploring gallbladder anatomy, the function of bile, and why gallstones cause issues. Fun and educational!",
