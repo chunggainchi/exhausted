@@ -35,44 +35,11 @@ export default function XRayViewer({ object, onBack, onInfoTrigger }: XRayViewer
         if (!containerRef.current) return;
         const rect = containerRef.current.getBoundingClientRect();
 
-        let x, y;
         if (isMobilePortrait) {
             // Remap coordinates for 90deg rotation
-            // Visual Top-Left is actually Element Bottom-Left (after 90deg rotation? No wait)
-            // Let's rely on the fact that we are rotating the PARENT, so the internal coordinate system might be tricky.
-            // Actually, if we rotate the container, the browser handles the visual, but we need the X/Y relative to the element's origin.
-
-            // Simpler approach: Calculate relative to the viewport, then map.
-            // But let's try standard logic first, it might just work if the rect is correct?
-            // No, getBoundingClientRect returns the viewport rect.
-
-            // If rotated 90deg CW:
-            // Element X is along Viewport Y.
-            // Element Y is along Viewport -X.
-
-            // Let's assume we rotate 90deg CW.
-            // The element's origin (0,0) is at the visual Top-Right of the screen? No.
-            // transform-origin: center.
-
-            // Let's do the remapping in the render logic or just swap dimensions?
-            // Actually, for touch, it's easier to just use the standard logic but swap X/Y if we swap dimensions.
-
-            // Let's try to just use the standard logic first, but we need to ensure the container rect is what we think it is.
-            // If we rotate the div, the rect rotates.
-
-            // Let's implement the coordinate mapping manually for safety.
-            // If rotated 90deg:
-            // Touch X (screen width axis) -> Maps to Element Y
-            // Touch Y (screen height axis) -> Maps to Element X
-            // But direction matters.
-
-            // Let's stick to standard first, if it fails we adjust.
-            // Actually, for the "Forced Landscape", we are effectively swapping width/height.
-            x = e.clientX - rect.left;
-            y = e.clientY - rect.top;
+            // ... (comments)
         } else {
-            x = e.clientX - rect.left;
-            y = e.clientY - rect.top;
+            // Standard behavior
         }
 
         // For now, let's trust the rect logic but we might need to adjust for the transform.
@@ -124,8 +91,7 @@ export default function XRayViewer({ object, onBack, onInfoTrigger }: XRayViewer
         // (Roughly)
 
         // Let's use a helper to get local coordinates.
-        const x_final = isMobilePortrait ? (e.clientY - rect.top) : (e.clientX - rect.left);
-        const y_final = isMobilePortrait ? (rect.right - e.clientX) : (e.clientY - rect.top);
+        // Let's use a helper to get local coordinates.
 
         // Wait, rect.right might be in viewport coords.
         // If rotated, rect.width is the visual width (which is element height).
