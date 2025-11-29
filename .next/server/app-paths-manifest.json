@@ -1,9 +1,0 @@
-{
-  "/(game)/anatomy/page": "app/(game)/anatomy/page.js",
-  "/(site)/blog/category/anatomy/page": "app/(site)/blog/category/anatomy/page.js",
-  "/(site)/page": "app/(site)/page.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/anatomy/page": "app/anatomy/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/page": "app/page.js"
-}
