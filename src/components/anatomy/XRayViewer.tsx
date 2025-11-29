@@ -13,6 +13,16 @@ export default function XRayViewer({ object, onBack, onInfoTrigger }: XRayViewer
     const containerRef = useRef<HTMLDivElement>(null);
     const [cursorPos, setCursorPos] = useState({ x: -100, y: -100 });
     const [isHovering, setIsHovering] = useState(false);
+    const [isMobilePortrait, setIsMobilePortrait] = useState(false);
+
+    useEffect(() => {
+        const checkOrientation = () => {
+            setIsMobilePortrait(window.matchMedia("(orientation: portrait) and (max-width: 768px)").matches);
+        };
+        checkOrientation();
+        window.addEventListener('resize', checkOrientation);
+        return () => window.removeEventListener('resize', checkOrientation);
+    }, []);
 
     const playSound = (type: 'hover' | 'click') => {
         // Placeholder for sound effects
@@ -24,21 +34,161 @@ export default function XRayViewer({ object, onBack, onInfoTrigger }: XRayViewer
     const handleMouseMove = useCallback((e: React.MouseEvent | MouseEvent) => {
         if (!containerRef.current) return;
         const rect = containerRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        setCursorPos({ x, y });
+
+        let x, y;
+        if (isMobilePortrait) {
+            // Remap coordinates for 90deg rotation
+            // Visual Top-Left is actually Element Bottom-Left (after 90deg rotation? No wait)
+            // Let's rely on the fact that we are rotating the PARENT, so the internal coordinate system might be tricky.
+            // Actually, if we rotate the container, the browser handles the visual, but we need the X/Y relative to the element's origin.
+
+            // Simpler approach: Calculate relative to the viewport, then map.
+            // But let's try standard logic first, it might just work if the rect is correct?
+            // No, getBoundingClientRect returns the viewport rect.
+
+            // If rotated 90deg CW:
+            // Element X is along Viewport Y.
+            // Element Y is along Viewport -X.
+
+            // Let's assume we rotate 90deg CW.
+            // The element's origin (0,0) is at the visual Top-Right of the screen? No.
+            // transform-origin: center.
+
+            // Let's do the remapping in the render logic or just swap dimensions?
+            // Actually, for touch, it's easier to just use the standard logic but swap X/Y if we swap dimensions.
+
+            // Let's try to just use the standard logic first, but we need to ensure the container rect is what we think it is.
+            // If we rotate the div, the rect rotates.
+
+            // Let's implement the coordinate mapping manually for safety.
+            // If rotated 90deg:
+            // Touch X (screen width axis) -> Maps to Element Y
+            // Touch Y (screen height axis) -> Maps to Element X
+            // But direction matters.
+
+            // Let's stick to standard first, if it fails we adjust.
+            // Actually, for the "Forced Landscape", we are effectively swapping width/height.
+            x = e.clientX - rect.left;
+            y = e.clientY - rect.top;
+        } else {
+            x = e.clientX - rect.left;
+            y = e.clientY - rect.top;
+        }
+
+        // For now, let's trust the rect logic but we might need to adjust for the transform.
+        // If the element is transformed, getBoundingClientRect gives the bounding box of the transformed element.
+        // But e.clientX is viewport. 
+        // If we want local coordinates in the transformed element, we might need to project.
+
+        // However, since we are just moving a mask *inside* the element, and the mask is also inside the transformed element,
+        // we want the mask position to be in the element's coordinate space.
+
+        // If the container is rotated 90deg, and we want the mask to be under the finger:
+        // Finger at viewport (Vx, Vy).
+        // We need element coordinates (Ex, Ey) such that when rendered at (Ex, Ey) inside the rotated element, it appears at (Vx, Vy).
+
+        // If Element is rotated 90deg CW:
+        // Visual Point P = RotationMatrix * Point E + Offset.
+        // We need E = InverseRotation * (P - Offset).
+
+        // Let's implement this logic in the render loop if needed, but for now let's try to just handle the layout.
+        // Actually, if we rotate the container, the internal X/Y axes rotate too.
+        // So if we set left: 10px, top: 10px, it will be at the "top-left" of the rotated element.
+        // Visually, that might be Top-Right of the screen (if 90deg CW).
+
+        // So if user touches Top-Right of screen, that corresponds to (0,0) or similar.
+        // We need to map Viewport (X, Y) to Element (X, Y).
+
+        // Let's refine the handleTouchMove for mobile portrait specifically.
+        // If isMobilePortrait (Rotated 90deg CW):
+        // Screen X (0 to Width) -> Element Y (Height to 0) ? or (0 to Height)?
+        // Screen Y (0 to Height) -> Element X (0 to Width) ?
+
+        // Let's assume we rotate 90deg CW around center.
+        // Screen Top-Left (0,0) -> Element Bottom-Left (0, Height) ? No.
+
+        // Let's keep it simple:
+        // If we rotate the container, we just need to map the touch to the element.
+        // We can use a ref to the image itself maybe?
+
+        // Let's try a simpler CSS hack:
+        // We don't rotate the container. We rotate the *content*?
+        // No, we want the image to be bigger.
+
+        // Let's go with the rotation.
+        // We will need to swap X and Y in the touch handler if rotated.
+
+        // If rotated 90deg CW:
+        // NewX = TouchY - RectTop
+        // NewY = RectRight - TouchX
+        // (Roughly)
+
+        // Let's use a helper to get local coordinates.
+        const x_final = isMobilePortrait ? (e.clientY - rect.top) : (e.clientX - rect.left);
+        const y_final = isMobilePortrait ? (rect.right - e.clientX) : (e.clientY - rect.top);
+
+        // Wait, rect.right might be in viewport coords.
+        // If rotated, rect.width is the visual width (which is element height).
+
+        // Let's try:
+        // If 90deg CW:
+        // Visual X axis corresponds to Element -Y axis.
+        // Visual Y axis corresponds to Element X axis.
+
+        // So:
+        // Element X = Visual Y (relative to top)
+        // Element Y = Visual Width - Visual X (relative to left)
+
+        // Let's try this mapping.
+
+        if (isMobilePortrait) {
+            // 90deg CW rotation
+            // Visual Y (down) increases Element X (right)
+            // Visual X (right) increases Element Y (down)? No.
+            // Visual X (right) corresponds to Element Y (down) going UP? 
+            // If we rotate 90 CW:
+            // Top edge -> Right edge.
+            // Left edge -> Top edge.
+            // So Element X axis points Down (Visual Y).
+            // Element Y axis points Left (Visual -X).
+
+            // So:
+            // Element X = (e.clientY - rect.top)
+            // Element Y = (rect.width - (e.clientX - rect.left))  <-- rect.width is visual width
+
+            setCursorPos({
+                x: e.clientY - rect.top,
+                y: rect.width - (e.clientX - rect.left)
+            });
+        } else {
+            setCursorPos({
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            });
+        }
+
         setIsHovering(true);
-    }, []);
+    }, [isMobilePortrait]);
 
     const handleTouchMove = useCallback((e: React.TouchEvent | TouchEvent) => {
         if (!containerRef.current) return;
         const rect = containerRef.current.getBoundingClientRect();
         const touch = e.touches[0];
-        const x = touch.clientX - rect.left;
-        const y = touch.clientY - rect.top;
-        setCursorPos({ x, y });
+
+        if (isMobilePortrait) {
+            // Same logic as above
+            setCursorPos({
+                x: touch.clientY - rect.top,
+                y: rect.width - (touch.clientX - rect.left)
+            });
+        } else {
+            setCursorPos({
+                x: touch.clientX - rect.left,
+                y: touch.clientY - rect.top
+            });
+        }
         setIsHovering(true);
-    }, []);
+    }, [isMobilePortrait]);
 
     // Keyboard controls for moving the mask
     useEffect(() => {
@@ -88,15 +238,22 @@ export default function XRayViewer({ object, onBack, onInfoTrigger }: XRayViewer
 
 
     return (
-        <div className="relative w-full h-screen flex flex-col items-center justify-center bg-black overflow-hidden">
+        <div className={`relative w-full h-screen flex flex-col items-center justify-center bg-black overflow-hidden ${isMobilePortrait ? 'fixed inset-0 z-50' : ''}`}>
             {/* Controls Hint */}
-            <div className="absolute top-4 left-4 text-white/50 text-xs md:text-sm z-20 pointer-events-none">
+            {/* Controls Hint */}
+            <div className={`absolute text-white/50 text-xs md:text-sm z-20 pointer-events-none
+                ${isMobilePortrait
+                    ? 'fixed top-1/2 right-4 -translate-y-1/2 rotate-90 origin-center whitespace-nowrap'
+                    : 'top-4 left-4'}`}>
                 <p>Bewegen: Maus / Touch</p>
                 <p className="hidden md:block">Info: &apos;i&apos; Taste</p>
                 <p className="hidden md:block">Zurück: &apos;Esc&apos; Taste</p>
             </div>
 
-            <div className="relative w-full h-full max-w-7xl max-h-[85vh] flex items-center justify-center overflow-hidden cursor-none touch-none"
+            <div className={`relative flex items-center justify-center overflow-hidden cursor-none touch-none transition-transform duration-300 ease-in-out
+                ${isMobilePortrait
+                    ? 'w-[100vh] h-[100vw] rotate-90 origin-center'
+                    : 'w-full h-full max-w-7xl max-h-[85vh]'}`}
                 ref={containerRef}
                 onMouseMove={handleMouseMove}
                 onMouseEnter={() => { setIsHovering(true); playSound('hover'); }}
@@ -139,7 +296,10 @@ export default function XRayViewer({ object, onBack, onInfoTrigger }: XRayViewer
                 )}
             </div>
 
-            <div className="absolute bottom-8 flex gap-4 z-30">
+            <div className={`absolute flex gap-4 z-30 
+                ${isMobilePortrait
+                    ? 'fixed left-8 top-1/2 -translate-y-1/2 -translate-x-1/2 rotate-90 origin-center'
+                    : 'bottom-8'}`}>
                 <button onClick={() => { onBack(); playSound('click'); }} className="px-8 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors backdrop-blur-sm">
                     Zurück
                 </button>

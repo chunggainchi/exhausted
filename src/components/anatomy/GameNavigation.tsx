@@ -19,7 +19,7 @@ export default function GameNavigation({ objects, onSelect, selectedObject }: Ga
             {/* Mobile Toggle */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="fixed top-4 right-4 z-50 p-2 bg-zinc-800/80 backdrop-blur-md rounded-full text-white hover:bg-zinc-700 transition-colors"
+                className="fixed top-4 right-4 z-[100] p-2 bg-zinc-800/80 backdrop-blur-md rounded-full text-white hover:bg-zinc-700 transition-colors"
             >
                 {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -34,7 +34,7 @@ export default function GameNavigation({ objects, onSelect, selectedObject }: Ga
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsOpen(false)}
-                            className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
+                            className="fixed inset-0 bg-black/50 z-[90] backdrop-blur-sm"
                         />
 
                         {/* Sidebar */}
@@ -43,7 +43,7 @@ export default function GameNavigation({ objects, onSelect, selectedObject }: Ga
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            className="fixed top-0 right-0 h-full w-80 bg-zinc-900 border-l border-zinc-800 z-50 overflow-y-auto p-6 shadow-2xl"
+                            className="fixed top-0 right-0 h-full w-80 bg-zinc-900 border-l border-zinc-800 z-[100] overflow-y-auto p-6 shadow-2xl"
                         >
                             <h2 className="text-2xl font-bold text-white mb-6">Bibliothek</h2>
 
@@ -60,8 +60,8 @@ export default function GameNavigation({ objects, onSelect, selectedObject }: Ga
                                                         setIsOpen(false);
                                                     }}
                                                     className={`w-full text-left px-4 py-3 rounded-lg transition-all flex items-center justify-between group ${selectedObject?.id === obj.id
-                                                            ? 'bg-zinc-800 text-white border border-zinc-700'
-                                                            : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
+                                                        ? 'bg-zinc-800 text-white border border-zinc-700'
+                                                        : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
                                                         }`}
                                                 >
                                                     <span>{obj.name}</span>

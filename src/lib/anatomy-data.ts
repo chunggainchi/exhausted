@@ -46,11 +46,28 @@ export const anatomyData: AnatomyObject[] = [
   },
   {
     id: 'human-foot',
-    name: 'Menschliches Fuß',
+    name: 'Menschlicher Fuß',
     category: 'Mensch',
     outerImage: '/images/anatomy/foot-outer.webp',
     xrayImage: '/images/anatomy/foot-xray.webp',
     description: 'Dein Fuß hat 26 Knochen – fast so viele wie deine ganze Hand! Sie arbeiten zusammen wie ein kleines Team, damit du stehen, gehen und springen kannst.',
+  },
+  {
+    id: 'human-forearm',
+    name: 'Menschlicher Unterarm',
+    category: 'Mensch',
+    outerImage: '/images/anatomy/arm-outer.webp',
+    xrayImage: '/images/anatomy/arm-xray.webp',
+    description: 'Wenn du dich mit der Hand abstützt, trägt der Unterarm einen großen Teil deines Gewichts. Darum ist er besonders stark und stabil gebaut.',
+  },
+  {
+    id: 'rabbit',
+    name: 'Kaninchen',
+    category: 'Tiere',
+    subcategory: 'Land',
+    outerImage: '/images/anatomy/rabbit-outer.webp',
+    xrayImage: '/images/anatomy/rabbit-xray.webp',
+    description: 'Ein Kaninchen hat riesige Ohren – aber im Skelett sieht man sie gar nicht! Sie bestehen fast nur aus Knorpel und Haut. Und weil das Skelett so leicht und flexibel gebaut ist, kann das Kaninchen blitzschnell hoppeln.',
   },
 ];
 
