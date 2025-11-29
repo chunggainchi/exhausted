@@ -3,7 +3,6 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Jost } from 'next/font/google';
 import "./globals.css";
-import Layout from "@/components/Layout";
 import { Analytics } from "@vercel/analytics/next";
 
 // import { GoogleAnalytics } from '@next/third-parties/google'; // Removed
@@ -28,7 +27,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode })                       {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${jostHeader.variable}`}>
       <head>
@@ -50,7 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* End Google tag (gtag.js) */}
       </head>
       <body>
-        <Layout>{children}</Layout>
+        {children}
         {/* <GoogleAnalytics gaId={GA_TRACKING_ID} /> */}{/* Removed */}
         <Analytics />
       </body>
