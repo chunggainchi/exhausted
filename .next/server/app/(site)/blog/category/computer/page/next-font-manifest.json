@@ -1,0 +1,12 @@
+{
+  "pages": {},
+  "app": {
+    "[project]/src/app/(site)/blog/category/computer/page": [
+      "static/media/Geist_Variable-s.p.f406b17f.woff2",
+      "static/media/92zJtBhPNqw73oHH7BbQp4_B6XlrZm0CBIokntPOIEtWCw-s.p.af5889b6.woff2",
+      "static/media/GeistMono_Variable.p.6bae060c.woff2"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pagesUsingSizeAdjust": false
+}

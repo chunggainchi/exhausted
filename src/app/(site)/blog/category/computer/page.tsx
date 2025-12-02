@@ -19,12 +19,12 @@ export const metadata: Metadata = {
 // Placeholder for posts in this category
 const computerPosts: BlogPostCardProps[] = [
   {
-    title: "Kinder Sudoku",
-    subtitle: "(Logik spielerisch lernen)",
-    description: "Ein farbenfrohes Sudoku-Spiel für Kinder mit 3 Schwierigkeitsstufen, Sounds und Konfetti-Belohnung.",
+    title: "Sudoku",
+    subtitle: "(for small geniuses)",
+    description: "A colorful, child-friendly Sudoku game with 3 difficulty levels, fun sounds, and a confetti reward.",
     imageUrl: "/images/blog/sudoku.png",
     href: "/blog/computer/sudoku",
-    imageAlt: "Kinder Sudoku Preview"
+    imageAlt: "Sudoku Preview"
   },
   {
     title: "CantoPlay",

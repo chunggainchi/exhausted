@@ -1,0 +1,3 @@
+{
+  "/(game)/sudoku/page": "app/(game)/sudoku/page.js"
+}

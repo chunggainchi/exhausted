@@ -8,92 +8,55 @@ export default function Confetti() {
     useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
-
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        const particles: Particle[] = [];
-        const colors = ['#ef4444', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#ec4899'];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const particles: any[] = [];
+        const colors = ['#f87171', '#60a5fa', '#4ade80', '#fbbf24', '#c084fc'];
 
-        class Particle {
-            x: number;
-            y: number;
-            size: number;
-            speedY: number;
-            speedX: number;
-            color: string;
-            rotation: number;
-            rotationSpeed: number;
-
-            constructor() {
-                this.x = Math.random() * canvas!.width;
-                this.y = Math.random() * canvas!.height - canvas!.height;
-                this.size = Math.random() * 10 + 5;
-                this.speedY = Math.random() * 3 + 2;
-                this.speedX = Math.random() * 2 - 1;
-                this.color = colors[Math.floor(Math.random() * colors.length)];
-                this.rotation = Math.random() * 360;
-                this.rotationSpeed = Math.random() * 5 - 2.5;
-            }
-
-            update() {
-                this.y += this.speedY;
-                this.x += this.speedX;
-                this.rotation += this.rotationSpeed;
-
-                if (this.y > canvas!.height) {
-                    this.y = -20;
-                    this.x = Math.random() * canvas!.width;
-                }
-            }
-
-            draw() {
-                if (!ctx) return;
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate((this.rotation * Math.PI) / 180);
-                ctx.fillStyle = this.color;
-                ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
-                ctx.restore();
-            }
-        }
-
-        // Create particles
         for (let i = 0; i < 150; i++) {
-            particles.push(new Particle());
+            particles.push({
+                x: window.innerWidth / 2,
+                y: window.innerHeight / 2,
+                vx: (Math.random() - 0.5) * 15,
+                vy: (Math.random() - 0.5) * 15 - 5,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                size: Math.random() * 8 + 4,
+                life: 100
+            });
         }
 
-        let animationId: number;
+        let frameId: number;
         const animate = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let alive = false;
             particles.forEach(p => {
-                p.update();
-                p.draw();
+                if (p.life > 0) {
+                    alive = true;
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.3; // Gravity
+                    p.life--;
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             });
-            animationId = requestAnimationFrame(animate);
+
+            if (alive) {
+                frameId = requestAnimationFrame(animate);
+            }
         };
 
         animate();
-
-        const handleResize = () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        };
-
-        window.addEventListener('resize', handleResize);
-        return () => {
-            cancelAnimationFrame(animationId);
-            window.removeEventListener('resize', handleResize);
-        };
+        return () => cancelAnimationFrame(frameId);
     }, []);
 
-    return (
-        <canvas
-            ref={canvasRef}
-            className="fixed inset-0 pointer-events-none z-50"
-        />
-    );
+    return <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-50" />;
 }

@@ -1,48 +1,61 @@
-export type Cell = number | null;
-export type Board = Cell[][];
+export type Grid = number[][];
 
-export function createEmptyBoard(size: number): Board {
-    return Array.from({ length: size }, () => Array(size).fill(null));
-}
+export type LevelConfig = {
+    id: number;
+    name: string;
+    size: number;
+    maxNumber: number;
+    color: string;
+    hasBlocks: boolean; // For 4x4 (2x2 blocks)
+    emptyCount: number; // Approximate difficulty
+};
 
-export function isValidMove(board: Board, row: number, col: number, num: number, size: number): boolean {
+export const LEVELS: LevelConfig[] = [
+    { id: 1, name: 'Tiny', size: 3, maxNumber: 3, color: 'bg-green-400', hasBlocks: false, emptyCount: 3 },
+    { id: 2, name: 'Mini', size: 4, maxNumber: 4, color: 'bg-blue-400', hasBlocks: true, emptyCount: 6 },
+    { id: 3, name: 'Big', size: 5, maxNumber: 5, color: 'bg-purple-400', hasBlocks: false, emptyCount: 10 },
+];
+
+// Check if placing num at board[row][col] is valid
+export const isValid = (board: Grid, row: number, col: number, num: number, size: number, hasBlocks: boolean): boolean => {
     // Check Row
     for (let x = 0; x < size; x++) {
         if (board[row][x] === num) return false;
     }
 
-    // Check Column
+    // Check Col
     for (let x = 0; x < size; x++) {
         if (board[x][col] === num) return false;
     }
 
-    // Check Subgrid (Only for 4x4)
-    if (size === 4) {
-        const startRow = Math.floor(row / 2) * 2;
-        const startCol = Math.floor(col / 2) * 2;
-        for (let i = 0; i < 2; i++) {
-            for (let j = 0; j < 2; j++) {
-                if (board[startRow + i][startCol + j] === num) return false;
+    // Check Subgrid (only for 4x4)
+    if (hasBlocks && size === 4) {
+        const blockSize = 2;
+        const startRow = Math.floor(row / blockSize) * blockSize;
+        const startCol = Math.floor(col / blockSize) * blockSize;
+        for (let r = 0; r < blockSize; r++) {
+            for (let c = 0; c < blockSize; c++) {
+                if (board[startRow + r][startCol + c] === num) return false;
             }
         }
     }
 
     return true;
-}
+};
 
-function solveSudoku(board: Board, size: number): boolean {
-    for (let row = 0; row < size; row++) {
-        for (let col = 0; col < size; col++) {
-            if (board[row][col] === null) {
-                // Try numbers 1 to size
-                // Randomize order to get different puzzles
+// Backtracking solver
+export const solveSudoku = (board: Grid, size: number, hasBlocks: boolean): boolean => {
+    for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+            if (board[r][c] === 0) {
+                // Try numbers 1..size in random order to get random puzzles
                 const nums = Array.from({ length: size }, (_, i) => i + 1).sort(() => Math.random() - 0.5);
 
                 for (const num of nums) {
-                    if (isValidMove(board, row, col, num, size)) {
-                        board[row][col] = num;
-                        if (solveSudoku(board, size)) return true;
-                        board[row][col] = null;
+                    if (isValid(board, r, c, num, size, hasBlocks)) {
+                        board[r][c] = num;
+                        if (solveSudoku(board, size, hasBlocks)) return true;
+                        board[r][c] = 0;
                     }
                 }
                 return false;
@@ -50,60 +63,35 @@ function solveSudoku(board: Board, size: number): boolean {
         }
     }
     return true;
-}
+};
 
-export function generatePuzzle(size: number): { initial: Board, solved: Board } {
-    // 1. Generate a full valid board
-    const solved = createEmptyBoard(size);
-    solveSudoku(solved, size);
+export const generateGame = (levelId: number) => {
+    const config = LEVELS.find(l => l.id === levelId) || LEVELS[0];
+    const size = config.size;
 
-    // 2. Clone for the puzzle
-    const initial = solved.map(row => [...row]);
+    // 1. Create empty board
+    const solution: Grid = Array.from({ length: size }, () => Array(size).fill(0));
 
-    // 3. Remove numbers based on difficulty/size
-    // Heuristic: Keep N cells filled
-    let cellsToKeep;
-    if (size === 3) cellsToKeep = 4; // Very easy
-    else if (size === 4) cellsToKeep = 6;
-    else if (size === 5) cellsToKeep = 8;
-    else cellsToKeep = Math.floor(size * size * 0.4);
+    // 2. Fill diagonal (or just random first row) to seed randomness efficiently
+    // For small grids, just solving from scratch with randomized number picking is fast enough.
+    solveSudoku(solution, size, config.hasBlocks);
 
-    let attempts = size * size * 2;
-    while (attempts > 0 && countFilled(initial) > cellsToKeep) {
-        const row = Math.floor(Math.random() * size);
-        const col = Math.floor(Math.random() * size);
-        if (initial[row][col] !== null) {
-            initial[row][col] = null;
-            // Ideally we should check if unique solution remains, but for kids app simple removal is usually fine
-            // and ensures solvability since we started from a solved state.
-        }
-        attempts--;
-    }
+    // 3. Create puzzle by removing numbers
+    // Deep copy solution to puzzle
+    const puzzle: Grid = solution.map(row => [...row]);
 
-    return { initial, solved };
-}
+    let removed = 0;
+    const target = config.emptyCount;
+    const attempts = 100; // safety break
 
-function countFilled(board: Board): number {
-    return board.flat().filter(c => c !== null).length;
-}
-
-export function checkWin(board: Board, size: number): boolean {
-    // Check if full
-    if (countFilled(board) !== size * size) return false;
-
-    // Validate all cells
-    for (let r = 0; r < size; r++) {
-        for (let c = 0; c < size; c++) {
-            const val = board[r][c];
-            if (val === null) return false;
-
-            // Temporarily remove to check validity
-            board[r][c] = null;
-            const valid = isValidMove(board, r, c, val, size);
-            board[r][c] = val;
-
-            if (!valid) return false;
+    for (let i = 0; i < attempts && removed < target; i++) {
+        const r = Math.floor(Math.random() * size);
+        const c = Math.floor(Math.random() * size);
+        if (puzzle[r][c] !== 0) {
+            puzzle[r][c] = 0;
+            removed++;
         }
     }
-    return true;
-}
+
+    return { puzzle, solution };
+};
