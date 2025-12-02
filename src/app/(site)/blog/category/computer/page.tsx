@@ -19,6 +19,14 @@ export const metadata: Metadata = {
 // Placeholder for posts in this category
 const computerPosts: BlogPostCardProps[] = [
   {
+    title: "Kinder Sudoku",
+    subtitle: "(Logik spielerisch lernen)",
+    description: "Ein farbenfrohes Sudoku-Spiel für Kinder mit 3 Schwierigkeitsstufen, Sounds und Konfetti-Belohnung.",
+    imageUrl: "/images/blog/sudoku.png",
+    href: "/blog/computer/sudoku",
+    imageAlt: "Kinder Sudoku Preview"
+  },
+  {
     title: "CantoPlay",
     subtitle: "(learn Cantonese on canvas)",
     description: "A calm, canvas-based Cantonese practice game with flashcards, a quiz, and a gentle mini-game - built for my daughter before our HK trip.",
@@ -50,7 +58,7 @@ const computerPosts: BlogPostCardProps[] = [
     href: "/blog/computer/reading-fun",
     imageAlt: "LeseSpaß Deutsch game interface"
   },
-    // Add more computer posts here
+  // Add more computer posts here
 ];
 
 export default function ComputerCategoryPage() {
@@ -89,10 +97,10 @@ export default function ComputerCategoryPage() {
       <header className="text-center mb-8 md:mb-12">
         <h1 className="text-4xl sm:text-5xl font-bold">Just Enough {categoryName} Fun</h1>
         <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-        I&apos;ve never been a true gamer (I tried, but one of my guilty pleasures is buying tons of games and finishing none). Out of nowhere, my daughter started asking me to build her games (who even told her that was a thing?!). The clueless part of me just said, &apos;Sure!&apos; and that&apos;s how this journey began. Somehow, creating these simple games for her is way more fulfilling than playing games myself.
+          I&apos;ve never been a true gamer (I tried, but one of my guilty pleasures is buying tons of games and finishing none). Out of nowhere, my daughter started asking me to build her games (who even told her that was a thing?!). The clueless part of me just said, &apos;Sure!&apos; and that&apos;s how this journey began. Somehow, creating these simple games for her is way more fulfilling than playing games myself.
         </p>
       </header>
-      
+
 
       {/* Blog Post Grid */}
       {computerPosts.length > 0 ? (

@@ -118,6 +118,12 @@
       "namedRegex": "^/blog/computer/reading\\-fun(?:/)?$"
     },
     {
+      "page": "/blog/computer/sudoku",
+      "regex": "^/blog/computer/sudoku(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/computer/sudoku(?:/)?$"
+    },
+    {
       "page": "/blog/computer/toddler-types",
       "regex": "^/blog/computer/toddler\\-types(?:/)?$",
       "routeKeys": {},
@@ -218,6 +224,12 @@
       "regex": "^/impressum(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/impressum(?:/)?$"
+    },
+    {
+      "page": "/sudoku",
+      "regex": "^/sudoku(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/sudoku(?:/)?$"
     }
   ],
   "dataRoutes": [],
