@@ -64,6 +64,8 @@ export default function SudokuPostPage() {
 
                         <p className="mt-4 mb-4">
                             👉 Play it here: <Link href="/sudoku" className="text-blue-600 dark:text-blue-500 hover:underline">Sudoku for small geniuses</Link>
+                            <br />
+                            👉 For those who prefers paper, I made a generator that you can use to generate and print out baby sudokus: <Link href="/sudokugenerator" className="text-blue-600 dark:text-blue-500 hover:underline">Tiny Sudoku generator</Link>
                         </p>
 
                         <h3 className="text-xl font-semibold mt-8 mb-2">Details</h3>

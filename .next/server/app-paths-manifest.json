@@ -1,6 +1,8 @@
 {
   "/(game)/sudoku/page": "app/(game)/sudoku/page.js",
+  "/(game)/sudokugenerator/page": "app/(game)/sudokugenerator/page.js",
+  "/(site)/blog/category/computer/page": "app/(site)/blog/category/computer/page.js",
   "/(site)/blog/computer/sudoku/page": "app/(site)/blog/computer/sudoku/page.js",
-  "/apple-icon.png/route": "app/apple-icon.png/route.js",
+  "/(site)/page": "app/(site)/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js"
 }
