@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Printer, Loader2, Sparkles, RefreshCcw } from 'lucide-react';
+import SimpleHeader from './SimpleHeader';
 
 // ========= Types =========
 
@@ -284,6 +285,11 @@ const TinySudokuGenerator: React.FC = () => {
       `}</style>
 
             <PatternDefinitions />
+
+            {/* Blog Header - hidden when printing */}
+            <div className="no-print">
+                <SimpleHeader />
+            </div>
 
             {/* Controls */}
             <header className="no-print bg-white border-b border-slate-200 sticky top-0 z-50 px-4 py-4 shadow-sm">

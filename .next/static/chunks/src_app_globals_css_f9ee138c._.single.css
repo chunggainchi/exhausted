@@ -1180,14 +1180,6 @@
     max-width: 80px;
   }
 
-  .max-w-\[400px\] {
-    max-width: 400px;
-  }
-
-  .max-w-\[500px\] {
-    max-width: 500px;
-  }
-
   .max-w-\[600px\] {
     max-width: 600px;
   }
@@ -3422,18 +3414,9 @@
     color: var(--accent-foreground);
   }
 
-  .focus\:ring-1:focus {
-    --tw-ring-shadow: var(--tw-ring-inset, ) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
-    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
-  }
-
   .focus\:ring-2:focus {
     --tw-ring-shadow: var(--tw-ring-inset, ) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color, currentcolor);
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
-  }
-
-  .focus\:ring-indigo-400:focus {
-    --tw-ring-color: var(--color-indigo-400);
   }
 
   .focus\:ring-primary:focus {
@@ -4143,22 +4126,9 @@
   }
 
   @media print {
-    .print\:opacity-100 {
-      opacity: 1;
-    }
-  }
-
-  @media print {
     .print\:shadow-none {
       --tw-shadow: 0 0 #0000;
       box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
-    }
-  }
-
-  @media print {
-    .print\:grayscale-0 {
-      --tw-grayscale: grayscale(0%);
-      filter: var(--tw-blur, ) var(--tw-brightness, ) var(--tw-contrast, ) var(--tw-grayscale, ) var(--tw-hue-rotate, ) var(--tw-invert, ) var(--tw-saturate, ) var(--tw-sepia, ) var(--tw-drop-shadow, );
     }
   }
 
