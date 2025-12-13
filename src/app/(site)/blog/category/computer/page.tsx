@@ -19,6 +19,14 @@ export const metadata: Metadata = {
 // Placeholder for posts in this category
 const computerPosts: BlogPostCardProps[] = [
   {
+    title: "Solar System Simulation",
+    subtitle: "(a realistic, calm space travel)",
+    description: "A realistic 3D solar system simulation with accurate physics and time control. Perfect for explaining space to kids or just zoning out.",
+    imageUrl: "/images/blog/solar-system-simulation.png",
+    href: "/blog/computer/solar-system-simulation",
+    imageAlt: "Solar System Simulation Interface"
+  },
+  {
     title: "Sudoku",
     subtitle: "(for small geniuses)",
     description: "A colorful, child-friendly Sudoku game with 3 difficulty levels, fun sounds, and a confetti reward.",

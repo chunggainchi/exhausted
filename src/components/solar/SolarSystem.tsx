@@ -1,0 +1,1143 @@
+
+'use client';
+
+import React, { useState, useEffect, useRef, useMemo, Suspense } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { useTexture, Text, OrbitControls, Stars, Loader, Preload } from '@react-three/drei';
+import * as THREE from 'three';
+
+// --- TYPES ---
+interface PlanetData {
+    id: string;
+    name: string;
+    color: string;
+    size: number;
+    distance: number;
+    speed: number;
+    rotationSpeed: number;
+    textureUrl: string;
+    description: string;
+    funFact: string;
+    temp: string;
+    moonsCount: number;
+    realSize: string;
+    travelTime?: string;
+    inclination?: number;
+    orbitAU: number;
+    radiusMultiplier: number;
+    hasRings?: boolean;
+    moons?: MoonData[];
+    // Dynamic props for display
+    useRealDist?: boolean;
+    useRealSize?: boolean;
+}
+
+interface MoonData {
+    size: number;
+    distance: number;
+    speed: number;
+    color: string;
+    // Dynamic props
+    useRealDist?: boolean;
+    useRealSize?: boolean;
+}
+
+// --- CONSTANTS & DATA ---
+// Using local texture assets
+const TEXTURE_BASE = '/textures';
+
+const PLANETS: PlanetData[] = [
+    {
+        id: 'mercury',
+        name: 'Mercury',
+        color: '#E0E0E0',
+        size: 0.8,
+        distance: 12,
+        speed: 8.26e-7,
+        rotationSpeed: 1.24e-6,
+        textureUrl: `${TEXTURE_BASE}/Mercury.jpg`,
+        travelTime: "~3 Months",
+        inclination: 7.0,
+        orbitAU: 0.39,
+        radiusMultiplier: 0.38,
+        description: "The smallest planet in our solar system.",
+        funFact: "A year on Mercury is only 88 Earth days!",
+        temp: "🔥🔥🔥",
+        moonsCount: 0,
+        realSize: "0.38x Earth"
+    },
+    {
+        id: 'venus',
+        name: 'Venus',
+        color: '#E3BB76',
+        size: 1.5,
+        distance: 18,
+        speed: 3.23e-7,
+        rotationSpeed: -2.99e-7,
+        textureUrl: `${TEXTURE_BASE}/Venus.jpg`,
+        travelTime: "~4 Months",
+        inclination: 3.4,
+        orbitAU: 0.72,
+        radiusMultiplier: 0.95,
+        description: "The hottest planet.",
+        funFact: "A day on Venus is longer than a year!",
+        temp: "🔥🔥🔥🔥",
+        moonsCount: 0,
+        realSize: "0.95x Earth"
+    },
+    {
+        id: 'earth',
+        name: 'Earth',
+        color: '#2233FF',
+        size: 1.6,
+        distance: 26,
+        speed: 1.99e-7,
+        rotationSpeed: 7.27e-5,
+        textureUrl: `${TEXTURE_BASE}/Earth.jpg`,
+        travelTime: "0",
+        inclination: 0,
+        orbitAU: 1.00,
+        radiusMultiplier: 1.00,
+        description: "Our home planet, the only known world with life.",
+        funFact: "Earth is the only planet not named after a god!",
+        temp: "🌿😎",
+        moonsCount: 1,
+        realSize: "1x Earth",
+        moons: [{ size: 0.45, distance: 3.5, speed: 2.66e-6, color: '#DDDDDD' }]
+    },
+    {
+        id: 'mars',
+        name: 'Mars',
+        color: '#D14A28',
+        size: 1.1,
+        distance: 34,
+        speed: 1.05e-7,
+        rotationSpeed: 7.08e-5,
+        textureUrl: `${TEXTURE_BASE}/Mars.jpg`,
+        travelTime: "~7 Months",
+        inclination: 1.85,
+        orbitAU: 1.52,
+        radiusMultiplier: 0.53,
+        description: "The Red Planet.",
+        funFact: "Mars has the tallest volcano in the solar system!",
+        temp: "❄️",
+        moonsCount: 2,
+        realSize: "0.53x Earth"
+    },
+    {
+        id: 'jupiter',
+        name: 'Jupiter',
+        color: '#D8CA9D',
+        size: 4.5,
+        distance: 55,
+        speed: 1.67e-8,
+        rotationSpeed: 1.76e-4,
+        textureUrl: `${TEXTURE_BASE}/Jupiter.jpg`,
+        travelTime: "~5 Years",
+        inclination: 1.3,
+        orbitAU: 5.20,
+        radiusMultiplier: 11.2,
+        description: "The largest planet in our solar system.",
+        funFact: "You can fit 1,300 Earths inside Jupiter!",
+        temp: "❄️❄️",
+        moonsCount: 79,
+        realSize: "11.2x Earth"
+    },
+    {
+        id: 'saturn',
+        name: 'Saturn',
+        color: '#F4D03F',
+        size: 3.8,
+        distance: 75,
+        speed: 6.75e-9,
+        rotationSpeed: 1.64e-4,
+        textureUrl: `${TEXTURE_BASE}/Saturn.jpg`,
+        travelTime: "~7 Years",
+        inclination: 2.5,
+        orbitAU: 9.58,
+        radiusMultiplier: 9.45,
+        hasRings: true,
+        description: "Lord of the Rings.",
+        funFact: "Saturn could float in a giant bathtub!",
+        temp: "❄️❄️❄️",
+        moonsCount: 82,
+        realSize: "9.45x Earth"
+    },
+    {
+        id: 'uranus',
+        name: 'Uranus',
+        color: '#4FD0E7',
+        size: 2.6,
+        distance: 92,
+        speed: 2.37e-9,
+        rotationSpeed: -1.01e-4,
+        textureUrl: `${TEXTURE_BASE}/Uranus.jpg`,
+        travelTime: "~9 Years",
+        inclination: 0.77,
+        orbitAU: 19.2,
+        radiusMultiplier: 4.0,
+        description: "The Ice Giant.",
+        funFact: "Uranus spins on its side like a ball.",
+        temp: "❄️❄️❄️❄️",
+        moonsCount: 27,
+        realSize: "4.0x Earth"
+    },
+    {
+        id: 'neptune',
+        name: 'Neptune',
+        color: '#2E5D9C',
+        size: 2.5,
+        distance: 110,
+        speed: 1.20e-9,
+        rotationSpeed: 1.08e-4,
+        textureUrl: `${TEXTURE_BASE}/Neptune.jpg`,
+        travelTime: "~12 Years",
+        inclination: 1.77,
+        orbitAU: 30.05,
+        radiusMultiplier: 3.88,
+        description: "The Windiest One.",
+        funFact: "Neptune has the strongest winds in the solar system!",
+        temp: "❄️❄️❄️❄️❄️",
+        moonsCount: 14,
+        realSize: "3.88x Earth"
+    }
+];
+
+const TIME_SPEEDS = [
+    { value: 1, label: '1s/s' }, // Real Time
+    { value: 60, label: '1m/s' },
+    { value: 3600, label: '1h/s' },
+    { value: 86400, label: '1d/s' }, // Default
+    { value: 604800, label: '1w/s' }
+];
+
+const SUN_SIZE = 7;
+
+// --- AUDIO SERVICE ---
+const audioService = new class {
+    bgMusic: HTMLAudioElement | null = null;
+    ctx: AudioContext | null = null;
+
+    constructor() {
+        if (typeof window !== 'undefined') {
+            this.bgMusic = new Audio('/music/space.mp3');
+            this.bgMusic.loop = true;
+            this.bgMusic.volume = 0.5;
+        }
+    }
+
+    getContext() {
+        if (!this.ctx && typeof window !== 'undefined') {
+            this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        }
+        return this.ctx;
+    }
+
+    playClick() {
+        const ctx = this.getContext();
+        if (!ctx) return;
+        if (ctx.state === 'suspended') ctx.resume();
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1200, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.05);
+
+        gain.gain.setValueAtTime(0.05, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+
+        osc.start();
+        osc.stop(ctx.currentTime + 0.05);
+    }
+
+    startDrone() {
+        this.bgMusic?.play().catch(e => console.warn("Audio autoplay blocked", e));
+    }
+
+    stopDrone() {
+        this.bgMusic?.pause();
+    }
+}();
+
+// --- SUB COMPONENTS ---
+
+const Sun: React.FC<{ useRealSize: boolean }> = ({ useRealSize }) => {
+    const meshRef = useRef<THREE.Mesh>(null);
+    const texture = useTexture(`${TEXTURE_BASE}/Sun.jpg`);
+
+    const size = SUN_SIZE; // Sun size is constant, planets scale relative to it
+
+    useFrame((state, delta) => {
+        if (meshRef.current) {
+            meshRef.current.rotation.y += delta * 0.05;
+        }
+    });
+
+    return (
+        <group>
+            {/* Increase light distance for realistic scale */}
+            <pointLight intensity={3.0} decay={0} distance={useRealSize ? 5000 : 300} color="#ffaa00" />
+            <ambientLight intensity={0.3} />
+            <hemisphereLight intensity={0.4} groundColor="#000000" color="#443355" />
+
+            <mesh ref={meshRef}>
+                <sphereGeometry args={[size, 64, 64]} />
+                <meshStandardMaterial
+                    map={texture}
+                    emissive="#FFD700"
+                    emissiveIntensity={0.5}
+                    emissiveMap={texture}
+                    color="#ffffff"
+                />
+            </mesh>
+            <mesh scale={[1.2, 1.2, 1.2]}>
+                <sphereGeometry args={[size, 32, 32]} />
+                <meshBasicMaterial
+                    color="#FF4500"
+                    transparent
+                    opacity={0.1}
+                    depthWrite={false}
+                />
+            </mesh>
+            <Text
+                position={[0, size + (useRealSize ? 10 : 2.5), 0]}
+                fontSize={useRealSize ? 20 : 3}
+                color="white"
+                anchorX="center"
+                anchorY="middle"
+                outlineWidth={0.1}
+                outlineColor="#000000"
+            >
+                Sun
+            </Text>
+        </group>
+    );
+};
+
+const AsteroidBelt: React.FC<{ useRealDist: boolean; isPlaying: boolean }> = ({ useRealDist, isPlaying }) => {
+    const meshRef = useRef<THREE.InstancedMesh>(null);
+    // Nice mode: Between Mars (34) and Jupiter (55) -> 42-50.
+    // Real mode: Between 2.2 AU (66) and 3.2 AU (96).
+    const count = 1500;
+    const dummy = useMemo(() => new THREE.Object3D(), []);
+
+    useEffect(() => {
+        if (!meshRef.current) return;
+
+        const minR = useRealDist ? 66 : 42;
+        const maxR = useRealDist ? 96 : 50;
+
+        for (let i = 0; i < count; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const radius = minR + Math.random() * (maxR - minR); // Scaled radius
+            const x = Math.cos(angle) * radius;
+            const z = Math.sin(angle) * radius;
+            const y = (Math.random() - 0.5) * 2; // Slight vertical spread
+            const scale = Math.random() * 0.2 + 0.05;
+
+            dummy.position.set(x, y, z);
+            dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+            dummy.scale.set(scale, scale, scale);
+            dummy.updateMatrix();
+            meshRef.current.setMatrixAt(i, dummy.matrix);
+        }
+        meshRef.current.instanceMatrix.needsUpdate = true;
+    }, [dummy, useRealDist]);
+
+    useFrame((state, delta) => {
+        if (meshRef.current && isPlaying) {
+            meshRef.current.rotation.y += delta * 0.02;
+        }
+    });
+
+    return (
+        <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
+            <dodecahedronGeometry args={[1, 0]} />
+            <meshStandardMaterial color="#666666" roughness={0.8} />
+        </instancedMesh>
+    );
+};
+
+const Moon: React.FC<{ data: any, parentSize: number, simTimeRef: React.MutableRefObject<number>, useRealDist: boolean, useRealSize: boolean }> = ({ data, parentSize, simTimeRef, useRealDist, useRealSize }) => {
+    const ref = useRef<THREE.Group>(null);
+    const textureUrl = '/textures/Moon.jpg';
+    const texture = useTexture(textureUrl);
+
+    // Realistic Moon Scaling:
+    // Size: ~27% of Earth (Parent)
+    // Distance: ~60x Earth Radius (Parent Radius)
+    // Only apply real distance scaling if BOTH dist and size are real, otherwise Moon flies off if parent is huge.
+
+    const size = useRealSize ? parentSize * 0.27 : data.size;
+    const distance = (useRealDist && useRealSize) ? parentSize * 60 : data.distance;
+
+    // Calculate orbit geometry once
+    const orbitCurve = useMemo(() => {
+        const radius = parentSize + distance; // Visual radius for the line
+        const curve = new THREE.EllipseCurve(0, 0, radius, radius, 0, 2 * Math.PI, false, 0);
+        const points = curve.getPoints(64);
+        return new THREE.BufferGeometry().setFromPoints(points).rotateX(-Math.PI / 2);
+    }, [parentSize, distance]);
+
+    useFrame(() => {
+        if (ref.current) {
+            const angle = simTimeRef.current * data.speed;
+            ref.current.position.x = Math.cos(angle) * (parentSize + distance);
+            ref.current.position.z = Math.sin(angle) * (parentSize + distance);
+
+            // Tidal Locking: Moon always faces the planet (Parent)
+
+            // Tidal Locking: Moon always faces the planet (Parent)
+            // We must use the parent's WORLD position, because lookAt() expects world coords.
+            // lookAt(0,0,0) was looking at the Sun (World Origin).
+            if (ref.current.parent) {
+                const parentWorldPos = new THREE.Vector3();
+                ref.current.parent.getWorldPosition(parentWorldPos);
+                ref.current.lookAt(parentWorldPos);
+            }
+        }
+    });
+
+    return (
+        <group>
+            {/* Stable Moon Orbit Line */}
+            <lineLoop geometry={orbitCurve}>
+                <lineBasicMaterial attach="material" color="#666" transparent opacity={0.3} />
+            </lineLoop>
+
+            <group ref={ref}>
+                <mesh rotation={[0, Math.PI * 1.5, 0]}>
+                    <sphereGeometry args={[size, 32, 32]} />
+                    <meshStandardMaterial map={texture} roughness={0.9} color="#ffffff" />
+                </mesh>
+                <Text
+                    position={[0, size + 0.8, 0]}
+                    fontSize={0.8}
+                    color="#ffffff"
+                    anchorX="center"
+                    anchorY="middle"
+                    outlineWidth={0.05}
+                    outlineColor="#000000"
+                >
+                    Moon
+                </Text>
+            </group>
+        </group>
+    );
+};
+
+const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: string) => void; simTimeRef: React.MutableRefObject<number>; isPlaying: boolean; userLocation?: { lat: number; long: number } | null }> = ({ data, isFocused, onSelect, simTimeRef, isPlaying, userLocation }) => {
+    const meshRef = useRef<THREE.Mesh>(null);
+    const orbitRef = useRef<THREE.Group>(null);
+
+    // Apply Orbital Inclination
+    const inclinationRad = THREE.MathUtils.degToRad(data.inclination || 0);
+
+    const texture = useTexture(data.textureUrl);
+
+    const orbitCurve = useMemo(() => {
+        const points = [];
+        for (let i = 0; i <= 128; i++) {
+            const angle = (i / 128) * Math.PI * 2;
+            points.push(new THREE.Vector3(Math.cos(angle) * data.distance, 0, Math.sin(angle) * data.distance));
+        }
+        return new THREE.BufferGeometry().setFromPoints(points);
+    }, [data.distance]);
+
+    const initialAngle = data.distance * 0.5;
+
+    const isGasGiant = ['jupiter', 'saturn', 'uranus', 'neptune'].includes(data.id);
+    const isEarth = data.id === 'earth';
+    const roughness = isEarth ? 0.5 : (isGasGiant ? 0.4 : 0.9);
+    const metalness = isEarth ? 0.1 : 0.0;
+
+    useFrame((state, delta) => {
+        if (orbitRef.current) {
+            const time = simTimeRef.current;
+            const angle = initialAngle + (time * data.speed * 0.1);
+
+            orbitRef.current.position.x = Math.cos(angle) * data.distance;
+            orbitRef.current.position.z = Math.sin(angle) * data.distance;
+
+            // Rotate planet based on sim time
+            if (meshRef.current) {
+                meshRef.current.rotation.y = time * data.rotationSpeed;
+            }
+        }
+    });
+
+    return (
+        <group rotation={[inclinationRad, 0, 0]}>
+            <lineLoop geometry={orbitCurve}>
+                <lineBasicMaterial attach="material" color={isFocused ? "#aaa" : "#555"} transparent opacity={isFocused ? 0.6 : 0.4} />
+            </lineLoop>
+
+            <group ref={orbitRef}>
+                <group onClick={(e) => { e.stopPropagation(); onSelect(data.id); }}>
+
+                    <Text
+                        position={[0, data.size + 1.8, 0]}
+                        fontSize={Math.max(1.5, data.size * 0.6)}
+                        color="white"
+                        anchorX="center"
+                        anchorY="middle"
+                        outlineWidth={0.1}
+                        outlineColor="#000000"
+                    >
+                        {data.name}
+                    </Text>
+
+                    <mesh ref={meshRef}>
+                        <sphereGeometry args={[data.size, 64, 64]} />
+                        <meshStandardMaterial
+                            map={texture}
+                            metalness={metalness}
+                            roughness={roughness}
+                            emissive={isFocused ? "#111111" : "#000000"}
+                            emissiveIntensity={isFocused ? 0.2 : 0}
+                        />
+                        {data.id === 'earth' && userLocation && (
+                            <mesh position={[
+                                data.size * Math.cos(THREE.MathUtils.degToRad(userLocation.lat)) * Math.sin(THREE.MathUtils.degToRad(userLocation.long + 90)),
+                                data.size * Math.sin(THREE.MathUtils.degToRad(userLocation.lat)),
+                                data.size * Math.cos(THREE.MathUtils.degToRad(userLocation.lat)) * Math.cos(THREE.MathUtils.degToRad(userLocation.long + 90))
+                            ]}>
+                                <sphereGeometry args={[data.size * 0.03, 16, 16]} />
+                                <meshBasicMaterial color="#ff0000" toneMapped={false} />
+                                <pointLight distance={data.size * 0.5} intensity={5} color="#ff0000" />
+                            </mesh>
+                        )}
+                    </mesh>
+
+                    {isFocused && <pointLight intensity={1.5} distance={50} decay={2} color="#ffffff" />}
+
+                    {(data.id === 'venus' || isGasGiant) && !isFocused && (
+                        <mesh scale={[1.05, 1.05, 1.05]}>
+                            <sphereGeometry args={[data.size, 32, 32]} />
+                            <meshBasicMaterial
+                                color={data.color}
+                                transparent
+                                opacity={0.08}
+                                blending={THREE.AdditiveBlending}
+                                side={THREE.BackSide}
+                            />
+                        </mesh>
+                    )}
+
+
+                    {data.id === 'earth' && !isFocused && (
+                        <mesh scale={[1.03, 1.03, 1.03]}>
+                            <sphereGeometry args={[data.size, 64, 64]} />
+                            <meshStandardMaterial
+                                map={texture}
+                                transparent
+                                opacity={0.2}
+                                depthWrite={false}
+                                blending={THREE.AdditiveBlending}
+                            />
+                        </mesh>
+                    )}
+
+                    {data.hasRings && (
+                        <mesh rotation={[-Math.PI / 3, 0, 0]}>
+                            <ringGeometry args={[data.size * 1.4, data.size * 2.2, 128]} />
+                            <meshStandardMaterial color={data.color} side={THREE.DoubleSide} transparent opacity={0.7} />
+                        </mesh>
+                    )}
+
+                    {data.moons?.map((moon, idx) => (
+                        <Moon key={idx} data={moon} parentSize={data.size} simTimeRef={simTimeRef} useRealDist={data.useRealDist || false} useRealSize={data.useRealSize || false} />
+                    ))}
+                </group>
+            </group>
+        </group >
+    );
+};
+
+// Fallback if textures fail
+const PlanetFallback: React.FC<{ data: any, simTimeRef: React.MutableRefObject<number>, onSelect: (id: string) => void }> = ({ data, simTimeRef, onSelect }) => {
+    const meshRef = useRef<THREE.Mesh>(null);
+    const orbitRef = useRef<THREE.Group>(null);
+    const initialAngle = data.distance * 0.5;
+
+    useFrame(() => {
+        if (orbitRef.current) {
+            const time = simTimeRef.current;
+            const angle = initialAngle + (time * data.speed * 0.1);
+            orbitRef.current.position.x = Math.cos(angle) * data.distance;
+            orbitRef.current.position.z = Math.sin(angle) * data.distance;
+            if (meshRef.current) meshRef.current.rotation.y += data.rotationSpeed;
+        }
+    });
+
+    return (
+        <group>
+            <group ref={orbitRef}>
+                <group onClick={(e) => { e.stopPropagation(); onSelect(data.id); }}>
+                    <Text
+                        position={[0, data.size + 1.8, 0]}
+                        fontSize={Math.max(1.2, data.size * 0.5)}
+                        color="white"
+                        anchorX="center"
+                        anchorY="middle"
+                        outlineWidth={0.05}
+                        outlineColor="#000000"
+                    >
+                        {data.name}
+                    </Text>
+                    <mesh ref={meshRef}>
+                        <sphereGeometry args={[data.size, 64, 64]} />
+                        <meshPhysicalMaterial
+                            color={data.color}
+                            metalness={0.4}
+                            roughness={0.3}
+                            clearcoat={1}
+                            clearcoatRoughness={0.1}
+                        />
+                    </mesh>
+                    {data.hasRings && (
+                        <mesh rotation={[-Math.PI / 3, 0, 0]}>
+                            <ringGeometry args={[data.size * 1.4, data.size * 2.2, 64]} />
+                            <meshStandardMaterial color={data.color} side={THREE.DoubleSide} transparent opacity={0.5} />
+                        </mesh>
+                    )}
+                </group>
+            </group>
+            <mesh rotation={[Math.PI / 2, 0, 0]}>
+                <ringGeometry args={[data.distance - 0.1, data.distance + 0.1, 128]} />
+                <meshBasicMaterial color="#444" side={THREE.DoubleSide} transparent opacity={0.2} />
+            </mesh>
+        </group>
+    );
+};
+
+class PlanetErrorBoundary extends React.Component<
+    { children: React.ReactNode, data: any, simTimeRef: React.MutableRefObject<number>, onSelect: (id: string) => void },
+    { hasError: boolean }
+> {
+    constructor(props: any) {
+        super(props);
+        this.state = { hasError: false };
+    }
+    static getDerivedStateFromError(error: any) { return { hasError: true }; }
+    componentDidCatch(error: any) { console.warn(`Texture failed for ${this.props.data.name}, switching to glossy mode.`); }
+    render() {
+        if (this.state.hasError) {
+            return <PlanetFallback data={this.props.data} simTimeRef={this.props.simTimeRef} onSelect={this.props.onSelect} />;
+        }
+        return this.props.children;
+    }
+}
+
+const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; useRealSize: boolean; simTimeRef: React.MutableRefObject<number> }> = ({ focusedId, useRealDist, useRealSize, simTimeRef }) => {
+    const { camera } = useThree();
+    const controlsRef = useRef<any>(null);
+    const isTransitioning = useRef(false);
+    const previousPlanetPos = useRef(new THREE.Vector3());
+
+    // Trigger transition when focusedId changes
+    useEffect(() => {
+        isTransitioning.current = true;
+    }, [focusedId]);
+
+    useFrame(() => {
+        if (!controlsRef.current) return;
+
+        if (focusedId) {
+            const planet = PLANETS.find(p => p.id === focusedId);
+            if (planet) {
+                // Calculate current position exactly as Planet component does
+                const dist = useRealDist ? planet.orbitAU * 30 : planet.distance;
+                const angle = (dist * 0.5) + (simTimeRef.current * planet.speed * 0.1);
+
+                let x = Math.cos(angle) * dist;
+                let z = Math.sin(angle) * dist;
+                let y = 0;
+
+                // Apply Inclination (Rotate around X axis)
+                if (planet.inclination) {
+                    const inc = THREE.MathUtils.degToRad(planet.inclination);
+                    y = -z * Math.sin(inc);
+                    z = z * Math.cos(inc);
+                }
+                const planetPos = new THREE.Vector3(x, y, z);
+
+                if (isTransitioning.current) {
+                    // Fly to planet
+                    const size = useRealSize ? (SUN_SIZE / 109) * planet.radiusMultiplier : planet.size;
+                    const viewDist = size * 3.0 + 3.0;
+                    const offset = new THREE.Vector3(0, viewDist * 0.5, viewDist);
+                    const idealPos = planetPos.clone().add(offset);
+
+                    camera.position.lerp(idealPos, 0.08);
+                    controlsRef.current.target.lerp(planetPos, 0.08);
+
+                    if (camera.position.distanceTo(idealPos) < 0.5) {
+                        isTransitioning.current = false;
+                        previousPlanetPos.current.copy(planetPos);
+                    }
+                } else {
+                    // Follow planet
+                    // Move camera by the delta of planet movement
+                    const delta = planetPos.clone().sub(previousPlanetPos.current);
+                    if (delta.length() < 50) { // Sanity check
+                        camera.position.add(delta);
+                    }
+                    controlsRef.current.target.copy(planetPos);
+                    previousPlanetPos.current.copy(planetPos);
+                }
+            }
+        } else {
+            if (isTransitioning.current) {
+                // Return to overview
+                const maxD = useRealDist ? 2000 : 160;
+                const resetPos = new THREE.Vector3(0, maxD * 0.8, maxD);
+                const resetTarget = new THREE.Vector3(0, 0, 0);
+                camera.position.lerp(resetPos, 0.05);
+                controlsRef.current.target.lerp(resetTarget, 0.05);
+                if (camera.position.distanceTo(resetPos) < 1.0) isTransitioning.current = false;
+            }
+        }
+        controlsRef.current.update();
+    });
+
+    const maxDistance = useRealDist ? 3000 : 300;
+
+    return (
+        <OrbitControls
+            ref={controlsRef}
+            makeDefault
+            enableDamping
+            dampingFactor={0.08}
+            enableZoom={true}
+            enablePan={true}
+            enableRotate={true}
+            minDistance={focusedId ? (useRealDist ? 0.1 : 3) : 10}
+            maxDistance={focusedId ? (useRealDist ? 500 : 80) : maxDistance}
+            rotateSpeed={0.5}
+            zoomSpeed={0.8}
+            panSpeed={0.5}
+        />
+    );
+};
+
+const SimulationController: React.FC<{ isPlaying: boolean, speedMultiplier: number, simTimeRef: React.MutableRefObject<number> }> = ({ isPlaying, speedMultiplier, simTimeRef }) => {
+    useFrame((state, delta) => {
+        if (isPlaying) simTimeRef.current += delta * speedMultiplier;
+    });
+    return null;
+};
+
+const UI: React.FC<{
+    focusedId: string | null;
+    onSelect: (id: string | null) => void;
+    isPlaying: boolean;
+    onTogglePlay: () => void;
+    showInfo: boolean;
+    onToggleInfo: () => void;
+    onToggleFullscreen: () => void;
+    useRealDist: boolean;
+    onToggleRealDist: () => void;
+    useRealSize: boolean;
+    onToggleRealSize: () => void;
+    showLocation: boolean;
+    onToggleLocation: () => void;
+    isMusicOn: boolean;
+    onToggleMusic: () => void;
+    simSpeed: number;
+    onToggleSpeed: () => void;
+}> = ({ focusedId, onSelect, isPlaying, onTogglePlay, showInfo, onToggleInfo, onToggleFullscreen, useRealDist, onToggleRealDist, useRealSize, onToggleRealSize, showLocation, onToggleLocation, isMusicOn, onToggleMusic, simSpeed, onToggleSpeed }) => {
+    const [showMobileMenu, setShowMobileMenu] = useState(false);
+    const [hoveredInfo, setHoveredInfo] = useState<string | null>(null);
+    const focusedPlanet = PLANETS.find(p => p.id === focusedId);
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    const handleSelect = (id: string | null) => {
+        audioService.playClick();
+        onSelect(id);
+        setShowMobileMenu(false);
+    };
+
+    return (
+        <div className="absolute inset-0 pointer-events-none flex flex-col justify-between z-50 font-sans">
+            {/* Mobile Info Modal */}
+            {focusedPlanet && showInfo && isMobile && (
+                <div
+                    className="absolute inset-0 bg-black/80 backdrop-blur-md z-50 pointer-events-auto flex items-center justify-center p-6"
+                    onClick={() => onToggleInfo()}
+                >
+                    <div
+                        className="bg-black/90 backdrop-blur-xl p-6 rounded-2xl border border-white/20 shadow-2xl max-w-md w-full"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex justify-between items-start mb-4">
+                            <h1 className="text-white text-2xl font-light tracking-wide">{focusedPlanet.name}</h1>
+                            <button onClick={() => onToggleInfo()} className="text-white/60 hover:text-white text-2xl">✕</button>
+                        </div>
+                        <p className="text-gray-300 text-sm italic mb-4 font-light">"{focusedPlanet.description}"</p>
+                        <div className="grid grid-cols-2 gap-3 text-xs text-gray-300 mb-4">
+                            <div className="flex items-center gap-2"><span className="text-base">🌡️</span><span>{focusedPlanet.temp}</span></div>
+                            <div className="flex items-center gap-2"><span className="text-base">🌕</span><span>{focusedPlanet.moonsCount} Moons</span></div>
+                            <div className="flex items-center gap-2 col-span-2"><span className="text-base">📏</span><span>{focusedPlanet.realSize}</span></div>
+                            <div className="flex items-center gap-2 col-span-2"><span className="text-base">🚀</span><span>Fly there: {focusedPlanet.travelTime}</span></div>
+                        </div>
+                        <div className="mt-3 bg-white/5 p-3 rounded-lg border border-white/10">
+                            <span className="text-xs font-medium text-gray-400 uppercase block mb-1.5 tracking-wide">Fun Fact</span>
+                            <p className="text-sm text-white font-light leading-relaxed">{focusedPlanet.funFact}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Top Bar */}
+            <div className="p-4 md:p-6 flex justify-between items-start pointer-events-auto gap-4">
+                {/* Info Panel - Collapsible (Desktop Only) */}
+                {!isMobile && (
+                    <div className={`transition-all duration-500 ${focusedPlanet && showInfo ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8 pointer-events-none'} bg-black/40 backdrop-blur-md p-5 rounded-xl border border-white/10 shadow-2xl max-w-sm`}>
+                        <h1 className="text-white text-2xl font-light tracking-wide mb-3">
+                            {focusedPlanet?.name}
+                        </h1>
+                        <p className="text-gray-300 text-sm italic mb-4 font-light">"{focusedPlanet?.description}"</p>
+                        <div className="grid grid-cols-2 gap-3 text-xs text-gray-300 mb-4">
+                            <div className="flex items-center gap-2"><span className="text-base">🌡️</span><span>{focusedPlanet?.temp}</span></div>
+                            <div className="flex items-center gap-2"><span className="text-base">🌕</span><span>{focusedPlanet?.moonsCount} Moons</span></div>
+                            <div className="flex items-center gap-2 col-span-2"><span className="text-base">📏</span><span>{focusedPlanet?.realSize}</span></div>
+                            <div className="flex items-center gap-2 col-span-2"><span className="text-base">🚀</span><span>Fly there: {focusedPlanet?.travelTime}</span></div>
+                        </div>
+                        <div className="mt-3 bg-white/5 p-3 rounded-lg border border-white/10">
+                            <span className="text-xs font-medium text-gray-400 uppercase block mb-1.5 tracking-wide">Fun Fact</span>
+                            <p className="text-sm text-white font-light leading-relaxed">{focusedPlanet?.funFact}</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Info Toggle Button */}
+                {focusedPlanet && (
+                    <button
+                        onClick={onToggleInfo}
+                        className="bg-black/40 backdrop-blur-md border border-white/10 text-white px-3 py-2 md:px-4 md:py-3 rounded-lg hover:bg-white/10 transition-all duration-300 shadow-lg"
+                        title={showInfo ? 'Hide Info' : 'Show Info'}
+                    >
+                        <span className="text-lg md:text-xl">{showInfo ? '✕' : 'ⓘ'}</span>
+                    </button>
+                )}
+
+                <div className="flex-1"></div>
+                {/* Control Buttons & Tooltip */}
+                <div className="flex flex-col items-end gap-2">
+                    <div className="flex gap-3">
+                        <div className="hidden md:flex gap-3">
+                            <button
+                                onClick={() => { audioService.playClick(); onTogglePlay(); }}
+                                onMouseEnter={() => setHoveredInfo("Pause/Resume Time")}
+                                onMouseLeave={() => setHoveredInfo(null)}
+                                className={`${isPlaying ? 'bg-white/10 hover:bg-white/15' : 'bg-white/20 hover:bg-white/25'} backdrop-blur-md border border-white/20 text-white px-6 py-3 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg flex items-center gap-2`}
+                            >
+                                <span className="text-lg flex items-center justify-center w-5">{isPlaying ? <div className="flex gap-1"><div className="w-1.5 h-4 bg-white rounded-sm"></div><div className="w-1.5 h-4 bg-white rounded-sm"></div></div> : "▶︎"}</span>
+                                <span className="text-sm font-light tracking-wide">{isPlaying ? "Pause Time" : "Resume Time"}</span>
+                            </button>
+
+                            <button
+                                onClick={onToggleRealDist}
+                                onMouseEnter={() => setHoveredInfo("Scale distances to true reality (Planets far apart)")}
+                                onMouseLeave={() => setHoveredInfo(null)}
+                                className={`${useRealDist ? 'bg-white/10 border-white/40' : 'bg-black/20 border-white/10'} backdrop-blur-md border text-white px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10`}
+                            >
+                                <span className="text-sm">📏</span>
+                            </button>
+                            <button
+                                onClick={onToggleRealSize}
+                                onMouseEnter={() => setHoveredInfo("Scale planets to real relative sizes")}
+                                onMouseLeave={() => setHoveredInfo(null)}
+                                className={`${useRealSize ? 'bg-white/10 border-white/40' : 'bg-black/20 border-white/10'} backdrop-blur-md border text-white px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10`}
+                            >
+                                <span className="text-sm">⚪</span>
+                            </button>
+                            <button
+                                onClick={onToggleLocation}
+                                onMouseEnter={() => setHoveredInfo("Show my location on Earth")}
+                                onMouseLeave={() => setHoveredInfo(null)}
+                                className={`${showLocation ? 'bg-white/10 border-white/40' : 'bg-black/20 border-white/10'} backdrop-blur-md border text-white px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10`}
+                            >
+                                <span className="text-sm">⚲</span>
+                            </button>
+                            <button
+                                onClick={onToggleMusic}
+                                onMouseEnter={() => setHoveredInfo("Ambient Space Music")}
+                                onMouseLeave={() => setHoveredInfo(null)}
+                                className={`${isMusicOn ? 'bg-white/10 border-white/40' : 'bg-black/20 border-white/10'} backdrop-blur-md border text-white px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10`}
+                            >
+                                <span className="text-sm">♬</span>
+                            </button>
+                            <button
+                                onClick={onToggleSpeed}
+                                onMouseEnter={() => setHoveredInfo("Toggle Time Speed")}
+                                onMouseLeave={() => setHoveredInfo(null)}
+                                className="bg-black/20 backdrop-blur-md border border-white/10 text-white px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10"
+                            >
+                                <span className="text-sm font-mono">{TIME_SPEEDS.find(s => s.value === simSpeed)?.label}</span>
+                            </button>
+                        </div>
+
+                        <button
+                            onClick={onToggleFullscreen}
+                            onMouseEnter={() => setHoveredInfo("Toggle Fullscreen")}
+                            onMouseLeave={() => setHoveredInfo(null)}
+                            className="bg-white/10 hover:bg-white/15 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg"
+                        >
+                            <span className="text-lg">⛶</span>
+                        </button>
+                    </div>
+                    {!isMobile && hoveredInfo && (
+                        <div className="bg-black/80 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-md border border-white/20 shadow-xl tracking-wide font-light animate-in fade-in slide-in-from-top-1 duration-200">
+                            {hoveredInfo}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Navigation - Desktop */}
+            <div className="hidden md:block pointer-events-auto bg-black/60 backdrop-blur-lg border-t border-white/10 overflow-x-auto pb-4 shadow-2xl">
+                <div className="flex items-center gap-3 p-4 min-w-max mx-auto justify-center">
+                    <button onClick={() => handleSelect(null)} className={`flex flex-col items-center justify-center w-20 h-20 rounded-xl transition-all duration-300 ${!focusedId ? 'bg-white/20 scale-105 ring-2 ring-white/30' : 'bg-white/5 hover:bg-white/10 border border-white/10'}`}>
+                        {/* Sun Texture for Home Button */}
+                        <div className="w-10 h-10 rounded-full mb-1 shadow-md ring-1 ring-white/20 overflow-hidden relative">
+                            <img src="/textures/Sun.jpg" alt="Sun" className="w-full h-full object-cover" />
+                        </div>
+                        <span className="text-[10px] font-light text-white uppercase tracking-wider">Sun</span>
+                    </button>
+                    <div className="w-[1px] h-12 bg-white/10 mx-2"></div>
+                    {PLANETS.map((planet) => (
+                        <button key={planet.id} onClick={() => handleSelect(planet.id)} className={`flex flex-col items-center justify-center w-16 h-16 rounded-xl transition-all duration-300 border relative ${focusedId === planet.id ? 'border-white/40 bg-white/10 scale-105 -translate-y-1 shadow-xl z-10' : 'border-white/10 hover:bg-white/5 opacity-70 hover:opacity-100 hover:scale-105'}`}>
+                            {/* Planet Texture for Buttons */}
+                            <div className="w-8 h-8 rounded-full mb-1 shadow-md ring-1 ring-white/20 overflow-hidden relative" style={{ boxShadow: `0 0 10px ${planet.color}40` }}>
+                                <img src={planet.textureUrl} alt={planet.name} className="w-full h-full object-cover" />
+                            </div>
+                            <span className="text-[9px] font-light text-white uppercase tracking-wide">{planet.name}</span>
+                            {focusedId === planet.id && <div className="absolute -bottom-1.5 w-1 h-1 bg-white rounded-full animate-pulse"></div>}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Mobile Navigation - Burger Menu */}
+            <div className="md:hidden pointer-events-auto">
+                {/* Burger Button */}
+                <button
+                    onClick={() => setShowMobileMenu(!showMobileMenu)}
+                    className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-lg border border-white/20 text-white p-4 rounded-full shadow-2xl z-40"
+                >
+                    <span className="text-2xl">{showMobileMenu ? '✕' : '☰'}</span>
+                </button>
+
+                {showMobileMenu && (
+                    <div className="absolute bottom-20 right-4 bg-black/90 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl z-40">
+                        {/* Mobile Controls */}
+                        <div className="grid grid-cols-6 gap-2 mb-4 pb-4 border-b border-white/10">
+                            <button onClick={() => { audioService.playClick(); onTogglePlay(); }} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${isPlaying ? 'bg-white/20' : 'bg-white/5'}`}>
+                                <span className="text-lg flex items-center justify-center w-full h-full">{isPlaying ? <div className="flex gap-1"><div className="w-1 h-3 bg-white rounded-sm"></div><div className="w-1 h-3 bg-white rounded-sm"></div></div> : "▶︎"}</span>
+                            </button>
+                            <button onClick={onToggleRealDist} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${useRealDist ? 'bg-white/20' : 'bg-white/5'}`}>
+                                <span className="text-sm">📏</span>
+                            </button>
+                            <button onClick={onToggleRealSize} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${useRealSize ? 'bg-white/20' : 'bg-white/5'}`}>
+                                <span className="text-sm">⚪</span>
+                            </button>
+                            <button onClick={onToggleLocation} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${showLocation ? 'bg-white/20' : 'bg-white/5'}`}>
+                                <span className="text-sm">⚲</span>
+                            </button>
+                            <button onClick={onToggleMusic} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${isMusicOn ? 'bg-white/20' : 'bg-white/5'}`}>
+                                <span className="text-sm">♬</span>
+                            </button>
+                            <button onClick={onToggleSpeed} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white bg-white/5`}>
+                                <span className="text-xs font-mono">{TIME_SPEEDS.find(s => s.value === simSpeed)?.label}</span>
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                            <button onClick={() => handleSelect(null)} className={`flex flex-col items-center justify-center w-16 h-16 rounded-xl transition-all duration-300 ${!focusedId ? 'bg-white/20 ring-2 ring-white/30' : 'bg-white/5 border border-white/10'}`}>
+                                <div className="w-8 h-8 rounded-full mb-1 shadow-md ring-1 ring-white/20 overflow-hidden relative">
+                                    <img src="/textures/Sun.jpg" alt="Sun" className="w-full h-full object-cover" />
+                                </div>
+                                <span className="text-[8px] font-light text-white uppercase">Sun</span>
+                            </button>
+                            {PLANETS.map((planet) => (
+                                <button key={planet.id} onClick={() => handleSelect(planet.id)} className={`flex flex-col items-center justify-center w-16 h-16 rounded-xl transition-all duration-300 border ${focusedId === planet.id ? 'border-white/40 bg-white/10' : 'border-white/10 bg-white/5'}`}>
+                                    <div className="w-6 h-6 rounded-full mb-1 shadow-md ring-1 ring-white/20 overflow-hidden relative" style={{ boxShadow: `0 0 5px ${planet.color}40` }}>
+                                        <img src={planet.textureUrl} alt={planet.name} className="w-full h-full object-cover" />
+                                    </div>
+                                    <span className="text-[8px] font-light text-white uppercase">{planet.name}</span>
+                                </button>
+                            ))}
+                        </div>
+                        <a href="https://exhaustedrocket.com" target="_blank" rel="noopener noreferrer" className="block mt-4 text-center text-[10px] text-white/40 hover:text-white transition-colors">
+                            Product of exhaustedrocket.com
+                        </a>
+                    </div>
+                )}
+            </div>
+
+            {/* Desktop Footer Link */}
+            <a href="https://exhaustedrocket.com" target="_blank" rel="noopener noreferrer" className="hidden md:block absolute bottom-1 right-2 text-[10px] text-white/20 hover:text-white/60 z-50 pointer-events-auto transition-colors">
+                Product of exhaustedrocket.com
+            </a>
+        </div>
+    );
+};
+
+// --- MAIN COMPONENT ---
+export default function SolarSystem() {
+    const [focusedId, setFocusedId] = useState<string | null>(null);
+    const [isPlaying, setIsPlaying] = useState(true);
+    const [showInfo, setShowInfo] = useState(false);
+    const [useRealDist, setUseRealDist] = useState(false);
+    const [useRealSize, setUseRealSize] = useState(false);
+    const [showLocation, setShowLocation] = useState(false);
+    const [userLocation, setUserLocation] = useState<{ lat: number, long: number } | null>(null);
+    const [isMusicOn, setIsMusicOn] = useState(false);
+    const [simSpeed, setSimSpeed] = useState(86400); // Default 1 Day/s
+    const simTimeRef = useRef(0);
+
+    // Audio Drone
+    useEffect(() => {
+        if (isMusicOn) audioService.startDrone();
+        else audioService.stopDrone();
+        return () => audioService.stopDrone();
+    }, [isMusicOn]);
+
+    // Prevent Browser Zoom on Trackpad
+    useEffect(() => {
+        const handleWheel = (e: WheelEvent) => { if (e.ctrlKey) e.preventDefault(); };
+        if (typeof window !== 'undefined') window.addEventListener('wheel', handleWheel, { passive: false });
+
+        return () => {
+            if (typeof window !== 'undefined') window.removeEventListener('wheel', handleWheel);
+        };
+    }, []);
+
+    // Keyboard Navigation
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setFocusedId(null);
+            else if (e.key === ' ') setIsPlaying(p => !p);
+            else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                const idx = PLANETS.findIndex(p => p.id === focusedId);
+                let nextIdx = 0;
+                if (e.key === 'ArrowRight') nextIdx = idx === -1 ? 0 : (idx + 1) % PLANETS.length;
+                else nextIdx = idx === -1 ? PLANETS.length - 1 : (idx - 1 + PLANETS.length) % PLANETS.length;
+                setFocusedId(PLANETS[nextIdx].id);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [focusedId]);
+
+    const toggleLocation = () => {
+        if (!showLocation) {
+            if (typeof navigator !== 'undefined' && navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        setUserLocation({ lat: pos.coords.latitude, long: pos.coords.longitude });
+                        setShowLocation(true);
+                    },
+                    (err) => { console.warn("Geo error", err); alert("Could not get location. Allow permissions."); }
+                );
+            } else { alert("Geolocation not supported"); }
+        } else {
+            setShowLocation(false);
+        }
+    };
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    // Calculate display data based on toggles
+    const activePlanets = useMemo(() => {
+        return PLANETS.map(p => ({
+            ...p,
+            distance: useRealDist ? p.orbitAU * 30 : p.distance, // Scale AU by 30
+            size: useRealSize ? (SUN_SIZE / 109) * p.radiusMultiplier : p.size, // Scale relative to Sun (Size 7)
+            useRealDist,
+            useRealSize
+        }));
+    }, [useRealDist, useRealSize]);
+
+    // Fullscreen handler
+    const toggleFullscreen = () => {
+        if (!containerRef.current) return;
+        if (!document.fullscreenElement) {
+            containerRef.current.requestFullscreen().then(() => {
+                // Attempt to lock orientation to landscape on mobile
+                if (screen.orientation && 'lock' in screen.orientation) {
+                    // @ts-ignore
+                    (screen.orientation as any).lock('landscape').catch((e: any) => console.log('Orientation lock failed:', e));
+                }
+            }).catch(err => {
+                console.log('Fullscreen error:', err);
+            });
+        } else {
+            document.exitFullscreen();
+            if (screen.orientation && 'unlock' in screen.orientation) {
+                screen.orientation.unlock();
+            }
+        }
+    };
+
+    return (
+        <div ref={containerRef} className="w-full h-screen relative bg-black overflow-hidden select-none touch-action-none">
+
+            <Canvas
+                camera={{ position: [0, 60, 80], fov: 45 }}
+                dpr={[1, 2]}
+                gl={{ antialias: true, toneMappingExposure: 1.2 }}
+            >
+                <Suspense fallback={null}>
+                    <SimulationController isPlaying={isPlaying} speedMultiplier={simSpeed} simTimeRef={simTimeRef} />
+                    <Stars radius={useRealDist ? 2000 : 200} depth={100} count={20000} factor={8} saturation={0} fade speed={0.3} />
+
+                    <AsteroidBelt useRealDist={useRealDist} isPlaying={isPlaying} />
+                    <Sun useRealSize={useRealSize} />
+                    {activePlanets.map((planet) => (
+                        <PlanetErrorBoundary key={planet.id} data={planet} simTimeRef={simTimeRef} onSelect={setFocusedId}>
+                            <Planet
+                                data={planet}
+                                isFocused={focusedId === planet.id}
+                                onSelect={setFocusedId}
+                                simTimeRef={simTimeRef}
+                                isPlaying={isPlaying}
+                                userLocation={showLocation ? userLocation : null}
+                            />
+                        </PlanetErrorBoundary>
+                    ))}
+                    <CameraManager focusedId={focusedId} useRealDist={useRealDist} useRealSize={useRealSize} simTimeRef={simTimeRef} />
+                    <Preload all />
+                </Suspense>
+            </Canvas>
+            <Loader />
+            <UI
+                focusedId={focusedId}
+                onSelect={setFocusedId}
+                isPlaying={isPlaying}
+                onTogglePlay={() => setIsPlaying(!isPlaying)}
+                showInfo={showInfo}
+                onToggleInfo={() => setShowInfo(!showInfo)}
+                onToggleFullscreen={toggleFullscreen}
+                showLocation={showLocation}
+                onToggleLocation={toggleLocation}
+                isMusicOn={isMusicOn}
+                onToggleMusic={() => setIsMusicOn(!isMusicOn)}
+                simSpeed={simSpeed}
+                onToggleSpeed={() => {
+                    const currentIndex = TIME_SPEEDS.findIndex(s => s.value === simSpeed);
+                    const nextIndex = (currentIndex + 1) % TIME_SPEEDS.length;
+                    setSimSpeed(TIME_SPEEDS[nextIndex].value);
+                }}
+                useRealDist={useRealDist}
+                onToggleRealDist={() => setUseRealDist(!useRealDist)}
+                useRealSize={useRealSize}
+                onToggleRealSize={() => setUseRealSize(!useRealSize)}
+            />
+        </div>
+    );
+}
