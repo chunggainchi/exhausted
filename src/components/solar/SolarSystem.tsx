@@ -228,6 +228,7 @@ const audioService = new class {
 
     getContext() {
         if (!this.ctx && typeof window !== 'undefined') {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
         }
         return this.ctx;
@@ -362,7 +363,7 @@ const AsteroidBelt: React.FC<{ useRealDist: boolean; isPlaying: boolean }> = ({ 
     );
 };
 
-const Moon: React.FC<{ data: any, parentSize: number, simTimeRef: React.MutableRefObject<number>, useRealDist: boolean, useRealSize: boolean }> = ({ data, parentSize, simTimeRef, useRealDist, useRealSize }) => {
+const Moon: React.FC<{ data: { size: number, distance: number, speed: number, color: string }, parentSize: number, simTimeRef: React.MutableRefObject<number>, useRealDist: boolean, useRealSize: boolean }> = ({ data, parentSize, simTimeRef, useRealDist, useRealSize }) => {
     const ref = useRef<THREE.Group>(null);
     const textureUrl = '/textures/Moon.jpg';
     const texture = useTexture(textureUrl);
@@ -430,7 +431,7 @@ const Moon: React.FC<{ data: any, parentSize: number, simTimeRef: React.MutableR
     );
 };
 
-const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: string) => void; simTimeRef: React.MutableRefObject<number>; isPlaying: boolean; userLocation?: { lat: number; long: number } | null }> = ({ data, isFocused, onSelect, simTimeRef, isPlaying, userLocation }) => {
+const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: string) => void; simTimeRef: React.MutableRefObject<number>; isPlaying: boolean; userLocation?: { lat: number; long: number } | null }> = ({ data, isFocused, onSelect, simTimeRef, userLocation }) => {
     const meshRef = useRef<THREE.Mesh>(null);
     const orbitRef = useRef<THREE.Group>(null);
 
@@ -455,7 +456,7 @@ const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: st
     const roughness = isEarth ? 0.5 : (isGasGiant ? 0.4 : 0.9);
     const metalness = isEarth ? 0.1 : 0.0;
 
-    useFrame((state, delta) => {
+    useFrame(() => {
         if (orbitRef.current) {
             const time = simTimeRef.current;
             const angle = initialAngle + (time * data.speed * 0.1);
@@ -559,7 +560,7 @@ const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: st
 };
 
 // Fallback if textures fail
-const PlanetFallback: React.FC<{ data: any, simTimeRef: React.MutableRefObject<number>, onSelect: (id: string) => void }> = ({ data, simTimeRef, onSelect }) => {
+const PlanetFallback: React.FC<{ data: PlanetData, simTimeRef: React.MutableRefObject<number>, onSelect: (id: string) => void }> = ({ data, simTimeRef, onSelect }) => {
     const meshRef = useRef<THREE.Mesh>(null);
     const orbitRef = useRef<THREE.Group>(null);
     const initialAngle = data.distance * 0.5;
@@ -616,15 +617,16 @@ const PlanetFallback: React.FC<{ data: any, simTimeRef: React.MutableRefObject<n
 };
 
 class PlanetErrorBoundary extends React.Component<
-    { children: React.ReactNode, data: any, simTimeRef: React.MutableRefObject<number>, onSelect: (id: string) => void },
+    { children: React.ReactNode, data: PlanetData, simTimeRef: React.MutableRefObject<number>, onSelect: (id: string) => void },
     { hasError: boolean }
 > {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(props: any) {
         super(props);
         this.state = { hasError: false };
     }
-    static getDerivedStateFromError(error: any) { return { hasError: true }; }
-    componentDidCatch(error: any) { console.warn(`Texture failed for ${this.props.data.name}, switching to glossy mode.`); }
+    static getDerivedStateFromError() { return { hasError: true }; }
+    componentDidCatch() { console.warn(`Texture failed for ${this.props.data.name}, switching to glossy mode.`); }
     render() {
         if (this.state.hasError) {
             return <PlanetFallback data={this.props.data} simTimeRef={this.props.simTimeRef} onSelect={this.props.onSelect} />;
@@ -635,6 +637,7 @@ class PlanetErrorBoundary extends React.Component<
 
 const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; useRealSize: boolean; simTimeRef: React.MutableRefObject<number> }> = ({ focusedId, useRealDist, useRealSize, simTimeRef }) => {
     const { camera } = useThree();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const controlsRef = useRef<any>(null);
     const isTransitioning = useRef(false);
     const previousPlanetPos = useRef(new THREE.Vector3());
@@ -654,7 +657,7 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
                 const dist = useRealDist ? planet.orbitAU * 30 : planet.distance;
                 const angle = (dist * 0.5) + (simTimeRef.current * planet.speed * 0.1);
 
-                let x = Math.cos(angle) * dist;
+                const x = Math.cos(angle) * dist;
                 let z = Math.sin(angle) * dist;
                 let y = 0;
 
@@ -726,7 +729,7 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
 };
 
 const SimulationController: React.FC<{ isPlaying: boolean, speedMultiplier: number, simTimeRef: React.MutableRefObject<number> }> = ({ isPlaying, speedMultiplier, simTimeRef }) => {
-    useFrame((state, delta) => {
+    useFrame((_state, delta) => {
         if (isPlaying) simTimeRef.current += delta * speedMultiplier;
     });
     return null;
@@ -778,7 +781,7 @@ const UI: React.FC<{
                             <h1 className="text-white text-2xl font-light tracking-wide">{focusedPlanet.name}</h1>
                             <button onClick={() => onToggleInfo()} className="text-white/60 hover:text-white text-2xl">✕</button>
                         </div>
-                        <p className="text-gray-300 text-sm italic mb-4 font-light">"{focusedPlanet.description}"</p>
+                        <p className="text-gray-300 text-sm italic mb-4 font-light">&quot;{focusedPlanet.description}&quot;</p>
                         <div className="grid grid-cols-2 gap-3 text-xs text-gray-300 mb-4">
                             <div className="flex items-center gap-2"><span className="text-base">🌡️</span><span>{focusedPlanet.temp}</span></div>
                             <div className="flex items-center gap-2"><span className="text-base">🌕</span><span>{focusedPlanet.moonsCount} Moons</span></div>
@@ -801,7 +804,7 @@ const UI: React.FC<{
                         <h1 className="text-white text-2xl font-light tracking-wide mb-3">
                             {focusedPlanet?.name}
                         </h1>
-                        <p className="text-gray-300 text-sm italic mb-4 font-light">"{focusedPlanet?.description}"</p>
+                        <p className="text-gray-300 text-sm italic mb-4 font-light">&quot;{focusedPlanet?.description}&quot;</p>
                         <div className="grid grid-cols-2 gap-3 text-xs text-gray-300 mb-4">
                             <div className="flex items-center gap-2"><span className="text-base">🌡️</span><span>{focusedPlanet?.temp}</span></div>
                             <div className="flex items-center gap-2"><span className="text-base">🌕</span><span>{focusedPlanet?.moonsCount} Moons</span></div>
@@ -1070,8 +1073,8 @@ export default function SolarSystem() {
             containerRef.current.requestFullscreen().then(() => {
                 // Attempt to lock orientation to landscape on mobile
                 if (screen.orientation && 'lock' in screen.orientation) {
-                    // @ts-ignore
-                    (screen.orientation as any).lock('landscape').catch((e: any) => console.log('Orientation lock failed:', e));
+                    // @ts-expect-error - lock API is experimental
+                    screen.orientation.lock('landscape').catch((e: unknown) => console.log('Orientation lock failed:', e));
                 }
             }).catch(err => {
                 console.log('Fullscreen error:', err);

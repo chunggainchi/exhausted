@@ -118,6 +118,12 @@
       "namedRegex": "^/blog/computer/reading\\-fun(?:/)?$"
     },
     {
+      "page": "/blog/computer/solar-system-simulation",
+      "regex": "^/blog/computer/solar\\-system\\-simulation(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/blog/computer/solar\\-system\\-simulation(?:/)?$"
+    },
+    {
       "page": "/blog/computer/sudoku",
       "regex": "^/blog/computer/sudoku(?:/)?$",
       "routeKeys": {},
@@ -226,10 +232,22 @@
       "namedRegex": "^/impressum(?:/)?$"
     },
     {
+      "page": "/solar",
+      "regex": "^/solar(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/solar(?:/)?$"
+    },
+    {
       "page": "/sudoku",
       "regex": "^/sudoku(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/sudoku(?:/)?$"
+    },
+    {
+      "page": "/sudokugenerator",
+      "regex": "^/sudokugenerator(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/sudokugenerator(?:/)?$"
     }
   ],
   "dataRoutes": [],

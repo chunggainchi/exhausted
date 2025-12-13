@@ -52,14 +52,14 @@ export default function SolarSystemPage() {
                         </p>
 
                         <p>
-                            It started as a simple question: "Does the Moon really spin?" (Yes, it does, exactly once per orbit!). To answer it, I decided to build a simulation where we could verify it ourselves.
+                            It started as a simple question: &quot;Does the Moon really spin?&quot; (Yes, it does, exactly once per orbit!). To answer it, I decided to build a simulation where we could verify it ourselves.
                         </p>
 
                         <h3 className="text-xl font-semibold mt-6 mb-2">Features:</h3>
                         <ul>
                             <li><strong>Realistic Physics:</strong> Orbits and rotations based on real scientific data (Keplerian elements).</li>
                             <li><strong>Time Control:</strong> Speed up time from Real Time (1s/s) to 1 Week/s to watch the outer planets move.</li>
-                            <li><strong>Scale Modes:</strong> Toggle "Real Distance" to see just how empty space really is.</li>
+                            <li><strong>Scale Modes:</strong> Toggle &quot;Real Distance&quot; to see just how empty space really is.</li>
                             <li><strong>Ambient Mode:</strong> Calm background music for maximum zoning out.</li>
                         </ul>
 
