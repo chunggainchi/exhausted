@@ -681,6 +681,8 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
     const previousPlanetPos = useRef(new THREE.Vector3());
     const lastSimTime = useRef(simTimeRef.current);
 
+    const previousEarthPos = useRef(new THREE.Vector3());
+
     // Trigger transition when focusedId changes OR when viewMoonPhase turns off
     useEffect(() => {
         isTransitioning.current = true;
@@ -725,34 +727,37 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
                         camera.position.copy(camPos);
                         controlsRef.current.target.copy(targetPos);
                         isTransitioning.current = false;
-                        previousPlanetPos.current.copy(targetPos);
+
+                        // Initialize Previous State
+                        previousPlanetPos.current.copy(targetPos); // Target (Moon)
+                        previousEarthPos.current.copy(earthPos);   // Reference (Earth)
                         lastSimTime.current = simTimeRef.current;
                     }
                 } else {
-                    // FREE MODE: Follow Moon, but rotate WITH orbit to maintain relative view (e.g. from Earth)
-                    // 1. Translate Camera and Target by Moon's linear movement
-                    const delta = targetPos.clone().sub(previousPlanetPos.current);
-                    if (delta.length() < 100) {
-                        camera.position.add(delta);
-                        controlsRef.current.target.add(delta);
-                    } else {
-                        controlsRef.current.target.copy(targetPos);
-                    }
+                    // FREE MODE: Follow Moon's Orbit AND Rotation
+                    // We want to maintain the Camera's angle relative to the Earth-Moon axis.
 
-                    // 2. Rotate Camera around Moon to match Orbital Rotation (Keep Earth "down")
-                    // This allows the user to sit on Earth and watch, OR rotate around Moon manually.
-                    const dt = simTimeRef.current - lastSimTime.current;
-                    const dAngle = dt * moon.speed; // Orbital radians moved
+                    // 1. Calculate Geometric Rotation required
+                    // Current Vector from Moon to Earth
+                    const dirCurrent = new THREE.Vector3().subVectors(earthPos, targetPos).normalize();
+                    // Previous Vector from Moon to Earth
+                    const dirPrev = new THREE.Vector3().subVectors(previousEarthPos.current, previousPlanetPos.current).normalize();
 
-                    // Vector from Moon to Camera
-                    const relVec = camera.position.clone().sub(targetPos);
-                    // Rotate this vector around Y axis (Orbit Plane)
-                    relVec.applyAxisAngle(new THREE.Vector3(0, 1, 0), dAngle);
+                    // Quaternion to rotate Previous Frame to Current Frame
+                    const quat = new THREE.Quaternion().setFromUnitVectors(dirPrev, dirCurrent);
 
-                    // Apply new position
-                    camera.position.copy(targetPos).add(relVec);
+                    // 2. Apply this rotation to the Camera's relative offset from the Moon
+                    // Using PREVIOUS positions to get the offset
+                    const offset = camera.position.clone().sub(previousPlanetPos.current);
+                    offset.applyQuaternion(quat);
 
+                    // 3. Set New Camera Position: Current Moon + Rotated Offset
+                    camera.position.copy(targetPos).add(offset);
+                    controlsRef.current.target.copy(targetPos);
+
+                    // Update state
                     previousPlanetPos.current.copy(targetPos);
+                    previousEarthPos.current.copy(earthPos);
                     lastSimTime.current = simTimeRef.current;
                 }
 
