@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useRef, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useTexture, Text, OrbitControls, Stars, Loader, Preload } from '@react-three/drei';
 import * as THREE from 'three';
@@ -29,6 +29,7 @@ interface PlanetData {
     hasRings?: boolean;
     moons?: MoonData[];
     dayLength?: string;
+    rotationAxisTilt?: number; // Axial tilt in degrees (e.g., Uranus ~98°, Venus ~177°)
     // Dynamic props for display
     useRealDist?: boolean;
     useRealSize?: boolean;
@@ -63,7 +64,7 @@ const PLANETS: PlanetData[] = [
         orbitAU: 0.39,
         radiusMultiplier: 0.38,
         description: "The smallest planet in our solar system.",
-        funFact: "A year on Mercury is only 88 Earth days!",
+        funFact: "The smallest but the fastest! It zips around the Sun at around 47 km/s! It's full of craters and therefore looks very similar to our Moon. It has extreme temperature swings due to its lack of an atmosphere to trap heat. It goes from scorching hot to freezing cold. Even though it's the closest planet to the Sun, it has ice!",
         temp: "🔥🔥🔥",
         moonsCount: 0,
         realSize: "0.38x Earth",
@@ -76,14 +77,15 @@ const PLANETS: PlanetData[] = [
         size: 1.5,
         distance: 18,
         speed: 3.23e-7,
-        rotationSpeed: -2.99e-7,
+        rotationSpeed: -2.99e-7, // Retrograde (backwards) rotation
+        rotationAxisTilt: 177, // Nearly upside down
         textureUrl: `${TEXTURE_BASE}/Venus.jpg`,
         travelTime: "~4 Months",
         inclination: 3.4,
         orbitAU: 0.72,
         radiusMultiplier: 0.95,
         description: "The hottest planet.",
-        funFact: "A day on Venus is longer than a year!",
+        funFact: "A day on Venus is around 8 Earth months! The weird thing is that it's day (243 Earth days) is longer than its year (225 Earth days)! Unlike other planets, it rotates backwards (retrograde) which means that Sun rises in the west and sets in the east.",
         temp: "🔥🔥🔥🔥",
         moonsCount: 0,
         realSize: "0.95x Earth",
@@ -103,7 +105,7 @@ const PLANETS: PlanetData[] = [
         orbitAU: 1.00,
         radiusMultiplier: 1.00,
         description: "Our home planet, the only known world with life.",
-        funFact: "Earth is the only planet not named after a god!",
+        funFact: "Earth is the only planet not named after a god! It's not perfectly round. It travels very fast but its rotation is slowing down slightly every year. It's magnetic field is protecting us from the solar wind and the radiation from the Sun.",
         temp: "🌿😎",
         moonsCount: 1,
         realSize: "1x Earth",
@@ -124,7 +126,7 @@ const PLANETS: PlanetData[] = [
         orbitAU: 1.52,
         radiusMultiplier: 0.53,
         description: "The Red Planet.",
-        funFact: "Mars has the tallest volcano in the solar system!",
+        funFact: "Mars has the tallest volcano Olympus Mons (25km high - 3x the height of Everest) in the solar system. Its day is almost exactly an Earth day, but its year is almost twice as long! There are also signs that it once had flowing water!",
         temp: "❄️",
         moonsCount: 2,
         realSize: "0.53x Earth",
@@ -144,9 +146,9 @@ const PLANETS: PlanetData[] = [
         orbitAU: 5.20,
         radiusMultiplier: 11.2,
         description: "The largest planet in our solar system.",
-        funFact: "You can fit 1,300 Earths inside Jupiter!",
+        funFact: "It is the biggest planet but it has the shortest day. Its year is nearly 12 Earth years long. It is a gas giant with a thick atmosphere of hydrogen and helium, meaning that it has no solid surface. It is the protector of the Earth by pulling in/deflecting many comets and asteroids that would otherwise be heading towards Earth.",    
         temp: "❄️❄️",
-        moonsCount: 79,
+        moonsCount: 95,
         realSize: "11.2x Earth",
         dayLength: "10 Hours"
     },
@@ -165,9 +167,9 @@ const PLANETS: PlanetData[] = [
         radiusMultiplier: 9.45,
         hasRings: true,
         description: "Lord of the Rings.",
-        funFact: "Saturn could float in a giant bathtub!",
+        funFact: "Its magnificent rings aren't solid but are made of ice and rock particles that orbit around it. Like Jupiter it spins very quickly and has the second-shortest day. However, a year there is almost 30 Earth years long! It's too cold for liquid water to exist.",
         temp: "❄️❄️❄️",
-        moonsCount: 82,
+        moonsCount: 146,
         realSize: "9.45x Earth",
         dayLength: "10.7 Hours"
     },
@@ -178,16 +180,17 @@ const PLANETS: PlanetData[] = [
         size: 2.6,
         distance: 92,
         speed: 2.37e-9,
-        rotationSpeed: -1.01e-4,
+        rotationSpeed: 1.01e-4, // Prograde rotation, but axis is tilted
+        rotationAxisTilt: 98, // Spins on its side (~98° tilt)
         textureUrl: `${TEXTURE_BASE}/Uranus.jpg`,
         travelTime: "~9 Years",
         inclination: 0.77,
         orbitAU: 19.2,
         radiusMultiplier: 4.0,
         description: "The Ice Giant.",
-        funFact: "Uranus spins on its side like a ball.",
+        funFact: "Uranus spins on its side like a rolling ball around the Sun. Because of this tilt it has extreme seasons and is the coldest planet in our solar system. One side is always facing the Sun and the other is always facing away. A year on Uranus is around 84 Earth years long but a day is only 17 Earth hours long! It was the first planet discovered using a telescope.",
         temp: "❄️❄️❄️❄️",
-        moonsCount: 27,
+        moonsCount: 28,
         realSize: "4.0x Earth",
         dayLength: "17 Hours"
     },
@@ -205,9 +208,9 @@ const PLANETS: PlanetData[] = [
         orbitAU: 30.05,
         radiusMultiplier: 3.88,
         description: "The Windiest One.",
-        funFact: "Neptune has the strongest winds in the solar system!",
+        funFact: "It's the farthest planet from the Sun and has the fastest winds (2,400 km/h) in the solar system. It's year is around 165 Earth years long but a day is only 16 Earth hours long. Unlike most planets, it was discovered using math rather than observation.",
         temp: "❄️❄️❄️❄️❄️",
-        moonsCount: 14,
+        moonsCount: 16,
         realSize: "3.88x Earth",
         dayLength: "16 Hours"
     }
@@ -228,7 +231,7 @@ const SUN_INFO = {
     moonsCount: 0,
     realSize: "109x Earth",
     travelTime: "N/A",
-    funFact: "The Sun accounts for 99.86% of the mass in the Solar System.",
+    funFact: "The Sun accounts for 99.86% of the mass in the Solar System. It is so big that more than a million Earths could fit inside it! It looks yellow to us because of how our atmosphere scatters the blue light, but it's actually white (all colors blended together). A mystery that scientists are still trying to solve - its atmosphere gets hotter the farther you go out?! It's light takes 8 Earth minutes to reach Earth.",
     color: "#FFD700",
     dayLength: "25 Earth Days"
 };
@@ -303,15 +306,20 @@ const audioService = new class {
 
 // --- SUB COMPONENTS ---
 
-const Sun: React.FC<{ useRealSize: boolean; viewMoonPhase?: boolean }> = ({ useRealSize, viewMoonPhase }) => {
+const Sun: React.FC<{ useRealSize: boolean; viewMoonPhase?: boolean; simTimeRef: React.MutableRefObject<number> }> = ({ useRealSize, viewMoonPhase, simTimeRef }) => {
     const meshRef = useRef<THREE.Mesh>(null);
     const texture = useTexture(`${TEXTURE_BASE}/Sun.jpg`);
 
     const size = SUN_SIZE; // Sun size is constant, planets scale relative to it
+    
+    // Sun rotates once every ~25 days at equator
+    // Earth rotates at 7.27e-5, Sun rotates at ~1/25 of that: ~2.9e-6
+    const sunRotationSpeed = 2.9e-6;
 
-    useFrame((state, delta) => {
+    useFrame(() => {
         if (meshRef.current) {
-            meshRef.current.rotation.y += delta * 0.05;
+            // Use simulation time for realistic rotation that responds to time speed toggle
+            meshRef.current.rotation.y = simTimeRef.current * sunRotationSpeed;
         }
     });
 
@@ -357,12 +365,16 @@ const Sun: React.FC<{ useRealSize: boolean; viewMoonPhase?: boolean }> = ({ useR
     );
 };
 
-const AsteroidBelt: React.FC<{ useRealDist: boolean; isPlaying: boolean }> = ({ useRealDist, isPlaying }) => {
+const AsteroidBelt: React.FC<{ useRealDist: boolean; isPlaying: boolean; simTimeRef: React.MutableRefObject<number> }> = ({ useRealDist, isPlaying, simTimeRef }) => {
     const meshRef = useRef<THREE.InstancedMesh>(null);
     // Nice mode: Between Mars (34) and Jupiter (55) -> 42-50.
     // Real mode: Between 2.2 AU (66) and 3.2 AU (96).
     const count = 1500;
     const dummy = useMemo(() => new THREE.Object3D(), []);
+    
+    // Orbital speed for asteroid belt (average distance ~2.7 AU)
+    // Using Kepler's laws: speed ∝ 1/a^(3/2), so for 2.7 AU: ~4.5e-8
+    const orbitalSpeed = 5e-8;
 
     useEffect(() => {
         if (!meshRef.current) return;
@@ -387,9 +399,10 @@ const AsteroidBelt: React.FC<{ useRealDist: boolean; isPlaying: boolean }> = ({ 
         meshRef.current.instanceMatrix.needsUpdate = true;
     }, [dummy, useRealDist]);
 
-    useFrame((state, delta) => {
+    useFrame(() => {
         if (meshRef.current && isPlaying) {
-            meshRef.current.rotation.y += delta * 0.02;
+            // Use simulation time for realistic orbital motion, responds to time speed toggle
+            meshRef.current.rotation.y = simTimeRef.current * orbitalSpeed * 0.1;
         }
     });
 
@@ -504,7 +517,27 @@ const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: st
 
             // Rotate planet based on sim time
             if (meshRef.current) {
-                meshRef.current.rotation.y = time * data.rotationSpeed;
+                // Apply rotation axis tilt if specified (e.g., Uranus ~98°, Venus ~177°)
+                if (data.rotationAxisTilt !== undefined) {
+                    const tiltRad = THREE.MathUtils.degToRad(data.rotationAxisTilt);
+                    // Tilt the rotation axis around X-axis
+                    meshRef.current.rotation.x = tiltRad;
+                    // For Uranus (spinning on its side), rotate around Z-axis after tilt
+                    // For Venus (nearly upside down), rotate around Y-axis (backwards due to negative speed)
+                    if (data.id === 'uranus') {
+                        meshRef.current.rotation.z = time * data.rotationSpeed;
+                        meshRef.current.rotation.y = 0;
+                    } else {
+                        // Venus and others with tilt rotate around Y-axis
+                        meshRef.current.rotation.y = time * data.rotationSpeed;
+                        meshRef.current.rotation.z = 0;
+                    }
+                } else {
+                    // Normal rotation around Y-axis (vertical) - most planets
+                    meshRef.current.rotation.x = 0;
+                    meshRef.current.rotation.z = 0;
+                    meshRef.current.rotation.y = time * data.rotationSpeed;
+                }
             }
         }
     });
@@ -530,7 +563,12 @@ const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: st
                         {data.name}
                     </Text>
 
-                    <mesh ref={meshRef}>
+                    <mesh 
+                        ref={meshRef}
+                        onClick={(e) => { e.stopPropagation(); onSelect(data.id); }}
+                        onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }}
+                        onPointerOut={() => { document.body.style.cursor = 'auto'; }}
+                    >
                         <sphereGeometry args={[data.size, 64, 64]} />
                         <meshStandardMaterial
                             map={texture}
@@ -1243,69 +1281,10 @@ export default function SolarSystem() {
         return () => audioService.stopDrone();
     }, [isMusicOn]);
 
-    // Prevent Browser Zoom on Trackpad
-    useEffect(() => {
-        const handleWheel = (e: WheelEvent) => { if (e.ctrlKey) e.preventDefault(); };
-        if (typeof window !== 'undefined') window.addEventListener('wheel', handleWheel, { passive: false });
-
-        return () => {
-            if (typeof window !== 'undefined') window.removeEventListener('wheel', handleWheel);
-        };
-    }, []);
-
-    // Keyboard Navigation
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setFocusedId(null);
-            else if (e.key === ' ') setIsPlaying(p => !p);
-            else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-                const idx = PLANETS.findIndex(p => p.id === focusedId);
-                let nextIdx = 0;
-                if (e.key === 'ArrowRight') nextIdx = idx === -1 ? 0 : (idx + 1) % PLANETS.length;
-                else nextIdx = idx === -1 ? PLANETS.length - 1 : (idx - 1 + PLANETS.length) % PLANETS.length;
-                setFocusedId(PLANETS[nextIdx].id);
-                setFocusedId(PLANETS[nextIdx].id);
-            } else if (e.key === 'ArrowUp') {
-                setZoomSignal(z => z + 1);
-            } else if (e.key === 'ArrowDown') {
-                setZoomSignal(z => z - 1);
-            }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [focusedId]);
-
-    const toggleLocation = () => {
-        if (!showLocation) {
-            alert("Locating you...");
-            if (typeof navigator !== 'undefined' && navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        setUserLocation({ lat: pos.coords.latitude, long: pos.coords.longitude });
-                        setShowLocation(true);
-                    },
-                    (err) => { console.warn("Geo error", err); alert("Could not get location. Allow permissions."); }
-                );
-            } else { alert("Geolocation not supported"); }
-        } else {
-            setShowLocation(false);
-        }
-    };
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Calculate display data based on toggles
-    const activePlanets = useMemo(() => {
-        return PLANETS.map(p => ({
-            ...p,
-            distance: useRealDist ? p.orbitAU * 30 : p.distance, // Scale AU by 30
-            size: useRealSize ? (SUN_SIZE / 109) * p.radiusMultiplier : p.size, // Scale relative to Sun (Size 7)
-            useRealDist,
-            useRealSize
-        }));
-    }, [useRealDist, useRealSize]);
-
     // Fullscreen handler
-    const toggleFullscreen = () => {
+    const toggleFullscreen = useCallback(() => {
         if (!containerRef.current) return;
         if (!document.fullscreenElement) {
             containerRef.current.requestFullscreen().then(() => {
@@ -1323,7 +1302,91 @@ export default function SolarSystem() {
                 screen.orientation.unlock();
             }
         }
+    }, []);
+
+    // Prevent Browser Zoom on Trackpad
+    useEffect(() => {
+        const handleWheel = (e: WheelEvent) => { if (e.ctrlKey) e.preventDefault(); };
+        if (typeof window !== 'undefined') window.addEventListener('wheel', handleWheel, { passive: false });
+
+        return () => {
+            if (typeof window !== 'undefined') window.removeEventListener('wheel', handleWheel);
+        };
+    }, []);
+
+    // Keyboard Navigation
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Prevent shortcuts when typing in input fields
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+                return;
+            }
+
+            if (e.key === 'Escape') {
+                setFocusedId(null);
+            } else if (e.key === ' ') {
+                e.preventDefault();
+                setIsPlaying(p => !p);
+            } else if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                e.preventDefault();
+                const idx = PLANETS.findIndex(p => p.id === focusedId);
+                let nextIdx = 0;
+                if (e.key === 'ArrowRight') nextIdx = idx === -1 ? 0 : (idx + 1) % PLANETS.length;
+                else nextIdx = idx === -1 ? PLANETS.length - 1 : (idx - 1 + PLANETS.length) % PLANETS.length;
+                setFocusedId(PLANETS[nextIdx].id);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setZoomSignal(z => z + 1);
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                setZoomSignal(z => z - 1);
+            } else if (e.key === 'i' || e.key === 'I') {
+                e.preventDefault();
+                setShowInfo(s => !s);
+            } else if (e.key === 's' || e.key === 'S') {
+                e.preventDefault();
+                const currentIndex = TIME_SPEEDS.findIndex(s => s.value === simSpeed);
+                const nextIndex = (currentIndex + 1) % TIME_SPEEDS.length;
+                setSimSpeed(TIME_SPEEDS[nextIndex].value);
+            } else if (e.key === 'f' || e.key === 'F') {
+                e.preventDefault();
+                toggleFullscreen();
+            } else if (e.key === 'm' || e.key === 'M') {
+                e.preventDefault();
+                setIsMusicOn(m => !m);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [focusedId, simSpeed, showInfo, toggleFullscreen]);
+
+    const toggleLocation = () => {
+        if (!showLocation) {
+            alert("Locating you...");
+            if (typeof navigator !== 'undefined' && navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        setUserLocation({ lat: pos.coords.latitude, long: pos.coords.longitude });
+                        setShowLocation(true);
+                    },
+                    (err) => { console.warn("Geo error", err); alert("Could not get location. Allow permissions."); }
+                );
+            } else { alert("Geolocation not supported"); }
+        } else {
+            setShowLocation(false);
+        }
     };
+
+    // Calculate display data based on toggles
+    const activePlanets = useMemo(() => {
+        return PLANETS.map(p => ({
+            ...p,
+            distance: useRealDist ? p.orbitAU * 30 : p.distance, // Scale AU by 30
+            size: useRealSize ? (SUN_SIZE / 109) * p.radiusMultiplier : p.size, // Scale relative to Sun (Size 7)
+            useRealDist,
+            useRealSize
+        }));
+    }, [useRealDist, useRealSize]);
 
     return (
         <div ref={containerRef} className="w-full h-screen relative bg-black overflow-hidden select-none touch-action-none">
@@ -1337,8 +1400,8 @@ export default function SolarSystem() {
                     <SimulationController isPlaying={isPlaying} speedMultiplier={simSpeed} simTimeRef={simTimeRef} />
                     <Stars radius={useRealDist ? 2000 : 200} depth={100} count={20000} factor={8} saturation={0} fade speed={0.3} />
 
-                    <AsteroidBelt useRealDist={useRealDist} isPlaying={isPlaying} />
-                    <Sun useRealSize={useRealSize} viewMoonPhase={viewMoonPhase} />
+                    <AsteroidBelt useRealDist={useRealDist} isPlaying={isPlaying} simTimeRef={simTimeRef} />
+                    <Sun useRealSize={useRealSize} viewMoonPhase={viewMoonPhase} simTimeRef={simTimeRef} />
                     {activePlanets.map((planet) => (
                         <PlanetErrorBoundary key={planet.id} data={planet} simTimeRef={simTimeRef} onSelect={setFocusedId}>
                             <Planet
