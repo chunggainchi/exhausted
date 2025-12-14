@@ -947,7 +947,8 @@ const UI: React.FC<{
     onToggleSpeed: () => void;
     viewMoonPhase: boolean;
     onToggleMoonPhase: () => void;
-}> = ({ focusedId, onSelect, isPlaying, onTogglePlay, showInfo, onToggleInfo, onToggleFullscreen, useRealDist, onToggleRealDist, useRealSize, onToggleRealSize, showLocation, onToggleLocation, isMusicOn, onToggleMusic, simSpeed, onToggleSpeed, viewMoonPhase, onToggleMoonPhase }) => {
+    isFullscreen: boolean;
+}> = ({ focusedId, onSelect, isPlaying, onTogglePlay, showInfo, onToggleInfo, onToggleFullscreen, useRealDist, onToggleRealDist, useRealSize, onToggleRealSize, showLocation, onToggleLocation, isMusicOn, onToggleMusic, simSpeed, onToggleSpeed, viewMoonPhase, onToggleMoonPhase, isFullscreen }) => {
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [hoveredInfo, setHoveredInfo] = useState<string | null>(null);
     const infoPanelRef = useRef<HTMLDivElement>(null);
@@ -972,7 +973,14 @@ const UI: React.FC<{
 
     const focusedPlanet = PLANETS.find(p => p.id === focusedId);
     const displayedPlanet = viewMoonPhase ? MOON_INFO : (focusedPlanet || (focusedId === null ? SUN_INFO : null));
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    const [isMobile, setIsMobile] = useState(false);
+    useEffect(() => {
+        const updateViewport = () => setIsMobile(window.innerWidth < 768);
+        updateViewport();
+        window.addEventListener('resize', updateViewport);
+        return () => window.removeEventListener('resize', updateViewport);
+    }, []);
 
     const handleSelect = (id: string | null) => {
         audioService.playClick();
@@ -1040,13 +1048,24 @@ const UI: React.FC<{
                 )}
 
                 {/* Mobile Info Button */}
-                {isMobile && displayedPlanet && (
-                    <button
-                        onClick={onToggleInfo}
-                        className="pointer-events-auto bg-black/40 backdrop-blur-md border border-white/10 text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-all duration-300 shadow-lg"
-                    >
-                        <span className="text-lg">ⓘ</span>
-                    </button>
+                {isMobile && (
+                    <div className="flex items-center gap-2 pointer-events-auto">
+                        {displayedPlanet && (
+                            <button
+                                onClick={onToggleInfo}
+                                className="bg-black/40 backdrop-blur-md border border-white/10 text-white px-3 py-2 rounded-xl hover:bg-white/10 transition-all duration-300 shadow-lg"
+                            >
+                                <span className="text-lg">ⓘ</span>
+                            </button>
+                        )}
+                        <button
+                            onClick={onToggleFullscreen}
+                            aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                            className={`${isFullscreen ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/40 border-white/10 text-white'} backdrop-blur-md border px-3 py-2 rounded-xl hover:bg-white/10 transition-all duration-300 shadow-lg`}
+                        >
+                            <span className="text-lg">{isFullscreen ? '✕' : '⛶'}</span>
+                        </button>
+                    </div>
                 )}
 
                 {/* Info Toggle Button moved to control group */}
@@ -1062,7 +1081,7 @@ const UI: React.FC<{
                                     onClick={(e) => { e.stopPropagation(); onToggleInfo(); }}
                                     onMouseEnter={() => setHoveredInfo(showInfo ? "Hide info" : "Show info")}
                                     onMouseLeave={() => setHoveredInfo(null)}
-                                    className={`${showInfo ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10 hover:text-white`}
+                                    className={`${showInfo ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/10 hover:text-white`}
                                 >
                                     <span className="text-sm">ⓘ</span>
                                 </button>
@@ -1073,7 +1092,7 @@ const UI: React.FC<{
                                     onClick={() => { onToggleMoonPhase(); setTimeout(onToggleMoonPhase, 100); }}
                                     onMouseEnter={() => setHoveredInfo("Reset View")}
                                     onMouseLeave={() => setHoveredInfo(null)}
-                                    className="bg-black/20 border-white/10 backdrop-blur-md border text-white px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10"
+                                    className="bg-black/20 border-white/10 backdrop-blur-md border text-white px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/10"
                                 >
                                     <RotateCcw size={16} />
                                 </button>
@@ -1083,7 +1102,7 @@ const UI: React.FC<{
                                     onClick={onToggleMoonPhase}
                                     onMouseEnter={() => setHoveredInfo("View Moon from Earth")}
                                     onMouseLeave={() => setHoveredInfo(null)}
-                                    className={`${viewMoonPhase ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10 hover:text-white`}
+                                    className={`${viewMoonPhase ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/10 hover:text-white`}
                                 >
                                     <MoonIcon size={16} className={viewMoonPhase ? "fill-current" : ""} />
                                 </button>
@@ -1092,7 +1111,7 @@ const UI: React.FC<{
                                 onClick={() => { audioService.playClick(); onTogglePlay(); }}
                                 onMouseEnter={() => setHoveredInfo("Pause/Resume Time")}
                                 onMouseLeave={() => setHoveredInfo(null)}
-                                className={`${isPlaying ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-6 py-3 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg flex items-center gap-2 hover:text-white`}
+                                className={`${isPlaying ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg flex items-center gap-2 hover:text-white`}
                             >
                                 <span className="text-lg flex items-center justify-center w-5">{isPlaying ? <div className="flex gap-1"><div className="w-1.5 h-4 bg-current rounded-sm"></div><div className="w-1.5 h-4 bg-current rounded-sm"></div></div> : "▶︎"}</span>
                                 <span className="text-sm font-light tracking-wide">{isPlaying ? "Time" : "Time"}</span>
@@ -1102,7 +1121,7 @@ const UI: React.FC<{
                                 onClick={onToggleRealDist}
                                 onMouseEnter={() => setHoveredInfo("Scale distances to true reality (Planets will be much further apart)")}
                                 onMouseLeave={() => setHoveredInfo(null)}
-                                className={`${useRealDist ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10 hover:text-white`}
+                                className={`${useRealDist ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/10 hover:text-white`}
                             >
                                 <span className="text-sm">📏</span>
                             </button>
@@ -1110,7 +1129,7 @@ const UI: React.FC<{
                                 onClick={onToggleRealSize}
                                 onMouseEnter={() => setHoveredInfo("Scale planets to real relative sizes (Many planets will look much smaller)")}
                                 onMouseLeave={() => setHoveredInfo(null)}
-                                className={`${useRealSize ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10 hover:text-white`}
+                                className={`${useRealSize ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/10 hover:text-white`}
                             >
                                 <span className="text-sm">⚪</span>
                             </button>
@@ -1118,7 +1137,7 @@ const UI: React.FC<{
                                 onClick={onToggleLocation}
                                 onMouseEnter={() => setHoveredInfo("Show my location on Earth - Red dot shows where you are!")}
                                 onMouseLeave={() => setHoveredInfo(null)}
-                                className={`${showLocation ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10 hover:text-white`}
+                                className={`${showLocation ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/10 hover:text-white`}
                             >
                                 <span className="text-sm">⚲</span>
                             </button>
@@ -1126,7 +1145,7 @@ const UI: React.FC<{
                                 onClick={onToggleMusic}
                                 onMouseEnter={() => setHoveredInfo("Ambient space sound (Space has no sound in real life though)")}
                                 onMouseLeave={() => setHoveredInfo(null)}
-                                className={`${isMusicOn ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10 hover:text-white`}
+                                className={`${isMusicOn ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/10 hover:text-white`}
                             >
                                 <span className="text-sm">♬</span>
                             </button>
@@ -1134,7 +1153,7 @@ const UI: React.FC<{
                                 onClick={onToggleSpeed}
                                 onMouseEnter={() => setHoveredInfo("Toggle time speed (1s/s is real life speed but you will not see much movement)")}
                                 onMouseLeave={() => setHoveredInfo(null)}
-                                className="bg-black/20 backdrop-blur-md border border-white/10 text-white px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10"
+                                className="bg-black/20 backdrop-blur-md border border-white/10 text-white px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/10"
                             >
                                 <span className="text-sm font-mono">{TIME_SPEEDS.find(s => s.value === simSpeed)?.label}</span>
                             </button>
@@ -1145,7 +1164,7 @@ const UI: React.FC<{
                                 onClick={onToggleFullscreen}
                                 onMouseEnter={() => setHoveredInfo("Toggle fullscreen")}
                                 onMouseLeave={() => setHoveredInfo(null)}
-                                className="bg-white/10 hover:bg-white/15 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg"
+                                className="bg-white/10 hover:bg-white/15 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg"
                             >
                                 <span className="text-lg">⛶</span>
                             </button>
@@ -1188,7 +1207,7 @@ const UI: React.FC<{
                 {/* Burger Button */}
                 <button
                     onClick={() => setShowMobileMenu(!showMobileMenu)}
-                    className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-lg border border-white/20 text-white p-4 rounded-full shadow-2xl z-40 pointer-events-auto"
+                    className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-lg border border-white/20 text-white p-4 rounded-xl shadow-2xl z-40 pointer-events-auto"
                 >
                     <span className="text-2xl">{showMobileMenu ? '✕' : '☰'}</span>
                 </button>
@@ -1201,28 +1220,28 @@ const UI: React.FC<{
                             <div className="flex flex-col gap-3 mb-4 pb-4 border-b border-white/10">
                                 {/* Playback Controls */}
                                 <div className="flex gap-2">
-                                    <button onClick={() => { audioService.playClick(); onTogglePlay(); }} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border transition-all ${isPlaying ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                                    <button onClick={() => { audioService.playClick(); onTogglePlay(); }} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border transition-all ${isPlaying ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
                                         <span className="text-lg">{isPlaying ? "⏸" : "▶︎"}</span>
                                         <span className="text-sm font-medium">{isPlaying ? "Time" : "Time"}</span>
                                     </button>
-                                    <button onClick={onToggleSpeed} className="w-20 flex items-center justify-center py-3 rounded-lg text-white bg-white/5 border border-white/10 font-mono text-xs">
+                                    <button onClick={onToggleSpeed} className="w-20 flex items-center justify-center py-3 rounded-xl text-white bg-white/5 border border-white/10 font-mono text-xs">
                                         {TIME_SPEEDS.find(s => s.value === simSpeed)?.label}
                                     </button>
                                 </div>
 
                                 {/* View Options */}
                                 <div className="grid grid-cols-2 gap-2">
-                                    <button onClick={onToggleRealDist} className={`py-3 rounded-lg border transition-all ${useRealDist ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                                    <button onClick={onToggleRealDist} className={`py-3 rounded-xl border transition-all ${useRealDist ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
                                         <span className="mr-2">📏</span><span className="text-xs">Scale Dist</span>
                                     </button>
-                                    <button onClick={onToggleRealSize} className={`py-3 rounded-lg border transition-all ${useRealSize ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                                    <button onClick={onToggleRealSize} className={`py-3 rounded-xl border transition-all ${useRealSize ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
                                         <span className="mr-2">⚪</span><span className="text-xs">Scale Size</span>
                                     </button>
                                 </div>
 
                                 {/* Moon Phase - Dedicated Button */}
                                 {focusedId === 'earth' && (
-                                    <button onClick={onToggleMoonPhase} className={`w-full py-3 rounded-lg border flex items-center justify-center gap-2 transition-all ${viewMoonPhase ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                                    <button onClick={onToggleMoonPhase} className={`w-full py-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${viewMoonPhase ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
                                         <MoonIcon size={18} className={viewMoonPhase ? "fill-current" : ""} />
                                         <span className="text-sm font-medium">View Moon Phases</span>
                                     </button>
@@ -1230,10 +1249,10 @@ const UI: React.FC<{
 
                                 {/* Location & Audio */}
                                 <div className="grid grid-cols-2 gap-2">
-                                    <button onClick={onToggleLocation} className={`py-3 rounded-lg border transition-all ${showLocation ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                                    <button onClick={onToggleLocation} className={`py-3 rounded-xl border transition-all ${showLocation ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
                                         <span className="mr-2">⚲</span><span className="text-xs">Location</span>
                                     </button>
-                                    <button onClick={onToggleMusic} className={`py-3 rounded-lg border transition-all ${isMusicOn ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                                    <button onClick={onToggleMusic} className={`py-3 rounded-xl border transition-all ${isMusicOn ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
                                         <span className="mr-2">♬</span><span className="text-xs">Music</span>
                                     </button>
                                 </div>
@@ -1283,6 +1302,7 @@ export default function SolarSystem() {
     const [simSpeed, setSimSpeed] = useState(86400); // Default 1 Day/s
     const [viewMoonPhase, setViewMoonPhase] = useState(false);
     const [zoomSignal, setZoomSignal] = useState(0);
+    const [isFullscreen, setIsFullscreen] = useState(false);
     const simTimeRef = useRef(0);
 
     // Audio Drone
@@ -1295,14 +1315,27 @@ export default function SolarSystem() {
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Fullscreen handler
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            const fullscreenActive = !!document.fullscreenElement;
+            setIsFullscreen(fullscreenActive);
+            if (!fullscreenActive && typeof screen !== 'undefined' && screen.orientation && 'unlock' in screen.orientation) {
+                const orientation = screen.orientation as ScreenOrientation & { unlock?: () => void };
+                orientation.unlock?.();
+            }
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    }, []);
+
     const toggleFullscreen = useCallback(() => {
         if (!containerRef.current) return;
         if (!document.fullscreenElement) {
             containerRef.current.requestFullscreen().then(() => {
                 // Attempt to lock orientation to landscape on mobile
                 if (screen.orientation && 'lock' in screen.orientation) {
-                    // @ts-expect-error - lock API is experimental
-                    screen.orientation.lock('landscape').catch((e: unknown) => console.log('Orientation lock failed:', e));
+                    const orientation = screen.orientation as ScreenOrientation & { lock?: (orientation: 'landscape' | 'portrait') => Promise<void> };
+                    orientation.lock?.('landscape').catch((e: unknown) => console.log('Orientation lock failed:', e));
                 }
             }).catch(err => {
                 console.log('Fullscreen error:', err);
@@ -1310,7 +1343,8 @@ export default function SolarSystem() {
         } else {
             document.exitFullscreen();
             if (screen.orientation && 'unlock' in screen.orientation) {
-                screen.orientation.unlock();
+                const orientation = screen.orientation as ScreenOrientation & { unlock?: () => void };
+                orientation.unlock?.();
             }
         }
     }, []);
@@ -1454,6 +1488,7 @@ export default function SolarSystem() {
                 onToggleRealSize={() => setUseRealSize(!useRealSize)}
                 viewMoonPhase={viewMoonPhase}
                 onToggleMoonPhase={() => setViewMoonPhase(!viewMoonPhase)}
+                isFullscreen={isFullscreen}
             />
         </div>
     );
