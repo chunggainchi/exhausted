@@ -172,7 +172,7 @@ const PLANETS: PlanetData[] = [
         radiusMultiplier: 9.45,
         hasRings: true,
         description: "Lord of the Rings.",
-        funFact: "Its magnificent rings aren't solid but are made of ice and rock particles that orbit around it. Like Jupiter it spins very quickly and has the second-shortest day. However, a year there is almost 30 Earth years long! It's too cold for liquid water to exist.",
+        funFact: "It's magnificent 7 rings aren't solid but are made of ice and rock particles that orbit around it. Like Jupiter it spins very quickly and has the second-shortest day. However, a year there is almost 30 Earth years long! It's too cold for liquid water to exist.",
         temp: "❄️❄️❄️",
         moonsCount: 146,
         realSize: "9.45x Earth",
@@ -229,6 +229,58 @@ const TIME_SPEEDS = [
     { value: 86400, label: '1d/s' }, // Default
     { value: 604800, label: '1w/s' }
 ];
+
+interface SaturnRingBand {
+    start: number;
+    end: number;
+    color: [number, number, number];
+    opacity: number;
+    label: string;
+}
+
+// Tune each band's opacity/color here for quick visual adjustments
+export const SATURN_RING_BANDS: SaturnRingBand[] = [
+    // Innermost dusty D ring: very faint
+    { start: 0.0, end: 0.04, color: [150, 140, 130], opacity: 0.2, label: 'D Ring' },
+    
+    // C Ring: Visible gold/grey structure
+    { start: 0.04, end: 0.12, color: [160, 140, 100], opacity: 0.5, label: 'C Ring' },
+    
+    // B Ring (Inner): Intense gold scattering
+    { start: 0.12, end: 0.28, color: [220, 200, 150], opacity: 0.9, label: 'B Ring' },
+    // B Ring (Mid): Maximum density
+    { start: 0.28, end: 0.46, color: [200, 180, 130], opacity: 1.0, label: 'B Ring' },
+    // B Ring (Outer): Fading slightly
+    { start: 0.46, end: 0.58, color: [180, 160, 120], opacity: 0.85, label: 'B Ring' },
+    
+    // Cassini Division: Dark but not empty (dusty)
+    { start: 0.58, end: 0.62, color: [60, 60, 70], opacity: 0.3, label: 'Cassini Division' },
+    
+    // A Ring: Bright gold/white
+    { start: 0.62, end: 0.72, color: [210, 200, 170], opacity: 0.8, label: 'A Ring' },
+    // A Ring Outer Edge
+    { start: 0.72, end: 0.76, color: [180, 170, 160], opacity: 0.6, label: 'A Ring Outer' },
+    
+    // F Ring: Sharp, bright white strand
+    { start: 0.76, end: 0.77, color: [255, 255, 255], opacity: 1.0, label: 'F Ring' },
+    
+    // Gap
+    { start: 0.77, end: 0.82, color: [10, 20, 30], opacity: 0.0, label: '' },
+    
+    // G Ring: Diffuse, starting to shift blue
+    { start: 0.82, end: 0.88, color: [100, 150, 200], opacity: 0.4, label: 'G Ring' },
+    
+    // E Ring: The massive blue halo (Enceladus plume)
+    // Brighter color value needed because it's very diffuse
+    { start: 0.88, end: 1.0, color: [60, 120, 255], opacity: 0.4, label: 'E Ring' }
+];
+
+const findSaturnRingBand = (t: number): SaturnRingBand => {
+    for (const band of SATURN_RING_BANDS) {
+        if (t >= band.start && t < band.end) return band;
+    }
+    return SATURN_RING_BANDS[SATURN_RING_BANDS.length - 1];
+};
 const SUN_INFO = {
     id: 'sun',
     name: 'Sun',
@@ -491,11 +543,62 @@ const Moon: React.FC<{ data: { size: number, distance: number, speed: number, co
 const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: string) => void; simTimeRef: React.MutableRefObject<number>; isPlaying: boolean; userLocation?: { lat: number; long: number } | null }> = ({ data, isFocused, onSelect, simTimeRef, userLocation }) => {
     const meshRef = useRef<THREE.Mesh>(null);
     const orbitRef = useRef<THREE.Group>(null);
+    const ringRef = useRef<THREE.Mesh>(null);
 
     // Apply Orbital Inclination
     const inclinationRad = THREE.MathUtils.degToRad(data.inclination || 0);
 
     const texture = useTexture(data.textureUrl);
+    const isSaturn = data.id === 'saturn';
+
+    const saturnRingData = useMemo(() => {
+        if (!isSaturn) return null;
+        const innerRadius = data.size * 1.35;
+        const outerRadius = data.size * 2.4;
+        const geometry = new THREE.RingGeometry(innerRadius, outerRadius, 256, 128);
+
+        const positionAttr = geometry.attributes.position as THREE.BufferAttribute;
+        const colorArray = new Float32Array(positionAttr.count * 3);
+        const workingColor = new THREE.Color();
+        const highlight = new THREE.Color('#fff6e8');
+
+        for (let i = 0; i < positionAttr.count; i++) {
+            const x = positionAttr.getX(i);
+            const y = positionAttr.getY(i);
+            const radius = Math.sqrt(x * x + y * y);
+            const t = THREE.MathUtils.clamp((radius - innerRadius) / (outerRadius - innerRadius), 0, 1);
+            const band = findSaturnRingBand(t);
+            workingColor.setRGB(band.color[0] / 255, band.color[1] / 255, band.color[2] / 255);
+
+            const theta = Math.atan2(y, x);
+            const fineRinglets = 0.5 + 0.5 * Math.sin(t * 1800 + theta * 8);
+            const midRinglets = 0.5 + 0.5 * Math.sin(t * 320);
+            const radialRipple = 0.5 + 0.5 * Math.sin(theta * 20 + t * 25);
+            const density = THREE.MathUtils.clamp(band.opacity ?? 0.5, 0, 1);
+            const brightnessPrimary = THREE.MathUtils.clamp(0.55 + 0.35 * fineRinglets + 0.15 * midRinglets + 0.05 * radialRipple, 0.3, 1.4);
+            const brightness = THREE.MathUtils.clamp(0.65 + 0.4 * fineRinglets + 0.18 * midRinglets + 0.06 * radialRipple, brightnessPrimary, 1.5);
+
+            const haloAmount = THREE.MathUtils.smoothstep(t, 0.85, 1);
+            workingColor.lerp(highlight, 0.1 * haloAmount);
+
+            const finalR = THREE.MathUtils.clamp(workingColor.r * brightness * density * 1.08, 0, 1);
+            const finalG = THREE.MathUtils.clamp(workingColor.g * brightness * density * 1.08, 0, 1);
+            const finalB = THREE.MathUtils.clamp(workingColor.b * (0.96 + 0.05 * midRinglets) * density * 1.08, 0, 1);
+
+            colorArray[i * 3] = finalR;
+            colorArray[i * 3 + 1] = finalG;
+            colorArray[i * 3 + 2] = finalB;
+        }
+
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colorArray, 3));
+        return { geometry, innerRadius, outerRadius };
+    }, [isSaturn, data.size]);
+
+    useEffect(() => {
+        return () => {
+            saturnRingData?.geometry.dispose();
+        };
+    }, [saturnRingData]);
 
     const orbitCurve = useMemo(() => {
         const points = [];
@@ -627,9 +730,32 @@ const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: st
                     )}
 
                     {data.hasRings && (
-                        <mesh rotation={[-Math.PI / 3, 0, 0]}>
-                            <ringGeometry args={[data.size * 1.4, data.size * 2.2, 128]} />
-                            <meshStandardMaterial color={data.color} side={THREE.DoubleSide} transparent opacity={0.7} />
+                        <mesh
+                            rotation={[-Math.PI / 3, 0, 0]}
+                            ref={data.id === 'saturn' ? ringRef : undefined}
+                        >
+                            {isSaturn && saturnRingData ? (
+                                <>
+                                    <primitive object={saturnRingData.geometry} attach="geometry" />
+                                    <meshStandardMaterial
+                                        vertexColors
+                                        transparent
+                                        opacity={0.9}
+                                        roughness={0.35}
+                                        metalness={0.05}
+                                        emissive="#fff6d9"
+                                        emissiveIntensity={0.25}
+                                        toneMapped={false}
+                                        side={THREE.DoubleSide}
+                                        depthWrite={false}
+                                    />
+                                </>
+                            ) : (
+                                <>
+                                    <ringGeometry args={[data.size * 1.4, data.size * 2.2, 128]} />
+                                    <meshStandardMaterial color={data.color} side={THREE.DoubleSide} transparent opacity={0.7} />
+                                </>
+                            )}
                         </mesh>
                     )}
 
@@ -1048,24 +1174,13 @@ const UI: React.FC<{
                 )}
 
                 {/* Mobile Info Button */}
-                {isMobile && (
-                    <div className="flex items-center gap-2 pointer-events-auto">
-                        {displayedPlanet && (
-                            <button
-                                onClick={onToggleInfo}
-                                className="bg-black/40 backdrop-blur-md border border-white/10 text-white px-3 py-2 rounded-xl hover:bg-white/10 transition-all duration-300 shadow-lg"
-                            >
-                                <span className="text-lg">ⓘ</span>
-                            </button>
-                        )}
-                        <button
-                            onClick={onToggleFullscreen}
-                            aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-                            className={`${isFullscreen ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/40 border-white/10 text-white'} backdrop-blur-md border px-3 py-2 rounded-xl hover:bg-white/10 transition-all duration-300 shadow-lg`}
-                        >
-                            <span className="text-lg">{isFullscreen ? '✕' : '⛶'}</span>
-                        </button>
-                    </div>
+                {isMobile && displayedPlanet && (
+                    <button
+                        onClick={onToggleInfo}
+                        className="pointer-events-auto bg-black/40 backdrop-blur-md border border-white/10 text-white px-3 py-2 rounded-xl hover:bg-white/10 transition-all duration-300 shadow-lg"
+                    >
+                        <span className="text-lg">ⓘ</span>
+                    </button>
                 )}
 
                 {/* Info Toggle Button moved to control group */}
@@ -1162,11 +1277,11 @@ const UI: React.FC<{
                         {!isMobile && (
                             <button
                                 onClick={onToggleFullscreen}
-                                onMouseEnter={() => setHoveredInfo("Toggle fullscreen")}
+                                onMouseEnter={() => setHoveredInfo(isFullscreen ? "Exit fullscreen" : "Enter fullscreen")}
                                 onMouseLeave={() => setHoveredInfo(null)}
-                                className="bg-white/10 hover:bg-white/15 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg"
+                                className={`${isFullscreen ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/10 hover:bg-white/15 border-white/20 text-white'} backdrop-blur-md border px-4 py-3 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg`}
                             >
-                                <span className="text-lg">⛶</span>
+                                <span className="text-lg">{isFullscreen ? '✕' : '⛶'}</span>
                             </button>
                         )}
                     </div>
