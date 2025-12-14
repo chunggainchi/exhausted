@@ -719,6 +719,8 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
             enableZoom={true}
             enablePan={true}
             enableRotate={true}
+            minPolarAngle={0}
+            maxPolarAngle={Math.PI}
             minDistance={focusedId ? (useRealDist ? 0.1 : 3) : 10}
             maxDistance={focusedId ? (useRealDist ? 500 : 80) : maxDistance}
             rotateSpeed={0.5}
@@ -818,22 +820,23 @@ const UI: React.FC<{
                     </div>
                 )}
 
-                {/* Info Toggle Button */}
-                {focusedPlanet && (
-                    <button
-                        onClick={onToggleInfo}
-                        className="bg-black/40 backdrop-blur-md border border-white/10 text-white px-3 py-2 md:px-4 md:py-3 rounded-lg hover:bg-white/10 transition-all duration-300 shadow-lg"
-                        title={showInfo ? 'Hide Info' : 'Show Info'}
-                    >
-                        <span className="text-lg md:text-xl">{showInfo ? '✕' : 'ⓘ'}</span>
-                    </button>
-                )}
+                {/* Info Toggle Button moved to control group */}
 
                 <div className="flex-1"></div>
                 {/* Control Buttons & Tooltip */}
                 <div className="flex flex-col items-end gap-2">
                     <div className="flex gap-3">
                         <div className="hidden md:flex gap-3">
+                            {focusedPlanet && (
+                                <button
+                                    onClick={onToggleInfo}
+                                    onMouseEnter={() => setHoveredInfo(showInfo ? "Hide Info" : "Show Info")}
+                                    onMouseLeave={() => setHoveredInfo(null)}
+                                    className={`${showInfo ? 'bg-white/10 border-white/40' : 'bg-black/20 border-white/10'} backdrop-blur-md border text-white px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10`}
+                                >
+                                    <span className="text-sm">ⓘ</span>
+                                </button>
+                            )}
                             <button
                                 onClick={() => { audioService.playClick(); onTogglePlay(); }}
                                 onMouseEnter={() => setHoveredInfo("Pause/Resume Time")}
@@ -886,14 +889,16 @@ const UI: React.FC<{
                             </button>
                         </div>
 
-                        <button
-                            onClick={onToggleFullscreen}
-                            onMouseEnter={() => setHoveredInfo("Toggle Fullscreen")}
-                            onMouseLeave={() => setHoveredInfo(null)}
-                            className="bg-white/10 hover:bg-white/15 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg"
-                        >
-                            <span className="text-lg">⛶</span>
-                        </button>
+                        {!isMobile && (
+                            <button
+                                onClick={onToggleFullscreen}
+                                onMouseEnter={() => setHoveredInfo("Toggle Fullscreen")}
+                                onMouseLeave={() => setHoveredInfo(null)}
+                                className="bg-white/10 hover:bg-white/15 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg"
+                            >
+                                <span className="text-lg">⛶</span>
+                            </button>
+                        )}
                     </div>
                     {!isMobile && hoveredInfo && (
                         <div className="bg-black/80 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-md border border-white/20 shadow-xl tracking-wide font-light animate-in fade-in slide-in-from-top-1 duration-200">
@@ -938,48 +943,51 @@ const UI: React.FC<{
                 </button>
 
                 {showMobileMenu && (
-                    <div className="absolute bottom-20 right-4 bg-black/90 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl z-40">
-                        {/* Mobile Controls */}
-                        <div className="grid grid-cols-6 gap-2 mb-4 pb-4 border-b border-white/10">
-                            <button onClick={() => { audioService.playClick(); onTogglePlay(); }} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${isPlaying ? 'bg-white/20' : 'bg-white/5'}`}>
-                                <span className="text-lg flex items-center justify-center w-full h-full">{isPlaying ? <div className="flex gap-1"><div className="w-1 h-3 bg-white rounded-sm"></div><div className="w-1 h-3 bg-white rounded-sm"></div></div> : "▶︎"}</span>
-                            </button>
-                            <button onClick={onToggleRealDist} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${useRealDist ? 'bg-white/20' : 'bg-white/5'}`}>
-                                <span className="text-sm">📏</span>
-                            </button>
-                            <button onClick={onToggleRealSize} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${useRealSize ? 'bg-white/20' : 'bg-white/5'}`}>
-                                <span className="text-sm">⚪</span>
-                            </button>
-                            <button onClick={onToggleLocation} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${showLocation ? 'bg-white/20' : 'bg-white/5'}`}>
-                                <span className="text-sm">⚲</span>
-                            </button>
-                            <button onClick={onToggleMusic} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${isMusicOn ? 'bg-white/20' : 'bg-white/5'}`}>
-                                <span className="text-sm">♬</span>
-                            </button>
-                            <button onClick={onToggleSpeed} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white bg-white/5`}>
-                                <span className="text-xs font-mono">{TIME_SPEEDS.find(s => s.value === simSpeed)?.label}</span>
-                            </button>
-                        </div>
-                        <div className="grid grid-cols-3 gap-3">
-                            <button onClick={() => handleSelect(null)} className={`flex flex-col items-center justify-center w-16 h-16 rounded-xl transition-all duration-300 ${!focusedId ? 'bg-white/20 ring-2 ring-white/30' : 'bg-white/5 border border-white/10'}`}>
-                                <div className="w-8 h-8 rounded-full mb-1 shadow-md ring-1 ring-white/20 overflow-hidden relative">
-                                    <img src="/textures/Sun.jpg" alt="Sun" className="w-full h-full object-cover" />
-                                </div>
-                                <span className="text-[8px] font-light text-white uppercase">Sun</span>
-                            </button>
-                            {PLANETS.map((planet) => (
-                                <button key={planet.id} onClick={() => handleSelect(planet.id)} className={`flex flex-col items-center justify-center w-16 h-16 rounded-xl transition-all duration-300 border ${focusedId === planet.id ? 'border-white/40 bg-white/10' : 'border-white/10 bg-white/5'}`}>
-                                    <div className="w-6 h-6 rounded-full mb-1 shadow-md ring-1 ring-white/20 overflow-hidden relative" style={{ boxShadow: `0 0 5px ${planet.color}40` }}>
-                                        <img src={planet.textureUrl} alt={planet.name} className="w-full h-full object-cover" />
-                                    </div>
-                                    <span className="text-[8px] font-light text-white uppercase">{planet.name}</span>
+                    <>
+                        <div className="fixed inset-0 bg-transparent z-40" onClick={() => setShowMobileMenu(false)} />
+                        <div className="absolute bottom-20 right-4 bg-black/90 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl z-50">
+                            {/* Mobile Controls */}
+                            <div className="grid grid-cols-6 gap-2 mb-4 pb-4 border-b border-white/10">
+                                <button onClick={() => { audioService.playClick(); onTogglePlay(); }} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${isPlaying ? 'bg-white/20' : 'bg-white/5'}`}>
+                                    <span className="text-lg flex items-center justify-center w-full h-full">{isPlaying ? <div className="flex gap-1"><div className="w-1 h-3 bg-white rounded-sm"></div><div className="w-1 h-3 bg-white rounded-sm"></div></div> : "▶︎"}</span>
                                 </button>
-                            ))}
+                                <button onClick={onToggleRealDist} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${useRealDist ? 'bg-white/20' : 'bg-white/5'}`}>
+                                    <span className="text-sm">📏</span>
+                                </button>
+                                <button onClick={onToggleRealSize} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${useRealSize ? 'bg-white/20' : 'bg-white/5'}`}>
+                                    <span className="text-sm">⚪</span>
+                                </button>
+                                <button onClick={onToggleLocation} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${showLocation ? 'bg-white/20' : 'bg-white/5'}`}>
+                                    <span className="text-sm">⚲</span>
+                                </button>
+                                <button onClick={onToggleMusic} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${isMusicOn ? 'bg-white/20' : 'bg-white/5'}`}>
+                                    <span className="text-sm">♬</span>
+                                </button>
+                                <button onClick={onToggleSpeed} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white bg-white/5`}>
+                                    <span className="text-xs font-mono">{TIME_SPEEDS.find(s => s.value === simSpeed)?.label}</span>
+                                </button>
+                            </div>
+                            <div className="grid grid-cols-3 gap-3">
+                                <button onClick={() => handleSelect(null)} className={`flex flex-col items-center justify-center w-16 h-16 rounded-xl transition-all duration-300 ${!focusedId ? 'bg-white/20 ring-2 ring-white/30' : 'bg-white/5 border border-white/10'}`}>
+                                    <div className="w-8 h-8 rounded-full mb-1 shadow-md ring-1 ring-white/20 overflow-hidden relative">
+                                        <img src="/textures/Sun.jpg" alt="Sun" className="w-full h-full object-cover" />
+                                    </div>
+                                    <span className="text-[8px] font-light text-white uppercase">Sun</span>
+                                </button>
+                                {PLANETS.map((planet) => (
+                                    <button key={planet.id} onClick={() => handleSelect(planet.id)} className={`flex flex-col items-center justify-center w-16 h-16 rounded-xl transition-all duration-300 border ${focusedId === planet.id ? 'border-white/40 bg-white/10' : 'border-white/10 bg-white/5'}`}>
+                                        <div className="w-6 h-6 rounded-full mb-1 shadow-md ring-1 ring-white/20 overflow-hidden relative" style={{ boxShadow: `0 0 5px ${planet.color}40` }}>
+                                            <img src={planet.textureUrl} alt={planet.name} className="w-full h-full object-cover" />
+                                        </div>
+                                        <span className="text-[8px] font-light text-white uppercase">{planet.name}</span>
+                                    </button>
+                                ))}
+                            </div>
+                            <a href="https://exhaustedrocket.com" target="_blank" rel="noopener noreferrer" className="block mt-4 text-center text-[10px] text-white/40 hover:text-white transition-colors">
+                                Product of exhaustedrocket.com
+                            </a>
                         </div>
-                        <a href="https://exhaustedrocket.com" target="_blank" rel="noopener noreferrer" className="block mt-4 text-center text-[10px] text-white/40 hover:text-white transition-colors">
-                            Product of exhaustedrocket.com
-                        </a>
-                    </div>
+                    </>
                 )}
             </div>
 
@@ -1000,7 +1008,7 @@ export default function SolarSystem() {
     const [useRealSize, setUseRealSize] = useState(false);
     const [showLocation, setShowLocation] = useState(false);
     const [userLocation, setUserLocation] = useState<{ lat: number, long: number } | null>(null);
-    const [isMusicOn, setIsMusicOn] = useState(false);
+    const [isMusicOn, setIsMusicOn] = useState(true);
     const [simSpeed, setSimSpeed] = useState(86400); // Default 1 Day/s
     const simTimeRef = useRef(0);
 
