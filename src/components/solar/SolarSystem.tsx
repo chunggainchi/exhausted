@@ -57,13 +57,14 @@ const PLANETS: PlanetData[] = [
         size: 0.8,
         distance: 12,
         speed: 8.26e-7,
-        rotationSpeed: 1.24e-6,
+        rotationSpeed: 1.24e-7, // Adjusted to match orbital period ratio
+        rotationAxisTilt: 0.034, // Almost no tilt
         textureUrl: `${TEXTURE_BASE}/Mercury.jpg`,
         travelTime: "~3 Months",
         inclination: 7.0,
         orbitAU: 0.39,
         radiusMultiplier: 0.38,
-        description: "The smallest planet in our solar system.",
+        description: "The Smallest One.",
         funFact: "The smallest but the fastest! It zips around the Sun at around 47 km/s! It's full of craters and therefore looks very similar to our Moon. It has extreme temperature swings due to its lack of an atmosphere to trap heat. It goes from scorching hot to freezing cold. Even though it's the closest planet to the Sun, it has ice!",
         temp: "🔥🔥🔥",
         moonsCount: 0,
@@ -77,14 +78,14 @@ const PLANETS: PlanetData[] = [
         size: 1.5,
         distance: 18,
         speed: 3.23e-7,
-        rotationSpeed: -2.99e-7, // Retrograde (backwards) rotation
-        rotationAxisTilt: 177, // Nearly upside down
+        rotationSpeed: 2.99e-8, // Adjusted to match orbital period ratio (177° tilt makes it retrograde)
+        rotationAxisTilt: 177, // Nearly upside down - this causes retrograde rotation
         textureUrl: `${TEXTURE_BASE}/Venus.jpg`,
         travelTime: "~4 Months",
         inclination: 3.4,
         orbitAU: 0.72,
         radiusMultiplier: 0.95,
-        description: "The hottest planet.",
+        description: "The Hottest One.",
         funFact: "A day on Venus is around 8 Earth months! The weird thing is that it's day (243 Earth days) is longer than its year (225 Earth days)! Unlike other planets, it rotates backwards (retrograde) which means that Sun rises in the west and sets in the east.",
         temp: "🔥🔥🔥🔥",
         moonsCount: 0,
@@ -98,13 +99,14 @@ const PLANETS: PlanetData[] = [
         size: 1.6,
         distance: 26,
         speed: 1.99e-7,
-        rotationSpeed: 7.27e-5,
+        rotationSpeed: 7.27e-6, // Adjusted: Earth rotates 365.25 times per orbit
+        rotationAxisTilt: 23.44, // Critical for seasons!
         textureUrl: `${TEXTURE_BASE}/Earth.jpg`,
         travelTime: "0",
         inclination: 0,
         orbitAU: 1.00,
         radiusMultiplier: 1.00,
-        description: "Our home planet, the only known world with life.",
+        description: "Our Home. The Only One with Life.",
         funFact: "Earth is the only planet not named after a god! It's not perfectly round. It travels very fast but its rotation is slowing down slightly every year. It's magnetic field is protecting us from the solar wind and the radiation from the Sun.",
         temp: "🌿😎",
         moonsCount: 1,
@@ -119,7 +121,8 @@ const PLANETS: PlanetData[] = [
         size: 1.1,
         distance: 34,
         speed: 1.05e-7,
-        rotationSpeed: 7.08e-5,
+        rotationSpeed: 7.08e-6, // Adjusted to match orbital period ratio
+        rotationAxisTilt: 25.19, // Similar to Earth, causes seasons
         textureUrl: `${TEXTURE_BASE}/Mars.jpg`,
         travelTime: "~7 Months",
         inclination: 1.85,
@@ -139,13 +142,14 @@ const PLANETS: PlanetData[] = [
         size: 4.5,
         distance: 55,
         speed: 1.67e-8,
-        rotationSpeed: 1.76e-4,
+        rotationSpeed: 1.76e-5, // Adjusted to match orbital period ratio
+        rotationAxisTilt: 3.13, // Minimal tilt
         textureUrl: `${TEXTURE_BASE}/Jupiter.jpg`,
         travelTime: "~5 Years",
         inclination: 1.3,
         orbitAU: 5.20,
         radiusMultiplier: 11.2,
-        description: "The largest planet in our solar system.",
+        description: "The Biggest One.",
         funFact: "It is the biggest planet but it has the shortest day. Its year is nearly 12 Earth years long. It is a gas giant with a thick atmosphere of hydrogen and helium, meaning that it has no solid surface. It is the protector of the Earth by pulling in/deflecting many comets and asteroids that would otherwise be heading towards Earth.",    
         temp: "❄️❄️",
         moonsCount: 95,
@@ -159,7 +163,8 @@ const PLANETS: PlanetData[] = [
         size: 3.8,
         distance: 75,
         speed: 6.75e-9,
-        rotationSpeed: 1.64e-4,
+        rotationSpeed: 1.64e-5, // Adjusted to match orbital period ratio
+        rotationAxisTilt: 26.73, // Significant tilt, similar to Earth/Mars
         textureUrl: `${TEXTURE_BASE}/Saturn.jpg`,
         travelTime: "~7 Years",
         inclination: 2.5,
@@ -180,8 +185,8 @@ const PLANETS: PlanetData[] = [
         size: 2.6,
         distance: 92,
         speed: 2.37e-9,
-        rotationSpeed: 1.01e-4, // Prograde rotation, but axis is tilted
-        rotationAxisTilt: 98, // Spins on its side (~98° tilt)
+        rotationSpeed: 1.01e-5, // Adjusted to match orbital period ratio (prograde, but axis tilted)
+        rotationAxisTilt: 97.77, // Spins on its side (~97.77° tilt)
         textureUrl: `${TEXTURE_BASE}/Uranus.jpg`,
         travelTime: "~9 Years",
         inclination: 0.77,
@@ -201,7 +206,8 @@ const PLANETS: PlanetData[] = [
         size: 2.5,
         distance: 110,
         speed: 1.20e-9,
-        rotationSpeed: 1.08e-4,
+        rotationSpeed: 1.08e-5, // Adjusted to match orbital period ratio
+        rotationAxisTilt: 28.32, // Significant tilt
         textureUrl: `${TEXTURE_BASE}/Neptune.jpg`,
         travelTime: "~12 Years",
         inclination: 1.77,
@@ -517,23 +523,24 @@ const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: st
 
             // Rotate planet based on sim time
             if (meshRef.current) {
-                // Apply rotation axis tilt if specified (e.g., Uranus ~98°, Venus ~177°)
+                // Apply rotation axis tilt if specified
                 if (data.rotationAxisTilt !== undefined) {
                     const tiltRad = THREE.MathUtils.degToRad(data.rotationAxisTilt);
                     // Tilt the rotation axis around X-axis
                     meshRef.current.rotation.x = tiltRad;
-                    // For Uranus (spinning on its side), rotate around Z-axis after tilt
-                    // For Venus (nearly upside down), rotate around Y-axis (backwards due to negative speed)
+                    
+                    // For Uranus (spinning on its side ~98°), rotate around Z-axis after tilt
                     if (data.id === 'uranus') {
                         meshRef.current.rotation.z = time * data.rotationSpeed;
                         meshRef.current.rotation.y = 0;
                     } else {
-                        // Venus and others with tilt rotate around Y-axis
+                        // All other planets (including Venus with 177° tilt) rotate around Y-axis
+                        // Venus's 177° tilt already makes it retrograde, so positive speed is correct
                         meshRef.current.rotation.y = time * data.rotationSpeed;
                         meshRef.current.rotation.z = 0;
                     }
                 } else {
-                    // Normal rotation around Y-axis (vertical) - most planets
+                    // Planets without explicit tilt (shouldn't happen now, but fallback)
                     meshRef.current.rotation.x = 0;
                     meshRef.current.rotation.z = 0;
                     meshRef.current.rotation.y = time * data.rotationSpeed;
@@ -865,11 +872,12 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
                         previousPlanetPos.current.copy(planetPos);
                     }
                 } else {
-                    // Follow planet (Maintain relative position for manual control)
+                    // Follow planet: Only update the target to follow planet's orbit
+                    // Let OrbitControls handle camera position based on user input
                     const delta = planetPos.clone().sub(previousPlanetPos.current);
                     if (delta.length() < 50) {
-                        camera.position.add(delta); // Move camera with planet
-                        controlsRef.current.target.add(delta); // Move target with planet
+                        // Move target with planet - this allows camera to orbit around moving target
+                        controlsRef.current.target.add(delta);
                     } else {
                         // Large jump (loop/reset?), just copy
                         controlsRef.current.target.copy(planetPos);
@@ -974,11 +982,11 @@ const UI: React.FC<{
     };
 
     return (
-        <div className="absolute inset-0 pointer-events-none flex flex-col justify-between z-50 font-sans">
+        <>
             {/* Mobile Info Modal */}
             {displayedPlanet && showInfo && isMobile && (
                 <div
-                    className="absolute inset-0 bg-black/80 backdrop-blur-md z-50 pointer-events-auto flex items-center justify-center p-6"
+                    className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 pointer-events-auto flex items-center justify-center p-6"
                     onClick={() => onToggleInfo()}
                 >
                     <div
@@ -1006,7 +1014,7 @@ const UI: React.FC<{
             )}
 
             {/* Top Bar */}
-            <div className="p-4 md:p-6 flex justify-between items-start pointer-events-auto gap-4">
+            <div className="absolute top-0 left-0 right-0 p-4 md:p-6 flex justify-between items-start pointer-events-auto gap-4 z-50 font-sans">
                 {/* Info Panel - Collapsible (Desktop Only) */}
                 {!isMobile && (
                     <div ref={infoPanelRef} className={`transition-all duration-500 ${displayedPlanet && showInfo ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8 pointer-events-none'} bg-black/40 backdrop-blur-md p-5 rounded-xl border border-white/10 shadow-2xl max-w-sm`}>
@@ -1149,7 +1157,7 @@ const UI: React.FC<{
             </div>
 
             {/* Navigation - Desktop */}
-            <div className="hidden md:block pointer-events-auto bg-black/60 backdrop-blur-lg border-t border-white/10 overflow-x-auto pb-4 shadow-2xl">
+            <div className="absolute bottom-0 left-0 right-0 hidden md:block pointer-events-auto bg-black/60 backdrop-blur-lg border-t border-white/10 overflow-x-auto pb-4 shadow-2xl z-50">
                 <div className="flex items-center gap-3 p-4 min-w-max mx-auto justify-center">
                     <button onClick={() => handleSelect(null)} className={`flex flex-col items-center justify-center w-20 h-20 rounded-xl transition-all duration-300 ${!focusedId ? 'bg-white/20 scale-105 ring-2 ring-white/30' : 'bg-white/5 hover:bg-white/10 border border-white/10'}`}>
                         {/* Sun Texture for Home Button */}
@@ -1173,7 +1181,7 @@ const UI: React.FC<{
             </div>
 
             {/* Mobile Navigation - Burger Menu */}
-            <div className="md:hidden pointer-events-auto">
+            <div className="absolute bottom-0 left-0 right-0 md:hidden pointer-events-auto z-50">
                 {/* Burger Button */}
                 <button
                     onClick={() => setShowMobileMenu(!showMobileMenu)}
@@ -1252,10 +1260,10 @@ const UI: React.FC<{
             </div>
 
             {/* Desktop Footer Link */}
-            <a href="https://exhaustedrocket.com" target="_blank" rel="noopener noreferrer" className="hidden md:block absolute bottom-1 right-2 text-[10px] text-white/20 hover:text-white/60 z-50 pointer-events-auto transition-colors">
+            <a href="https://exhaustedrocket.com" target="_blank" rel="noopener noreferrer" className="hidden md:block fixed bottom-1 right-2 text-[10px] text-white/20 hover:text-white/60 z-50 pointer-events-auto transition-colors">
                 Product of exhaustedrocket.com
             </a>
-        </div>
+        </>
     );
 };
 
