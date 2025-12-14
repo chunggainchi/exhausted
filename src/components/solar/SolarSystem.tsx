@@ -982,7 +982,7 @@ const UI: React.FC<{
     };
 
     return (
-        <>
+        <div className="pointer-events-none">
             {/* Mobile Info Modal */}
             {displayedPlanet && showInfo && isMobile && (
                 <div
@@ -1014,10 +1014,13 @@ const UI: React.FC<{
             )}
 
             {/* Top Bar */}
-            <div className="absolute top-0 left-0 right-0 p-4 md:p-6 flex justify-between items-start pointer-events-auto gap-4 z-50 font-sans">
+            <div className="absolute top-0 left-0 right-0 p-4 md:p-6 flex justify-between items-start gap-4 z-50 font-sans pointer-events-none">
                 {/* Info Panel - Collapsible (Desktop Only) */}
                 {!isMobile && (
-                    <div ref={infoPanelRef} className={`transition-all duration-500 ${displayedPlanet && showInfo ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8 pointer-events-none'} bg-black/40 backdrop-blur-md p-5 rounded-xl border border-white/10 shadow-2xl max-w-sm`}>
+                    <div
+                        ref={infoPanelRef}
+                        className={`transition-all duration-500 ${displayedPlanet && showInfo ? 'pointer-events-auto opacity-100 translate-x-0' : 'opacity-0 -translate-x-8 pointer-events-none'} bg-black/40 backdrop-blur-md p-5 rounded-xl border border-white/10 shadow-2xl max-w-sm`}
+                    >
                         <h1 className="text-white text-2xl font-light tracking-wide mb-3">
                             {displayedPlanet?.name}
                         </h1>
@@ -1040,7 +1043,7 @@ const UI: React.FC<{
                 {isMobile && displayedPlanet && (
                     <button
                         onClick={onToggleInfo}
-                        className="bg-black/40 backdrop-blur-md border border-white/10 text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-all duration-300 shadow-lg"
+                        className="pointer-events-auto bg-black/40 backdrop-blur-md border border-white/10 text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-all duration-300 shadow-lg"
                     >
                         <span className="text-lg">ⓘ</span>
                     </button>
@@ -1050,8 +1053,8 @@ const UI: React.FC<{
 
                 <div className="flex-1"></div>
                 {/* Control Buttons & Tooltip */}
-                <div className="flex flex-col items-end gap-2">
-                    <div className="flex gap-3">
+                <div className="flex flex-col items-end gap-2 pointer-events-none">
+                    <div className="flex gap-3 pointer-events-auto">
                         <div className="hidden md:flex gap-3">
                             {displayedPlanet && (
                                 <button
@@ -1149,7 +1152,7 @@ const UI: React.FC<{
                         )}
                     </div>
                     {!isMobile && hoveredInfo && (
-                        <div className="bg-black/80 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-md border border-white/20 shadow-xl tracking-wide font-light animate-in fade-in slide-in-from-top-1 duration-200">
+                        <div className="pointer-events-none bg-black/80 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-md border border-white/20 shadow-xl tracking-wide font-light animate-in fade-in slide-in-from-top-1 duration-200">
                             {hoveredInfo}
                         </div>
                     )}
@@ -1157,8 +1160,8 @@ const UI: React.FC<{
             </div>
 
             {/* Navigation - Desktop */}
-            <div className="absolute bottom-0 left-0 right-0 hidden md:block pointer-events-auto bg-black/60 backdrop-blur-lg border-t border-white/10 overflow-x-auto pb-4 shadow-2xl z-50">
-                <div className="flex items-center gap-3 p-4 min-w-max mx-auto justify-center">
+            <div className="absolute bottom-0 left-0 right-0 hidden md:block bg-black/60 backdrop-blur-lg border-t border-white/10 overflow-x-auto pb-4 shadow-2xl z-50 pointer-events-none">
+                <div className="flex items-center gap-3 p-4 min-w-max mx-auto justify-center pointer-events-auto">
                     <button onClick={() => handleSelect(null)} className={`flex flex-col items-center justify-center w-20 h-20 rounded-xl transition-all duration-300 ${!focusedId ? 'bg-white/20 scale-105 ring-2 ring-white/30' : 'bg-white/5 hover:bg-white/10 border border-white/10'}`}>
                         {/* Sun Texture for Home Button */}
                         <div className="w-10 h-10 rounded-full mb-1 shadow-md ring-1 ring-white/20 overflow-hidden relative">
@@ -1181,19 +1184,19 @@ const UI: React.FC<{
             </div>
 
             {/* Mobile Navigation - Burger Menu */}
-            <div className="absolute bottom-0 left-0 right-0 md:hidden pointer-events-auto z-50">
+            <div className="absolute bottom-0 left-0 right-0 md:hidden z-50 pointer-events-none">
                 {/* Burger Button */}
                 <button
                     onClick={() => setShowMobileMenu(!showMobileMenu)}
-                    className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-lg border border-white/20 text-white p-4 rounded-full shadow-2xl z-40"
+                    className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-lg border border-white/20 text-white p-4 rounded-full shadow-2xl z-40 pointer-events-auto"
                 >
                     <span className="text-2xl">{showMobileMenu ? '✕' : '☰'}</span>
                 </button>
 
                 {showMobileMenu && (
                     <>
-                        <div className="fixed inset-0 bg-transparent z-40" onClick={() => setShowMobileMenu(false)} />
-                        <div className="absolute bottom-20 right-4 bg-black/90 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl z-50">
+                        <div className="fixed inset-0 bg-transparent z-40 pointer-events-auto" onClick={() => setShowMobileMenu(false)} />
+                        <div className="absolute bottom-20 right-4 bg-black/90 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl z-50 pointer-events-auto">
                             {/* Mobile Controls */}
                             <div className="flex flex-col gap-3 mb-4 pb-4 border-b border-white/10">
                                 {/* Playback Controls */}
@@ -1263,7 +1266,7 @@ const UI: React.FC<{
             <a href="https://exhaustedrocket.com" target="_blank" rel="noopener noreferrer" className="hidden md:block fixed bottom-1 right-2 text-[10px] text-white/20 hover:text-white/60 z-50 pointer-events-auto transition-colors">
                 Product of exhaustedrocket.com
             </a>
-        </>
+        </div>
     );
 };
 
