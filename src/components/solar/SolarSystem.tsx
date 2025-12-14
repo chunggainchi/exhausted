@@ -673,15 +673,42 @@ class PlanetErrorBoundary extends React.Component<
     }
 }
 
-const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; useRealSize: boolean; simTimeRef: React.MutableRefObject<number>, viewMoonPhase: boolean }> = ({ focusedId, useRealDist, useRealSize, simTimeRef, viewMoonPhase }) => {
+const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; useRealSize: boolean; simTimeRef: React.MutableRefObject<number>, viewMoonPhase: boolean, zoomSignal: number }> = ({ focusedId, useRealDist, useRealSize, simTimeRef, viewMoonPhase, zoomSignal }) => {
     const { camera } = useThree();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const controlsRef = useRef<any>(null);
     const isTransitioning = useRef(false);
     const previousPlanetPos = useRef(new THREE.Vector3());
     const lastSimTime = useRef(simTimeRef.current);
+    const prevZoomSignal = useRef(0);
 
     const previousEarthPos = useRef(new THREE.Vector3());
+
+    // Handle Zoom Signal
+    useEffect(() => {
+        if (zoomSignal !== prevZoomSignal.current) {
+            const delta = zoomSignal - prevZoomSignal.current;
+            if (controlsRef.current) {
+                const target = controlsRef.current.target;
+                const dist = camera.position.distanceTo(target);
+                // Zoom step: 15% of current distance
+                const step = dist * 0.15 * delta;
+
+                // Vector from Camera to Target
+                const dir = new THREE.Vector3().subVectors(target, camera.position).normalize();
+
+                // Move Camera
+                // If Zooming In (Positive Delta), we move towards target.
+                // If Zooming Out (Negative Delta), we move away.
+                // Wait. ArrowUp -> ZoomSignal + 1. We want Zoom In.
+                // So +Delta should mean "Move Closer".
+                camera.position.addScaledVector(dir, step);
+
+                controlsRef.current.update();
+            }
+            prevZoomSignal.current = zoomSignal;
+        }
+    }, [zoomSignal, camera]);
 
     // Trigger transition when focusedId changes OR when viewMoonPhase turns off
     useEffect(() => {
@@ -1202,6 +1229,7 @@ export default function SolarSystem() {
     const [isMusicOn, setIsMusicOn] = useState(true);
     const [simSpeed, setSimSpeed] = useState(86400); // Default 1 Day/s
     const [viewMoonPhase, setViewMoonPhase] = useState(false);
+    const [zoomSignal, setZoomSignal] = useState(0);
     const simTimeRef = useRef(0);
 
     // Audio Drone
@@ -1232,6 +1260,11 @@ export default function SolarSystem() {
                 if (e.key === 'ArrowRight') nextIdx = idx === -1 ? 0 : (idx + 1) % PLANETS.length;
                 else nextIdx = idx === -1 ? PLANETS.length - 1 : (idx - 1 + PLANETS.length) % PLANETS.length;
                 setFocusedId(PLANETS[nextIdx].id);
+                setFocusedId(PLANETS[nextIdx].id);
+            } else if (e.key === 'ArrowUp') {
+                setZoomSignal(z => z + 1);
+            } else if (e.key === 'ArrowDown') {
+                setZoomSignal(z => z - 1);
             }
         };
         window.addEventListener('keydown', handleKeyDown);
@@ -1314,7 +1347,7 @@ export default function SolarSystem() {
                             />
                         </PlanetErrorBoundary>
                     ))}
-                    <CameraManager focusedId={focusedId} useRealDist={useRealDist} useRealSize={useRealSize} simTimeRef={simTimeRef} viewMoonPhase={viewMoonPhase} />
+                    <CameraManager focusedId={focusedId} useRealDist={useRealDist} useRealSize={useRealSize} simTimeRef={simTimeRef} viewMoonPhase={viewMoonPhase} zoomSignal={zoomSignal} />
                     <Preload all />
                 </Suspense>
             </Canvas>
