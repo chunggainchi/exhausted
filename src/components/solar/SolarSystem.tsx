@@ -424,7 +424,7 @@ const Moon: React.FC<{ data: { size: number, distance: number, speed: number, co
 
     useFrame(() => {
         if (ref.current) {
-            const angle = simTimeRef.current * data.speed;
+            const angle = -simTimeRef.current * data.speed; // Negative to orbit counterclockwise (same as planets)
             ref.current.position.x = Math.cos(angle) * (parentSize + distance);
             ref.current.position.z = Math.sin(angle) * (parentSize + distance);
 
@@ -730,7 +730,7 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
 
 
                 const mDist = (useRealDist && useRealSize) ? ((SUN_SIZE / 109) * earth.radiusMultiplier * 60) : moon.distance;
-                const mAngle = simTimeRef.current * moon.speed;
+                const mAngle = -simTimeRef.current * moon.speed; // Negative to orbit counterclockwise (same as planets)
                 const moonWorldPos = new THREE.Vector3(
                     earthPos.x + Math.cos(mAngle) * (earth.size + mDist),
                     0,
