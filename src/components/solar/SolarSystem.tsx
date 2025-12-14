@@ -5,6 +5,7 @@ import React, { useState, useEffect, useRef, useMemo, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useTexture, Text, OrbitControls, Stars, Loader, Preload } from '@react-three/drei';
 import * as THREE from 'three';
+import { Moon as MoonIcon } from 'lucide-react';
 
 // --- TYPES ---
 interface PlanetData {
@@ -27,6 +28,7 @@ interface PlanetData {
     radiusMultiplier: number;
     hasRings?: boolean;
     moons?: MoonData[];
+    dayLength?: string;
     // Dynamic props for display
     useRealDist?: boolean;
     useRealSize?: boolean;
@@ -64,7 +66,8 @@ const PLANETS: PlanetData[] = [
         funFact: "A year on Mercury is only 88 Earth days!",
         temp: "🔥🔥🔥",
         moonsCount: 0,
-        realSize: "0.38x Earth"
+        realSize: "0.38x Earth",
+        dayLength: "59 Earth Days"
     },
     {
         id: 'venus',
@@ -83,7 +86,8 @@ const PLANETS: PlanetData[] = [
         funFact: "A day on Venus is longer than a year!",
         temp: "🔥🔥🔥🔥",
         moonsCount: 0,
-        realSize: "0.95x Earth"
+        realSize: "0.95x Earth",
+        dayLength: "243 Earth Days"
     },
     {
         id: 'earth',
@@ -103,6 +107,7 @@ const PLANETS: PlanetData[] = [
         temp: "🌿😎",
         moonsCount: 1,
         realSize: "1x Earth",
+        dayLength: "24 Hours",
         moons: [{ size: 0.45, distance: 3.5, speed: 2.66e-6, color: '#DDDDDD' }]
     },
     {
@@ -122,7 +127,8 @@ const PLANETS: PlanetData[] = [
         funFact: "Mars has the tallest volcano in the solar system!",
         temp: "❄️",
         moonsCount: 2,
-        realSize: "0.53x Earth"
+        realSize: "0.53x Earth",
+        dayLength: "24.6 Hours"
     },
     {
         id: 'jupiter',
@@ -141,7 +147,8 @@ const PLANETS: PlanetData[] = [
         funFact: "You can fit 1,300 Earths inside Jupiter!",
         temp: "❄️❄️",
         moonsCount: 79,
-        realSize: "11.2x Earth"
+        realSize: "11.2x Earth",
+        dayLength: "10 Hours"
     },
     {
         id: 'saturn',
@@ -161,7 +168,8 @@ const PLANETS: PlanetData[] = [
         funFact: "Saturn could float in a giant bathtub!",
         temp: "❄️❄️❄️",
         moonsCount: 82,
-        realSize: "9.45x Earth"
+        realSize: "9.45x Earth",
+        dayLength: "10.7 Hours"
     },
     {
         id: 'uranus',
@@ -180,7 +188,8 @@ const PLANETS: PlanetData[] = [
         funFact: "Uranus spins on its side like a ball.",
         temp: "❄️❄️❄️❄️",
         moonsCount: 27,
-        realSize: "4.0x Earth"
+        realSize: "4.0x Earth",
+        dayLength: "17 Hours"
     },
     {
         id: 'neptune',
@@ -199,7 +208,8 @@ const PLANETS: PlanetData[] = [
         funFact: "Neptune has the strongest winds in the solar system!",
         temp: "❄️❄️❄️❄️❄️",
         moonsCount: 14,
-        realSize: "3.88x Earth"
+        realSize: "3.88x Earth",
+        dayLength: "16 Hours"
     }
 ];
 
@@ -210,6 +220,33 @@ const TIME_SPEEDS = [
     { value: 86400, label: '1d/s' }, // Default
     { value: 604800, label: '1w/s' }
 ];
+const SUN_INFO = {
+    id: 'sun',
+    name: 'Sun',
+    description: "The star at the center of our Solar System.",
+    temp: "5,500°C",
+    moonsCount: 0,
+    realSize: "109x Earth",
+    travelTime: "N/A",
+    funFact: "The Sun accounts for 99.86% of the mass in the Solar System.",
+    color: "#FFD700",
+    dayLength: "25 Earth Days"
+};
+
+const MOON_INFO = {
+    id: 'moon',
+    name: 'Moon',
+    description: "Earth's best friend! It spins around us while we spin around the Sun. Its phases happen because sunlight hits it differently as it moves!",
+    temp: "-173°C to 127°C",
+    moonsCount: 0,
+    realSize: "0.27x Earth",
+    travelTime: "3 Days",
+    funFact: "We always see the same face of the Moon!",
+    dayLength: "29.5 Earth Days",
+    color: "#DDDDDD"
+};
+
+
 
 const SUN_SIZE = 7;
 
@@ -266,7 +303,7 @@ const audioService = new class {
 
 // --- SUB COMPONENTS ---
 
-const Sun: React.FC<{ useRealSize: boolean }> = ({ useRealSize }) => {
+const Sun: React.FC<{ useRealSize: boolean; viewMoonPhase?: boolean }> = ({ useRealSize, viewMoonPhase }) => {
     const meshRef = useRef<THREE.Mesh>(null);
     const texture = useTexture(`${TEXTURE_BASE}/Sun.jpg`);
 
@@ -281,9 +318,10 @@ const Sun: React.FC<{ useRealSize: boolean }> = ({ useRealSize }) => {
     return (
         <group>
             {/* Increase light distance for realistic scale */}
-            <pointLight intensity={3.0} decay={0} distance={useRealSize ? 5000 : 300} color="#ffaa00" />
-            <ambientLight intensity={0.3} />
-            <hemisphereLight intensity={0.4} groundColor="#000000" color="#443355" />
+            {/* High contrast lighting for Moon Phase View. White light for realism. */}
+            <pointLight intensity={viewMoonPhase ? 4.0 : 3.0} decay={0} distance={useRealSize ? 5000 : 300} color="#ffffff" />
+            <ambientLight intensity={viewMoonPhase ? 0.02 : 0.3} />
+            <hemisphereLight intensity={viewMoonPhase ? 0.1 : 0.4} groundColor="#000000" color="#443355" />
 
             <mesh ref={meshRef}>
                 <sphereGeometry args={[size, 64, 64]} />
@@ -635,25 +673,60 @@ class PlanetErrorBoundary extends React.Component<
     }
 }
 
-const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; useRealSize: boolean; simTimeRef: React.MutableRefObject<number> }> = ({ focusedId, useRealDist, useRealSize, simTimeRef }) => {
+const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; useRealSize: boolean; simTimeRef: React.MutableRefObject<number>, viewMoonPhase: boolean }> = ({ focusedId, useRealDist, useRealSize, simTimeRef, viewMoonPhase }) => {
     const { camera } = useThree();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const controlsRef = useRef<any>(null);
     const isTransitioning = useRef(false);
     const previousPlanetPos = useRef(new THREE.Vector3());
 
-    // Trigger transition when focusedId changes
+    // Trigger transition when focusedId changes OR when viewMoonPhase turns off
     useEffect(() => {
         isTransitioning.current = true;
-    }, [focusedId]);
+    }, [focusedId, viewMoonPhase]);
 
     useFrame(() => {
         if (!controlsRef.current) return;
 
+        if (viewMoonPhase) {
+            // Moon Phase View: Camera on Earth, looking at Moon
+            const earth = PLANETS.find(p => p.id === 'earth');
+            const moon = earth?.moons?.[0];
+            if (earth && moon) {
+                // Calculate Earth & Moon positions (Logic copied from below for accuracy)
+                const eDist = useRealDist ? earth.orbitAU * 30 : earth.distance;
+                const eAngle = (eDist * 0.5) + (simTimeRef.current * earth.speed * 0.1);
+                const earthPos = new THREE.Vector3(Math.cos(eAngle) * eDist, 0, Math.sin(eAngle) * eDist);
+
+
+                const mDist = (useRealDist && useRealSize) ? ((SUN_SIZE / 109) * earth.radiusMultiplier * 60) : moon.distance;
+                const mAngle = simTimeRef.current * moon.speed;
+                const moonWorldPos = new THREE.Vector3(
+                    earthPos.x + Math.cos(mAngle) * (earth.size + mDist),
+                    0,
+                    earthPos.z + Math.sin(mAngle) * (earth.size + mDist)
+                );
+
+                const earthRadius = useRealSize ? (SUN_SIZE / 109) * earth.radiusMultiplier : earth.size;
+                const dirToMoon = new THREE.Vector3().subVectors(moonWorldPos, earthPos).normalize();
+
+                // Lock camera to Earth surface facing Moon
+                // User cannot freely rotate here because we enforce this view every frame.
+                // This is intentional "Simulation View".
+                const camPos = earthPos.clone().add(dirToMoon.multiplyScalar(earthRadius * 1.5));
+                const lookTarget = moonWorldPos.clone();
+
+                camera.position.lerp(camPos, 0.1);
+                controlsRef.current.target.lerp(lookTarget, 0.1);
+                controlsRef.current.update();
+                previousPlanetPos.current.copy(earthPos); // Sync previous pos to avoid jump on exit
+                return;
+            }
+        }
+
         if (focusedId) {
             const planet = PLANETS.find(p => p.id === focusedId);
             if (planet) {
-                // Calculate current position exactly as Planet component does
                 const dist = useRealDist ? planet.orbitAU * 30 : planet.distance;
                 const angle = (dist * 0.5) + (simTimeRef.current * planet.speed * 0.1);
 
@@ -661,7 +734,6 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
                 let z = Math.sin(angle) * dist;
                 let y = 0;
 
-                // Apply Inclination (Rotate around X axis)
                 if (planet.inclination) {
                     const inc = THREE.MathUtils.degToRad(planet.inclination);
                     y = -z * Math.sin(inc);
@@ -670,35 +742,37 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
                 const planetPos = new THREE.Vector3(x, y, z);
 
                 if (isTransitioning.current) {
-                    // Fly to planet
+                    // Fly to planet (Initial Approach)
                     const size = useRealSize ? (SUN_SIZE / 109) * planet.radiusMultiplier : planet.size;
-                    const viewDist = size * 3.0 + 3.0;
+                    const viewDist = size * 3.0 + 3.0; // Distance to view from
                     const offset = new THREE.Vector3(0, viewDist * 0.5, viewDist);
+                    // Ensure we fly to an offset position (not inside planet)
                     const idealPos = planetPos.clone().add(offset);
 
                     camera.position.lerp(idealPos, 0.08);
                     controlsRef.current.target.lerp(planetPos, 0.08);
 
+                    // Stop transitioning when close
                     if (camera.position.distanceTo(idealPos) < 0.5) {
                         isTransitioning.current = false;
                         previousPlanetPos.current.copy(planetPos);
                     }
                 } else {
-                    // Follow planet
-                    // Move camera by the delta of planet movement
+                    // Follow planet (Maintain relative position for manual control)
                     const delta = planetPos.clone().sub(previousPlanetPos.current);
-                    if (delta.length() < 50) { // Sanity check
-                        camera.position.add(delta);
+                    if (delta.length() < 50) {
+                        camera.position.add(delta); // Move camera with planet
+                        controlsRef.current.target.add(delta); // Move target with planet
+                    } else {
+                        // Large jump (loop/reset?), just copy
+                        controlsRef.current.target.copy(planetPos);
                     }
-                    controlsRef.current.target.copy(planetPos);
                     previousPlanetPos.current.copy(planetPos);
                 }
             }
         } else {
             if (isTransitioning.current) {
-                // Return to overview
-                const maxD = useRealDist ? 2000 : 160;
-                const resetPos = new THREE.Vector3(0, maxD * 0.8, maxD);
+                const resetPos = useRealDist ? new THREE.Vector3(0, 1500, 2000) : new THREE.Vector3(0, 60, 80);
                 const resetTarget = new THREE.Vector3(0, 0, 0);
                 camera.position.lerp(resetPos, 0.05);
                 controlsRef.current.target.lerp(resetTarget, 0.05);
@@ -713,6 +787,7 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
     return (
         <OrbitControls
             ref={controlsRef}
+            key={focusedId ? 'planet' : 'sun'}
             makeDefault
             enableDamping
             dampingFactor={0.08}
@@ -755,22 +830,26 @@ const UI: React.FC<{
     onToggleMusic: () => void;
     simSpeed: number;
     onToggleSpeed: () => void;
-}> = ({ focusedId, onSelect, isPlaying, onTogglePlay, showInfo, onToggleInfo, onToggleFullscreen, useRealDist, onToggleRealDist, useRealSize, onToggleRealSize, showLocation, onToggleLocation, isMusicOn, onToggleMusic, simSpeed, onToggleSpeed }) => {
+    viewMoonPhase: boolean;
+    onToggleMoonPhase: () => void;
+}> = ({ focusedId, onSelect, isPlaying, onTogglePlay, showInfo, onToggleInfo, onToggleFullscreen, useRealDist, onToggleRealDist, useRealSize, onToggleRealSize, showLocation, onToggleLocation, isMusicOn, onToggleMusic, simSpeed, onToggleSpeed, viewMoonPhase, onToggleMoonPhase }) => {
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [hoveredInfo, setHoveredInfo] = useState<string | null>(null);
     const focusedPlanet = PLANETS.find(p => p.id === focusedId);
+    const displayedPlanet = viewMoonPhase ? MOON_INFO : (focusedPlanet || (focusedId === null ? SUN_INFO : null));
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
     const handleSelect = (id: string | null) => {
         audioService.playClick();
         onSelect(id);
         setShowMobileMenu(false);
+        if (id !== 'earth' && viewMoonPhase) onToggleMoonPhase(); // Exit moon phase ONLY if currently active
     };
 
     return (
         <div className="absolute inset-0 pointer-events-none flex flex-col justify-between z-50 font-sans">
             {/* Mobile Info Modal */}
-            {focusedPlanet && showInfo && isMobile && (
+            {displayedPlanet && showInfo && isMobile && (
                 <div
                     className="absolute inset-0 bg-black/80 backdrop-blur-md z-50 pointer-events-auto flex items-center justify-center p-6"
                     onClick={() => onToggleInfo()}
@@ -780,19 +859,20 @@ const UI: React.FC<{
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex justify-between items-start mb-4">
-                            <h1 className="text-white text-2xl font-light tracking-wide">{focusedPlanet.name}</h1>
+                            <h1 className="text-white text-2xl font-light tracking-wide">{displayedPlanet.name}</h1>
                             <button onClick={() => onToggleInfo()} className="text-white/60 hover:text-white text-2xl">✕</button>
                         </div>
-                        <p className="text-gray-300 text-sm italic mb-4 font-light">&quot;{focusedPlanet.description}&quot;</p>
+                        <p className="text-gray-300 text-sm italic mb-4 font-light">&quot;{displayedPlanet.description}&quot;</p>
                         <div className="grid grid-cols-2 gap-3 text-xs text-gray-300 mb-4">
-                            <div className="flex items-center gap-2"><span className="text-base">🌡️</span><span>{focusedPlanet.temp}</span></div>
-                            <div className="flex items-center gap-2"><span className="text-base">🌕</span><span>{focusedPlanet.moonsCount} Moons</span></div>
-                            <div className="flex items-center gap-2 col-span-2"><span className="text-base">📏</span><span>{focusedPlanet.realSize}</span></div>
-                            <div className="flex items-center gap-2 col-span-2"><span className="text-base">🚀</span><span>Fly there: {focusedPlanet.travelTime}</span></div>
+                            <div className="flex items-center gap-2"><span className="text-base">🌡️</span><span>{displayedPlanet.temp}</span></div>
+                            <div className="flex items-center gap-2"><span className="text-base">🌕</span><span>{displayedPlanet.moonsCount} Moons</span></div>
+                            <div className="flex items-center gap-2 col-span-2"><span className="text-base">📏</span><span>{displayedPlanet.realSize}</span></div>
+                            <div className="flex items-center gap-2 col-span-2"><span className="text-base">🚀</span><span>Fly there: {displayedPlanet.travelTime}</span></div>
+                            <div className="flex items-center gap-2 col-span-2"><span className="text-base">⏳</span><span>Day: {displayedPlanet.dayLength}</span></div>
                         </div>
                         <div className="mt-3 bg-white/5 p-3 rounded-lg border border-white/10">
                             <span className="text-xs font-medium text-gray-400 uppercase block mb-1.5 tracking-wide">Fun Fact</span>
-                            <p className="text-sm text-white font-light leading-relaxed">{focusedPlanet.funFact}</p>
+                            <p className="text-sm text-white font-light leading-relaxed">{displayedPlanet.funFact}</p>
                         </div>
                     </div>
                 </div>
@@ -802,22 +882,33 @@ const UI: React.FC<{
             <div className="p-4 md:p-6 flex justify-between items-start pointer-events-auto gap-4">
                 {/* Info Panel - Collapsible (Desktop Only) */}
                 {!isMobile && (
-                    <div className={`transition-all duration-500 ${focusedPlanet && showInfo ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8 pointer-events-none'} bg-black/40 backdrop-blur-md p-5 rounded-xl border border-white/10 shadow-2xl max-w-sm`}>
+                    <div className={`transition-all duration-500 ${displayedPlanet && showInfo ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8 pointer-events-none'} bg-black/40 backdrop-blur-md p-5 rounded-xl border border-white/10 shadow-2xl max-w-sm`}>
                         <h1 className="text-white text-2xl font-light tracking-wide mb-3">
-                            {focusedPlanet?.name}
+                            {displayedPlanet?.name}
                         </h1>
-                        <p className="text-gray-300 text-sm italic mb-4 font-light">&quot;{focusedPlanet?.description}&quot;</p>
+                        <p className="text-gray-300 text-sm italic mb-4 font-light">&quot;{displayedPlanet?.description}&quot;</p>
                         <div className="grid grid-cols-2 gap-3 text-xs text-gray-300 mb-4">
-                            <div className="flex items-center gap-2"><span className="text-base">🌡️</span><span>{focusedPlanet?.temp}</span></div>
-                            <div className="flex items-center gap-2"><span className="text-base">🌕</span><span>{focusedPlanet?.moonsCount} Moons</span></div>
-                            <div className="flex items-center gap-2 col-span-2"><span className="text-base">📏</span><span>{focusedPlanet?.realSize}</span></div>
-                            <div className="flex items-center gap-2 col-span-2"><span className="text-base">🚀</span><span>Fly there: {focusedPlanet?.travelTime}</span></div>
+                            <div className="flex items-center gap-2"><span className="text-base">🌡️</span><span>{displayedPlanet?.temp}</span></div>
+                            <div className="flex items-center gap-2"><span className="text-base">🌕</span><span>{displayedPlanet?.moonsCount} Moons</span></div>
+                            <div className="flex items-center gap-2 col-span-2"><span className="text-base">📏</span><span>{displayedPlanet?.realSize}</span></div>
+                            <div className="flex items-center gap-2 col-span-2"><span className="text-base">🚀</span><span>Fly there: {displayedPlanet?.travelTime}</span></div>
+                            <div className="flex items-center gap-2 col-span-2"><span className="text-base">⏳</span><span>Day: {displayedPlanet?.dayLength}</span></div>
                         </div>
                         <div className="mt-3 bg-white/5 p-3 rounded-lg border border-white/10">
                             <span className="text-xs font-medium text-gray-400 uppercase block mb-1.5 tracking-wide">Fun Fact</span>
-                            <p className="text-sm text-white font-light leading-relaxed">{focusedPlanet?.funFact}</p>
+                            <p className="text-sm text-white font-light leading-relaxed">{displayedPlanet?.funFact}</p>
                         </div>
                     </div>
+                )}
+
+                {/* Mobile Info Button */}
+                {isMobile && displayedPlanet && (
+                    <button
+                        onClick={onToggleInfo}
+                        className="bg-black/40 backdrop-blur-md border border-white/10 text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-all duration-300 shadow-lg"
+                    >
+                        <span className="text-lg">ⓘ</span>
+                    </button>
                 )}
 
                 {/* Info Toggle Button moved to control group */}
@@ -827,7 +918,7 @@ const UI: React.FC<{
                 <div className="flex flex-col items-end gap-2">
                     <div className="flex gap-3">
                         <div className="hidden md:flex gap-3">
-                            {focusedPlanet && (
+                            {displayedPlanet && (
                                 <button
                                     onClick={onToggleInfo}
                                     onMouseEnter={() => setHoveredInfo(showInfo ? "Hide Info" : "Show Info")}
@@ -837,6 +928,16 @@ const UI: React.FC<{
                                     <span className="text-sm">ⓘ</span>
                                 </button>
                             )}
+                            {focusedId === 'earth' && (
+                                <button
+                                    onClick={onToggleMoonPhase}
+                                    onMouseEnter={() => setHoveredInfo("View Moon from Earth")}
+                                    onMouseLeave={() => setHoveredInfo(null)}
+                                    className={`${viewMoonPhase ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10 hover:text-white`}
+                                >
+                                    <MoonIcon size={16} className={viewMoonPhase ? "fill-current" : ""} />
+                                </button>
+                            )}
                             <button
                                 onClick={() => { audioService.playClick(); onTogglePlay(); }}
                                 onMouseEnter={() => setHoveredInfo("Pause/Resume Time")}
@@ -844,7 +945,7 @@ const UI: React.FC<{
                                 className={`${isPlaying ? 'bg-white/10 hover:bg-white/15' : 'bg-white/20 hover:bg-white/25'} backdrop-blur-md border border-white/20 text-white px-6 py-3 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg flex items-center gap-2`}
                             >
                                 <span className="text-lg flex items-center justify-center w-5">{isPlaying ? <div className="flex gap-1"><div className="w-1.5 h-4 bg-white rounded-sm"></div><div className="w-1.5 h-4 bg-white rounded-sm"></div></div> : "▶︎"}</span>
-                                <span className="text-sm font-light tracking-wide">{isPlaying ? "Pause Time" : "Resume Time"}</span>
+                                <span className="text-sm font-light tracking-wide">{isPlaying ? "Time" : "Time"}</span>
                             </button>
 
                             <button
@@ -947,25 +1048,45 @@ const UI: React.FC<{
                         <div className="fixed inset-0 bg-transparent z-40" onClick={() => setShowMobileMenu(false)} />
                         <div className="absolute bottom-20 right-4 bg-black/90 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl z-50">
                             {/* Mobile Controls */}
-                            <div className="grid grid-cols-6 gap-2 mb-4 pb-4 border-b border-white/10">
-                                <button onClick={() => { audioService.playClick(); onTogglePlay(); }} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${isPlaying ? 'bg-white/20' : 'bg-white/5'}`}>
-                                    <span className="text-lg flex items-center justify-center w-full h-full">{isPlaying ? <div className="flex gap-1"><div className="w-1 h-3 bg-white rounded-sm"></div><div className="w-1 h-3 bg-white rounded-sm"></div></div> : "▶︎"}</span>
-                                </button>
-                                <button onClick={onToggleRealDist} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${useRealDist ? 'bg-white/20' : 'bg-white/5'}`}>
-                                    <span className="text-sm">📏</span>
-                                </button>
-                                <button onClick={onToggleRealSize} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${useRealSize ? 'bg-white/20' : 'bg-white/5'}`}>
-                                    <span className="text-sm">⚪</span>
-                                </button>
-                                <button onClick={onToggleLocation} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${showLocation ? 'bg-white/20' : 'bg-white/5'}`}>
-                                    <span className="text-sm">⚲</span>
-                                </button>
-                                <button onClick={onToggleMusic} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white ${isMusicOn ? 'bg-white/20' : 'bg-white/5'}`}>
-                                    <span className="text-sm">♬</span>
-                                </button>
-                                <button onClick={onToggleSpeed} className={`col-span-1 flex flex-col items-center justify-center w-10 h-10 rounded-lg text-white bg-white/5`}>
-                                    <span className="text-xs font-mono">{TIME_SPEEDS.find(s => s.value === simSpeed)?.label}</span>
-                                </button>
+                            <div className="flex flex-col gap-3 mb-4 pb-4 border-b border-white/10">
+                                {/* Playback Controls */}
+                                <div className="flex gap-2">
+                                    <button onClick={() => { audioService.playClick(); onTogglePlay(); }} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-white ${isPlaying ? 'bg-white/20' : 'bg-white/5'} border border-white/10`}>
+                                        <span className="text-lg">{isPlaying ? "⏸" : "▶︎"}</span>
+                                        <span className="text-sm font-medium">{isPlaying ? "Pause" : "Resume"}</span>
+                                    </button>
+                                    <button onClick={onToggleSpeed} className="w-20 flex items-center justify-center py-3 rounded-lg text-white bg-white/5 border border-white/10 font-mono text-xs">
+                                        {TIME_SPEEDS.find(s => s.value === simSpeed)?.label}
+                                    </button>
+                                </div>
+
+                                {/* View Options */}
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button onClick={onToggleRealDist} className={`py-3 rounded-lg text-white border ${useRealDist ? 'bg-white/20 border-white/40' : 'bg-white/5 border-white/10'}`}>
+                                        <span className="mr-2">📏</span><span className="text-xs">Scale Dist</span>
+                                    </button>
+                                    <button onClick={onToggleRealSize} className={`py-3 rounded-lg text-white border ${useRealSize ? 'bg-white/20 border-white/40' : 'bg-white/5 border-white/10'}`}>
+                                        <span className="mr-2">⚪</span><span className="text-xs">Scale Size</span>
+                                    </button>
+                                </div>
+
+                                {/* Moon Phase - Dedicated Button */}
+                                {focusedId === 'earth' && (
+                                    <button onClick={onToggleMoonPhase} className={`w-full py-3 rounded-lg border flex items-center justify-center gap-2 transition-all ${viewMoonPhase ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                                        <MoonIcon size={18} className={viewMoonPhase ? "fill-current" : ""} />
+                                        <span className="text-sm font-medium">View Moon Phases</span>
+                                    </button>
+                                )}
+
+                                {/* Location & Audio */}
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button onClick={onToggleLocation} className={`py-3 rounded-lg text-white border ${showLocation ? 'bg-white/20 border-white/40' : 'bg-white/5 border-white/10'}`}>
+                                        <span className="mr-2">⚲</span><span className="text-xs">Location</span>
+                                    </button>
+                                    <button onClick={onToggleMusic} className={`py-3 rounded-lg text-white border ${isMusicOn ? 'bg-white/20 border-white/40' : 'bg-white/5 border-white/10'}`}>
+                                        <span className="mr-2">♬</span><span className="text-xs">Music</span>
+                                    </button>
+                                </div>
                             </div>
                             <div className="grid grid-cols-3 gap-3">
                                 <button onClick={() => handleSelect(null)} className={`flex flex-col items-center justify-center w-16 h-16 rounded-xl transition-all duration-300 ${!focusedId ? 'bg-white/20 ring-2 ring-white/30' : 'bg-white/5 border border-white/10'}`}>
@@ -1010,6 +1131,7 @@ export default function SolarSystem() {
     const [userLocation, setUserLocation] = useState<{ lat: number, long: number } | null>(null);
     const [isMusicOn, setIsMusicOn] = useState(true);
     const [simSpeed, setSimSpeed] = useState(86400); // Default 1 Day/s
+    const [viewMoonPhase, setViewMoonPhase] = useState(false);
     const simTimeRef = useRef(0);
 
     // Audio Drone
@@ -1048,6 +1170,7 @@ export default function SolarSystem() {
 
     const toggleLocation = () => {
         if (!showLocation) {
+            alert("Locating you...");
             if (typeof navigator !== 'undefined' && navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
@@ -1108,7 +1231,7 @@ export default function SolarSystem() {
                     <Stars radius={useRealDist ? 2000 : 200} depth={100} count={20000} factor={8} saturation={0} fade speed={0.3} />
 
                     <AsteroidBelt useRealDist={useRealDist} isPlaying={isPlaying} />
-                    <Sun useRealSize={useRealSize} />
+                    <Sun useRealSize={useRealSize} viewMoonPhase={viewMoonPhase} />
                     {activePlanets.map((planet) => (
                         <PlanetErrorBoundary key={planet.id} data={planet} simTimeRef={simTimeRef} onSelect={setFocusedId}>
                             <Planet
@@ -1121,7 +1244,7 @@ export default function SolarSystem() {
                             />
                         </PlanetErrorBoundary>
                     ))}
-                    <CameraManager focusedId={focusedId} useRealDist={useRealDist} useRealSize={useRealSize} simTimeRef={simTimeRef} />
+                    <CameraManager focusedId={focusedId} useRealDist={useRealDist} useRealSize={useRealSize} simTimeRef={simTimeRef} viewMoonPhase={viewMoonPhase} />
                     <Preload all />
                 </Suspense>
             </Canvas>
@@ -1148,6 +1271,8 @@ export default function SolarSystem() {
                 onToggleRealDist={() => setUseRealDist(!useRealDist)}
                 useRealSize={useRealSize}
                 onToggleRealSize={() => setUseRealSize(!useRealSize)}
+                viewMoonPhase={viewMoonPhase}
+                onToggleMoonPhase={() => setViewMoonPhase(!viewMoonPhase)}
             />
         </div>
     );
