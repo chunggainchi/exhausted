@@ -923,7 +923,7 @@ const UI: React.FC<{
                                     onClick={onToggleInfo}
                                     onMouseEnter={() => setHoveredInfo(showInfo ? "Hide Info" : "Show Info")}
                                     onMouseLeave={() => setHoveredInfo(null)}
-                                    className={`${showInfo ? 'bg-white/10 border-white/40' : 'bg-black/20 border-white/10'} backdrop-blur-md border text-white px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10`}
+                                    className={`${showInfo ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10 hover:text-white`}
                                 >
                                     <span className="text-sm">ⓘ</span>
                                 </button>
@@ -942,9 +942,9 @@ const UI: React.FC<{
                                 onClick={() => { audioService.playClick(); onTogglePlay(); }}
                                 onMouseEnter={() => setHoveredInfo("Pause/Resume Time")}
                                 onMouseLeave={() => setHoveredInfo(null)}
-                                className={`${isPlaying ? 'bg-white/10 hover:bg-white/15' : 'bg-white/20 hover:bg-white/25'} backdrop-blur-md border border-white/20 text-white px-6 py-3 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg flex items-center gap-2`}
+                                className={`${isPlaying ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-6 py-3 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg flex items-center gap-2 hover:text-white`}
                             >
-                                <span className="text-lg flex items-center justify-center w-5">{isPlaying ? <div className="flex gap-1"><div className="w-1.5 h-4 bg-white rounded-sm"></div><div className="w-1.5 h-4 bg-white rounded-sm"></div></div> : "▶︎"}</span>
+                                <span className="text-lg flex items-center justify-center w-5">{isPlaying ? <div className="flex gap-1"><div className="w-1.5 h-4 bg-current rounded-sm"></div><div className="w-1.5 h-4 bg-current rounded-sm"></div></div> : "▶︎"}</span>
                                 <span className="text-sm font-light tracking-wide">{isPlaying ? "Time" : "Time"}</span>
                             </button>
 
@@ -952,7 +952,7 @@ const UI: React.FC<{
                                 onClick={onToggleRealDist}
                                 onMouseEnter={() => setHoveredInfo("Scale distances to true reality (Planets far apart)")}
                                 onMouseLeave={() => setHoveredInfo(null)}
-                                className={`${useRealDist ? 'bg-white/10 border-white/40' : 'bg-black/20 border-white/10'} backdrop-blur-md border text-white px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10`}
+                                className={`${useRealDist ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10 hover:text-white`}
                             >
                                 <span className="text-sm">📏</span>
                             </button>
@@ -960,7 +960,7 @@ const UI: React.FC<{
                                 onClick={onToggleRealSize}
                                 onMouseEnter={() => setHoveredInfo("Scale planets to real relative sizes")}
                                 onMouseLeave={() => setHoveredInfo(null)}
-                                className={`${useRealSize ? 'bg-white/10 border-white/40' : 'bg-black/20 border-white/10'} backdrop-blur-md border text-white px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10`}
+                                className={`${useRealSize ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10 hover:text-white`}
                             >
                                 <span className="text-sm">⚪</span>
                             </button>
@@ -968,7 +968,7 @@ const UI: React.FC<{
                                 onClick={onToggleLocation}
                                 onMouseEnter={() => setHoveredInfo("Show my location on Earth")}
                                 onMouseLeave={() => setHoveredInfo(null)}
-                                className={`${showLocation ? 'bg-white/10 border-white/40' : 'bg-black/20 border-white/10'} backdrop-blur-md border text-white px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10`}
+                                className={`${showLocation ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10 hover:text-white`}
                             >
                                 <span className="text-sm">⚲</span>
                             </button>
@@ -976,7 +976,7 @@ const UI: React.FC<{
                                 onClick={onToggleMusic}
                                 onMouseEnter={() => setHoveredInfo("Ambient Space Music")}
                                 onMouseLeave={() => setHoveredInfo(null)}
-                                className={`${isMusicOn ? 'bg-white/10 border-white/40' : 'bg-black/20 border-white/10'} backdrop-blur-md border text-white px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10`}
+                                className={`${isMusicOn ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10 hover:text-white`}
                             >
                                 <span className="text-sm">♬</span>
                             </button>
@@ -1051,7 +1051,7 @@ const UI: React.FC<{
                             <div className="flex flex-col gap-3 mb-4 pb-4 border-b border-white/10">
                                 {/* Playback Controls */}
                                 <div className="flex gap-2">
-                                    <button onClick={() => { audioService.playClick(); onTogglePlay(); }} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-white ${isPlaying ? 'bg-white/20' : 'bg-white/5'} border border-white/10`}>
+                                    <button onClick={() => { audioService.playClick(); onTogglePlay(); }} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border transition-all ${isPlaying ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
                                         <span className="text-lg">{isPlaying ? "⏸" : "▶︎"}</span>
                                         <span className="text-sm font-medium">{isPlaying ? "Pause" : "Resume"}</span>
                                     </button>
@@ -1062,10 +1062,10 @@ const UI: React.FC<{
 
                                 {/* View Options */}
                                 <div className="grid grid-cols-2 gap-2">
-                                    <button onClick={onToggleRealDist} className={`py-3 rounded-lg text-white border ${useRealDist ? 'bg-white/20 border-white/40' : 'bg-white/5 border-white/10'}`}>
+                                    <button onClick={onToggleRealDist} className={`py-3 rounded-lg border transition-all ${useRealDist ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
                                         <span className="mr-2">📏</span><span className="text-xs">Scale Dist</span>
                                     </button>
-                                    <button onClick={onToggleRealSize} className={`py-3 rounded-lg text-white border ${useRealSize ? 'bg-white/20 border-white/40' : 'bg-white/5 border-white/10'}`}>
+                                    <button onClick={onToggleRealSize} className={`py-3 rounded-lg border transition-all ${useRealSize ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
                                         <span className="mr-2">⚪</span><span className="text-xs">Scale Size</span>
                                     </button>
                                 </div>
@@ -1080,10 +1080,10 @@ const UI: React.FC<{
 
                                 {/* Location & Audio */}
                                 <div className="grid grid-cols-2 gap-2">
-                                    <button onClick={onToggleLocation} className={`py-3 rounded-lg text-white border ${showLocation ? 'bg-white/20 border-white/40' : 'bg-white/5 border-white/10'}`}>
+                                    <button onClick={onToggleLocation} className={`py-3 rounded-lg border transition-all ${showLocation ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
                                         <span className="mr-2">⚲</span><span className="text-xs">Location</span>
                                     </button>
-                                    <button onClick={onToggleMusic} className={`py-3 rounded-lg text-white border ${isMusicOn ? 'bg-white/20 border-white/40' : 'bg-white/5 border-white/10'}`}>
+                                    <button onClick={onToggleMusic} className={`py-3 rounded-lg border transition-all ${isMusicOn ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
                                         <span className="mr-2">♬</span><span className="text-xs">Music</span>
                                     </button>
                                 </div>
