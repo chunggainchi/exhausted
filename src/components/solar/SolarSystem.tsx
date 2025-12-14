@@ -679,6 +679,7 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
     const controlsRef = useRef<any>(null);
     const isTransitioning = useRef(false);
     const previousPlanetPos = useRef(new THREE.Vector3());
+    const lastSimTime = useRef(simTimeRef.current);
 
     // Trigger transition when focusedId changes OR when viewMoonPhase turns off
     useEffect(() => {
@@ -719,23 +720,40 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
                     camera.position.lerp(camPos, 0.1);
                     controlsRef.current.target.lerp(targetPos, 0.1);
 
-                    // Allow transition to finish when close
+                    // Allow transition to finish when close - SNAP to exact position
                     if (camera.position.distanceTo(camPos) < 1.0) {
+                        camera.position.copy(camPos);
+                        controlsRef.current.target.copy(targetPos);
                         isTransitioning.current = false;
                         previousPlanetPos.current.copy(targetPos);
+                        lastSimTime.current = simTimeRef.current;
                     }
                 } else {
-                    // FREE MODE: Follow Moon, but allow User to Rotate
-                    // Move Camera and Target by the Moon's movement delta
+                    // FREE MODE: Follow Moon, but rotate WITH orbit to maintain relative view (e.g. from Earth)
+                    // 1. Translate Camera and Target by Moon's linear movement
                     const delta = targetPos.clone().sub(previousPlanetPos.current);
-                    // Sanity check for warp/reset
                     if (delta.length() < 100) {
                         camera.position.add(delta);
                         controlsRef.current.target.add(delta);
                     } else {
                         controlsRef.current.target.copy(targetPos);
                     }
+
+                    // 2. Rotate Camera around Moon to match Orbital Rotation (Keep Earth "down")
+                    // This allows the user to sit on Earth and watch, OR rotate around Moon manually.
+                    const dt = simTimeRef.current - lastSimTime.current;
+                    const dAngle = dt * moon.speed; // Orbital radians moved
+
+                    // Vector from Moon to Camera
+                    const relVec = camera.position.clone().sub(targetPos);
+                    // Rotate this vector around Y axis (Orbit Plane)
+                    relVec.applyAxisAngle(new THREE.Vector3(0, 1, 0), dAngle);
+
+                    // Apply new position
+                    camera.position.copy(targetPos).add(relVec);
+
                     previousPlanetPos.current.copy(targetPos);
+                    lastSimTime.current = simTimeRef.current;
                 }
 
                 controlsRef.current.update();
@@ -1100,7 +1118,7 @@ const UI: React.FC<{
                                 <div className="flex gap-2">
                                     <button onClick={() => { audioService.playClick(); onTogglePlay(); }} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border transition-all ${isPlaying ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
                                         <span className="text-lg">{isPlaying ? "⏸" : "▶︎"}</span>
-                                        <span className="text-sm font-medium">{isPlaying ? "Pause" : "Resume"}</span>
+                                        <span className="text-sm font-medium">{isPlaying ? "Time" : "Time"}</span>
                                     </button>
                                     <button onClick={onToggleSpeed} className="w-20 flex items-center justify-center py-3 rounded-lg text-white bg-white/5 border border-white/10 font-mono text-xs">
                                         {TIME_SPEEDS.find(s => s.value === simSpeed)?.label}
