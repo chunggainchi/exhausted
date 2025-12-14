@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useMemo, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useTexture, Text, OrbitControls, Stars, Loader, Preload } from '@react-three/drei';
 import * as THREE from 'three';
-import { Moon as MoonIcon } from 'lucide-react';
+import { Moon as MoonIcon, RotateCcw } from 'lucide-react';
 
 // --- TYPES ---
 interface PlanetData {
@@ -707,19 +707,38 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
                     earthPos.z + Math.sin(mAngle) * (earth.size + mDist)
                 );
 
-                const earthRadius = useRealSize ? (SUN_SIZE / 109) * earth.radiusMultiplier : earth.size;
-                const dirToMoon = new THREE.Vector3().subVectors(moonWorldPos, earthPos).normalize();
+                // Track Moon as target
+                const targetPos = moonWorldPos;
 
-                // Lock camera to Earth surface facing Moon
-                // User cannot freely rotate here because we enforce this view every frame.
-                // This is intentional "Simulation View".
-                const camPos = earthPos.clone().add(dirToMoon.multiplyScalar(earthRadius * 1.5));
-                const lookTarget = moonWorldPos.clone();
+                if (isTransitioning.current) {
+                    // Initial Fly-in: Lock camera to "Earth Surface View" facing Moon
+                    const earthRadius = useRealSize ? (SUN_SIZE / 109) * earth.radiusMultiplier : earth.size;
+                    const dirToMoon = new THREE.Vector3().subVectors(moonWorldPos, earthPos).normalize();
+                    const camPos = earthPos.clone().add(dirToMoon.multiplyScalar(earthRadius * 1.5));
 
-                camera.position.lerp(camPos, 0.1);
-                controlsRef.current.target.lerp(lookTarget, 0.1);
+                    camera.position.lerp(camPos, 0.1);
+                    controlsRef.current.target.lerp(targetPos, 0.1);
+
+                    // Allow transition to finish when close
+                    if (camera.position.distanceTo(camPos) < 1.0) {
+                        isTransitioning.current = false;
+                        previousPlanetPos.current.copy(targetPos);
+                    }
+                } else {
+                    // FREE MODE: Follow Moon, but allow User to Rotate
+                    // Move Camera and Target by the Moon's movement delta
+                    const delta = targetPos.clone().sub(previousPlanetPos.current);
+                    // Sanity check for warp/reset
+                    if (delta.length() < 100) {
+                        camera.position.add(delta);
+                        controlsRef.current.target.add(delta);
+                    } else {
+                        controlsRef.current.target.copy(targetPos);
+                    }
+                    previousPlanetPos.current.copy(targetPos);
+                }
+
                 controlsRef.current.update();
-                previousPlanetPos.current.copy(earthPos); // Sync previous pos to avoid jump on exit
                 return;
             }
         }
@@ -835,6 +854,23 @@ const UI: React.FC<{
 }> = ({ focusedId, onSelect, isPlaying, onTogglePlay, showInfo, onToggleInfo, onToggleFullscreen, useRealDist, onToggleRealDist, useRealSize, onToggleRealSize, showLocation, onToggleLocation, isMusicOn, onToggleMusic, simSpeed, onToggleSpeed, viewMoonPhase, onToggleMoonPhase }) => {
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [hoveredInfo, setHoveredInfo] = useState<string | null>(null);
+    const infoPanelRef = useRef<HTMLDivElement>(null);
+
+    // Handle Click Outside for Info Panel
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (infoPanelRef.current && !infoPanelRef.current.contains(event.target as Node)) {
+                // Ignore clicks on the toggle button itself (handled by stopPropagation or check)
+                // Assuming toggle button is outside.
+                // We check if showInfo is true before preventing default? No.
+                if (showInfo) onToggleInfo(); // Use onToggleInfo to close
+            }
+        };
+        // Use mousedown to capture before click triggers other actions
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showInfo, onToggleInfo]);
+
     const focusedPlanet = PLANETS.find(p => p.id === focusedId);
     const displayedPlanet = viewMoonPhase ? MOON_INFO : (focusedPlanet || (focusedId === null ? SUN_INFO : null));
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -882,7 +918,7 @@ const UI: React.FC<{
             <div className="p-4 md:p-6 flex justify-between items-start pointer-events-auto gap-4">
                 {/* Info Panel - Collapsible (Desktop Only) */}
                 {!isMobile && (
-                    <div className={`transition-all duration-500 ${displayedPlanet && showInfo ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8 pointer-events-none'} bg-black/40 backdrop-blur-md p-5 rounded-xl border border-white/10 shadow-2xl max-w-sm`}>
+                    <div ref={infoPanelRef} className={`transition-all duration-500 ${displayedPlanet && showInfo ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8 pointer-events-none'} bg-black/40 backdrop-blur-md p-5 rounded-xl border border-white/10 shadow-2xl max-w-sm`}>
                         <h1 className="text-white text-2xl font-light tracking-wide mb-3">
                             {displayedPlanet?.name}
                         </h1>
@@ -920,12 +956,23 @@ const UI: React.FC<{
                         <div className="hidden md:flex gap-3">
                             {displayedPlanet && (
                                 <button
-                                    onClick={onToggleInfo}
+                                    onClick={(e) => { e.stopPropagation(); onToggleInfo(); }}
                                     onMouseEnter={() => setHoveredInfo(showInfo ? "Hide Info" : "Show Info")}
                                     onMouseLeave={() => setHoveredInfo(null)}
                                     className={`${showInfo ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10 hover:text-white`}
                                 >
                                     <span className="text-sm">ⓘ</span>
+                                </button>
+                            )}
+                            {/* Reset View Button for Moon Phase */}
+                            {viewMoonPhase && (
+                                <button
+                                    onClick={() => { onToggleMoonPhase(); setTimeout(onToggleMoonPhase, 100); }}
+                                    onMouseEnter={() => setHoveredInfo("Reset View")}
+                                    onMouseLeave={() => setHoveredInfo(null)}
+                                    className="bg-black/20 border-white/10 backdrop-blur-md border text-white px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10"
+                                >
+                                    <RotateCcw size={16} />
                                 </button>
                             )}
                             {focusedId === 'earth' && (
