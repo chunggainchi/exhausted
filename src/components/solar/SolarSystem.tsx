@@ -1194,7 +1194,7 @@ const UI: React.FC<{
                                 <button
                                     ref={infoButtonRef}
                                     onClick={(e) => { e.stopPropagation(); onToggleInfo(); }}
-                                    onMouseEnter={() => setHoveredInfo(showInfo ? "Hide info" : "Show info")}
+                                    onMouseEnter={() => setHoveredInfo(showInfo ? "Hide info (I)" : "Show info (I)")}
                                     onMouseLeave={() => setHoveredInfo(null)}
                                     className={`${showInfo ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/10 hover:text-white`}
                                 >
@@ -1224,7 +1224,7 @@ const UI: React.FC<{
                             )}
                             <button
                                 onClick={() => { audioService.playClick(); onTogglePlay(); }}
-                                onMouseEnter={() => setHoveredInfo("Pause/Resume Time")}
+                                onMouseEnter={() => setHoveredInfo("Pause/Resume Time (Space)")}
                                 onMouseLeave={() => setHoveredInfo(null)}
                                 className={`${isPlaying ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-6 py-3 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg flex items-center gap-2 hover:text-white`}
                             >
@@ -1258,7 +1258,7 @@ const UI: React.FC<{
                             </button>
                             <button
                                 onClick={onToggleMusic}
-                                onMouseEnter={() => setHoveredInfo("Ambient space sound (Space has no sound in real life though)")}
+                                onMouseEnter={() => setHoveredInfo("Ambient space sound (M)")}
                                 onMouseLeave={() => setHoveredInfo(null)}
                                 className={`${isMusicOn ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/10 hover:text-white`}
                             >
@@ -1266,7 +1266,7 @@ const UI: React.FC<{
                             </button>
                             <button
                                 onClick={onToggleSpeed}
-                                onMouseEnter={() => setHoveredInfo("Toggle time speed (1s/s is real life speed but you will not see much movement)")}
+                                onMouseEnter={() => setHoveredInfo("Toggle time speed (S)")}
                                 onMouseLeave={() => setHoveredInfo(null)}
                                 className="bg-black/20 backdrop-blur-md border border-white/10 text-white px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/10"
                             >
@@ -1277,7 +1277,7 @@ const UI: React.FC<{
                         {!isMobile && (
                             <button
                                 onClick={onToggleFullscreen}
-                                onMouseEnter={() => setHoveredInfo(isFullscreen ? "Exit fullscreen" : "Enter fullscreen")}
+                                onMouseEnter={() => setHoveredInfo(isFullscreen ? "Exit fullscreen (F)" : "Enter fullscreen (F)")}
                                 onMouseLeave={() => setHoveredInfo(null)}
                                 className={`${isFullscreen ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/10 hover:bg-white/15 border-white/20 text-white'} backdrop-blur-md border px-4 py-3 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg`}
                             >
