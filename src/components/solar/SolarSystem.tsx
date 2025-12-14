@@ -905,18 +905,21 @@ const UI: React.FC<{
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [hoveredInfo, setHoveredInfo] = useState<string | null>(null);
     const infoPanelRef = useRef<HTMLDivElement>(null);
+    const infoButtonRef = useRef<HTMLButtonElement>(null);
 
     // Handle Click Outside for Info Panel
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (infoPanelRef.current && !infoPanelRef.current.contains(event.target as Node)) {
-                // Ignore clicks on the toggle button itself (handled by stopPropagation or check)
-                // Assuming toggle button is outside.
-                // We check if showInfo is true before preventing default? No.
-                if (showInfo) onToggleInfo(); // Use onToggleInfo to close
+            // Check if click is outside Panel AND outside Button
+            if (
+                infoPanelRef.current &&
+                !infoPanelRef.current.contains(event.target as Node) &&
+                infoButtonRef.current &&
+                !infoButtonRef.current.contains(event.target as Node)
+            ) {
+                if (showInfo) onToggleInfo();
             }
         };
-        // Use mousedown to capture before click triggers other actions
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [showInfo, onToggleInfo]);
@@ -1006,8 +1009,9 @@ const UI: React.FC<{
                         <div className="hidden md:flex gap-3">
                             {displayedPlanet && (
                                 <button
+                                    ref={infoButtonRef}
                                     onClick={(e) => { e.stopPropagation(); onToggleInfo(); }}
-                                    onMouseEnter={() => setHoveredInfo(showInfo ? "Hide Info" : "Show Info")}
+                                    onMouseEnter={() => setHoveredInfo(showInfo ? "Hide info" : "Show info")}
                                     onMouseLeave={() => setHoveredInfo(null)}
                                     className={`${showInfo ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10 hover:text-white`}
                                 >
@@ -1047,7 +1051,7 @@ const UI: React.FC<{
 
                             <button
                                 onClick={onToggleRealDist}
-                                onMouseEnter={() => setHoveredInfo("Scale distances to true reality (Planets far apart)")}
+                                onMouseEnter={() => setHoveredInfo("Scale distances to true reality (Planets will be much further apart)")}
                                 onMouseLeave={() => setHoveredInfo(null)}
                                 className={`${useRealDist ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10 hover:text-white`}
                             >
@@ -1055,7 +1059,7 @@ const UI: React.FC<{
                             </button>
                             <button
                                 onClick={onToggleRealSize}
-                                onMouseEnter={() => setHoveredInfo("Scale planets to real relative sizes")}
+                                onMouseEnter={() => setHoveredInfo("Scale planets to real relative sizes (Many planets will look much smaller)")}
                                 onMouseLeave={() => setHoveredInfo(null)}
                                 className={`${useRealSize ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10 hover:text-white`}
                             >
@@ -1063,7 +1067,7 @@ const UI: React.FC<{
                             </button>
                             <button
                                 onClick={onToggleLocation}
-                                onMouseEnter={() => setHoveredInfo("Show my location on Earth")}
+                                onMouseEnter={() => setHoveredInfo("Show my location on Earth - Red dot shows where you are!")}
                                 onMouseLeave={() => setHoveredInfo(null)}
                                 className={`${showLocation ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10 hover:text-white`}
                             >
@@ -1071,7 +1075,7 @@ const UI: React.FC<{
                             </button>
                             <button
                                 onClick={onToggleMusic}
-                                onMouseEnter={() => setHoveredInfo("Ambient Space Music")}
+                                onMouseEnter={() => setHoveredInfo("Ambient space sound (Space has no sound in real life though)")}
                                 onMouseLeave={() => setHoveredInfo(null)}
                                 className={`${isMusicOn ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10 hover:text-white`}
                             >
@@ -1079,7 +1083,7 @@ const UI: React.FC<{
                             </button>
                             <button
                                 onClick={onToggleSpeed}
-                                onMouseEnter={() => setHoveredInfo("Toggle Time Speed")}
+                                onMouseEnter={() => setHoveredInfo("Toggle time speed (1s/s is real life speed but you will not see much movement)")}
                                 onMouseLeave={() => setHoveredInfo(null)}
                                 className="bg-black/20 backdrop-blur-md border border-white/10 text-white px-4 py-3 rounded-lg transition-all duration-300 hover:bg-white/10"
                             >
@@ -1090,7 +1094,7 @@ const UI: React.FC<{
                         {!isMobile && (
                             <button
                                 onClick={onToggleFullscreen}
-                                onMouseEnter={() => setHoveredInfo("Toggle Fullscreen")}
+                                onMouseEnter={() => setHoveredInfo("Toggle fullscreen")}
                                 onMouseLeave={() => setHoveredInfo(null)}
                                 className="bg-white/10 hover:bg-white/15 backdrop-blur-md border border-white/20 text-white px-4 py-3 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg"
                             >
