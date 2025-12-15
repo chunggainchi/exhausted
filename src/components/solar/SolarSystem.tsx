@@ -777,7 +777,7 @@ const PlanetFallback: React.FC<{ data: PlanetData, simTimeRef: React.MutableRefO
     useFrame(() => {
         if (orbitRef.current) {
             const time = simTimeRef.current;
-            const angle = initialAngle + (time * data.speed * 0.1);
+            const angle = initialAngle + (time * data.speed);
             orbitRef.current.position.x = Math.cos(angle) * data.distance;
             orbitRef.current.position.z = Math.sin(angle) * data.distance;
             if (meshRef.current) meshRef.current.rotation.y += data.rotationSpeed;
@@ -896,7 +896,7 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
             if (earth && moon) {
                 // Calculate Earth & Moon positions (Logic copied from below for accuracy)
                 const eDist = useRealDist ? earth.orbitAU * 30 : earth.distance;
-                const eAngle = (eDist * 0.5) + (simTimeRef.current * earth.speed * 0.1);
+                const eAngle = (eDist * 0.5) + (simTimeRef.current * earth.speed);
                 const earthPos = new THREE.Vector3(Math.cos(eAngle) * eDist, 0, Math.sin(eAngle) * eDist);
 
 
@@ -968,7 +968,7 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
             const planet = PLANETS.find(p => p.id === focusedId);
             if (planet) {
                 const dist = useRealDist ? planet.orbitAU * 30 : planet.distance;
-                const angle = (dist * 0.5) + (simTimeRef.current * planet.speed * 0.1);
+                const angle = (dist * 0.5) + (simTimeRef.current * planet.speed);
 
                 const x = Math.cos(angle) * dist;
                 let z = Math.sin(angle) * dist;
