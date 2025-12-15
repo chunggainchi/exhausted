@@ -30,6 +30,9 @@ interface PlanetData {
     moons?: MoonData[];
     dayLength?: string;
     rotationAxisTilt?: number; // Axial tilt in degrees (e.g., Uranus ~98°, Venus ~177°)
+    orbitPeriodDays?: number; // Orbital period in Earth days
+    rotationPeriodHours?: number; // Rotation period in Earth hours
+    rotationRetrograde?: boolean; // Explicit retrograde rotation flag
     // Dynamic props for display
     useRealDist?: boolean;
     useRealSize?: boolean;
@@ -48,6 +51,26 @@ interface MoonData {
 // --- CONSTANTS & DATA ---
 // Using local texture assets
 const TEXTURE_BASE = '/textures';
+const TWO_PI = Math.PI * 2;
+const DAY_SECONDS = 86400;
+const HOUR_SECONDS = 3600;
+const DEBUG_OVERLAY_ENABLED = false;
+
+const deriveAngularSpeeds = (planet: PlanetData): PlanetData => {
+    const orbitSpeed = planet.orbitPeriodDays
+        ? TWO_PI / (planet.orbitPeriodDays * DAY_SECONDS)
+        : planet.speed;
+
+    const periodHours = planet.rotationPeriodHours;
+    const rotationSign = periodHours && periodHours < 0
+        ? -1
+        : (planet.rotationRetrograde ? -1 : 1);
+    const rotationSpeed = periodHours
+        ? (TWO_PI / (Math.abs(periodHours) * HOUR_SECONDS)) * rotationSign
+        : planet.rotationSpeed;
+
+    return { ...planet, speed: orbitSpeed, rotationSpeed };
+};
 
 const PLANETS: PlanetData[] = [
     {
@@ -58,6 +81,8 @@ const PLANETS: PlanetData[] = [
         distance: 12,
         speed: 8.26e-7,
         rotationSpeed: 1.24e-6, // Adjusted to match orbital period ratio
+        orbitPeriodDays: 87.9691,
+        rotationPeriodHours: 1407.6,
         rotationAxisTilt: 0.034, // Almost no tilt
         textureUrl: `${TEXTURE_BASE}/Mercury.jpg`,
         travelTime: "~3 Months",
@@ -79,6 +104,9 @@ const PLANETS: PlanetData[] = [
         distance: 18,
         speed: 3.23e-7,
         rotationSpeed: 2.99e-7, // Adjusted to match orbital period ratio (177° tilt makes it retrograde)
+        orbitPeriodDays: 224.701,
+        rotationPeriodHours: 5832.5,
+        rotationRetrograde: false,
         rotationAxisTilt: 177, // Nearly upside down - this causes retrograde rotation
         textureUrl: `${TEXTURE_BASE}/Venus.jpg`,
         travelTime: "~4 Months",
@@ -100,6 +128,8 @@ const PLANETS: PlanetData[] = [
         distance: 26,
         speed: 1.99e-7,
         rotationSpeed: 7.29e-5, // (Standard Earth angular velocity)
+        orbitPeriodDays: 365.256,
+        rotationPeriodHours: 23.934,
         rotationAxisTilt: 23.44, // Critical for seasons!
         textureUrl: `${TEXTURE_BASE}/Earth.jpg`,
         travelTime: "0",
@@ -122,6 +152,8 @@ const PLANETS: PlanetData[] = [
         distance: 34,
         speed: 1.05e-7,
         rotationSpeed: 7.08e-5, // Adjusted to match orbital period ratio
+        orbitPeriodDays: 686.98,
+        rotationPeriodHours: 24.623,
         rotationAxisTilt: 25.19, // Similar to Earth, causes seasons
         textureUrl: `${TEXTURE_BASE}/Mars.jpg`,
         travelTime: "~7 Months",
@@ -143,6 +175,8 @@ const PLANETS: PlanetData[] = [
         distance: 55,
         speed: 1.67e-8,
         rotationSpeed: 1.76e-4, // Adjusted to match orbital period ratio
+        orbitPeriodDays: 4332.59,
+        rotationPeriodHours: 9.925,
         rotationAxisTilt: 3.13, // Minimal tilt
         textureUrl: `${TEXTURE_BASE}/Jupiter.jpg`,
         travelTime: "~5 Years",
@@ -164,6 +198,8 @@ const PLANETS: PlanetData[] = [
         distance: 75,
         speed: 6.75e-9,
         rotationSpeed: 1.64e-4, // Adjusted to match orbital period ratio
+        orbitPeriodDays: 10759,
+        rotationPeriodHours: 10.7,
         rotationAxisTilt: 26.73, // Significant tilt, similar to Earth/Mars
         textureUrl: `${TEXTURE_BASE}/Saturn.jpg`,
         travelTime: "~7 Years",
@@ -186,6 +222,9 @@ const PLANETS: PlanetData[] = [
         distance: 92,
         speed: 2.37e-9,
         rotationSpeed: 1.01e-4, // Adjusted to match orbital period ratio (prograde, but axis tilted)
+        orbitPeriodDays: 30687,
+        rotationPeriodHours: 17.24,
+        rotationRetrograde: false,
         rotationAxisTilt: 97.77, // Spins on its side (~97.77° tilt)
         textureUrl: `${TEXTURE_BASE}/Uranus.jpg`,
         travelTime: "~9 Years",
@@ -207,6 +246,8 @@ const PLANETS: PlanetData[] = [
         distance: 110,
         speed: 1.20e-9,
         rotationSpeed: 1.08e-4, // Adjusted to match orbital period ratio
+        orbitPeriodDays: 60190,
+        rotationPeriodHours: 16.11,
         rotationAxisTilt: 28.32, // Significant tilt
         textureUrl: `${TEXTURE_BASE}/Neptune.jpg`,
         travelTime: "~12 Years",
@@ -780,7 +821,9 @@ const PlanetFallback: React.FC<{ data: PlanetData, simTimeRef: React.MutableRefO
             const angle = initialAngle + (time * data.speed);
             orbitRef.current.position.x = Math.cos(angle) * data.distance;
             orbitRef.current.position.z = Math.sin(angle) * data.distance;
-            if (meshRef.current) meshRef.current.rotation.y += data.rotationSpeed;
+            if (meshRef.current) {
+                meshRef.current.rotation.y = time * data.rotationSpeed;
+            }
         }
     });
 
@@ -891,7 +934,8 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
 
         if (viewMoonPhase) {
             // Moon Phase View: Camera on Earth, looking at Moon
-            const earth = PLANETS.find(p => p.id === 'earth');
+            const earthBase = PLANETS.find(p => p.id === 'earth');
+            const earth = earthBase ? deriveAngularSpeeds(earthBase) : undefined;
             const moon = earth?.moons?.[0];
             if (earth && moon) {
                 // Calculate Earth & Moon positions (Logic copied from below for accuracy)
@@ -965,7 +1009,8 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
         }
 
         if (focusedId) {
-            const planet = PLANETS.find(p => p.id === focusedId);
+            const basePlanet = PLANETS.find(p => p.id === focusedId);
+            const planet = basePlanet ? deriveAngularSpeeds(basePlanet) : undefined;
             if (planet) {
                 const dist = useRealDist ? planet.orbitAU * 30 : planet.distance;
                 const angle = (dist * 0.5) + (simTimeRef.current * planet.speed);
@@ -1079,6 +1124,7 @@ const UI: React.FC<{
     const [hoveredInfo, setHoveredInfo] = useState<string | null>(null);
     const infoPanelRef = useRef<HTMLDivElement>(null);
     const infoButtonRef = useRef<HTMLButtonElement>(null);
+    const [showDebugOverlay, setShowDebugOverlay] = useState(DEBUG_OVERLAY_ENABLED);
 
     // Handle Click Outside for Info Panel
     useEffect(() => {
@@ -1099,6 +1145,27 @@ const UI: React.FC<{
 
     const focusedPlanet = PLANETS.find(p => p.id === focusedId);
     const displayedPlanet = viewMoonPhase ? MOON_INFO : (focusedPlanet || (focusedId === null ? SUN_INFO : null));
+
+    // Debug overlay for orbital/rotation periods derived from current speeds
+    const derivedFocused = focusedPlanet ? deriveAngularSpeeds(focusedPlanet) : null;
+    const debugOrbitDays = derivedFocused ? (TWO_PI / derivedFocused.speed) / DAY_SECONDS : null;
+    const debugRotationHours = derivedFocused ? (TWO_PI / Math.abs(derivedFocused.rotationSpeed)) / HOUR_SECONDS : null;
+    // Always pull Moon orbit data when in Moon Phase mode or when Earth is focused
+    const earthForMoonDebug = (viewMoonPhase || derivedFocused?.id === 'earth')
+        ? (() => {
+            const earthBase = PLANETS.find(p => p.id === 'earth');
+            return earthBase ? deriveAngularSpeeds(earthBase) : null;
+        })()
+        : null;
+    const moonDebug = earthForMoonDebug?.moons?.[0]
+        ? {
+            name: 'Moon',
+            orbitDays: (TWO_PI / earthForMoonDebug.moons[0].speed) / DAY_SECONDS,
+        }
+        : null;
+    const moonSynodicDays = moonDebug?.orbitDays && debugOrbitDays
+        ? 1 / ((1 / moonDebug.orbitDays) - (1 / debugOrbitDays))
+        : null;
 
     const [isMobile, setIsMobile] = useState(false);
     useEffect(() => {
@@ -1400,6 +1467,46 @@ const UI: React.FC<{
             <a href="https://exhaustedrocket.com" target="_blank" rel="noopener noreferrer" className="hidden md:block fixed bottom-1 right-2 text-[10px] text-white/20 hover:text-white/60 z-50 pointer-events-auto transition-colors">
                 Product of exhaustedrocket.com
             </a>
+
+            {/* Debug overlay for quick physics sanity-check */}
+            {DEBUG_OVERLAY_ENABLED && (
+                <div className="fixed top-2 left-2 z-50 pointer-events-auto flex flex-col gap-2">
+                    <button
+                        onClick={() => setShowDebugOverlay(v => !v)}
+                        className="bg-black/70 text-white text-[11px] px-3 py-2 rounded border border-white/10 shadow-lg hover:bg-black/80"
+                    >
+                        {showDebugOverlay ? 'Hide' : 'Show'} debug
+                    </button>
+                    {showDebugOverlay && (
+                        <div className="bg-black/80 text-white text-[11px] px-3 py-2 rounded border border-white/10 shadow-lg space-y-2 min-w-[200px]">
+                            {moonDebug && (
+                                <div className="space-y-1">
+                                    <div className="font-semibold">Moon debug</div>
+                                    <div>Orbit: {moonDebug.orbitDays.toFixed(2)} days</div>
+                                    {moonSynodicDays && (
+                                        <div>Moon phase cycle: {moonSynodicDays.toFixed(2)} days</div>
+                                    )}
+                                </div>
+                            )}
+                            {derivedFocused && (
+                                <div className="space-y-1">
+                                    <div className="font-semibold">{derivedFocused.name} debug</div>
+                                    {debugOrbitDays !== null && (
+                                        <div>Orbit: {debugOrbitDays.toFixed(2)} days</div>
+                                    )}
+                                    {debugRotationHours !== null && (
+                                        <div>Day: {debugRotationHours.toFixed(2)} hours</div>
+                                    )}
+                                </div>
+                            )}
+                            {!derivedFocused && !moonDebug && (
+                                <div className="opacity-80">Select a planet or enable Moon phase</div>
+                            )}
+                            <div className="opacity-60">Speeds → periods (rad/s)</div>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
@@ -1539,13 +1646,16 @@ export default function SolarSystem() {
 
     // Calculate display data based on toggles
     const activePlanets = useMemo(() => {
-        return PLANETS.map(p => ({
-            ...p,
-            distance: useRealDist ? p.orbitAU * 30 : p.distance, // Scale AU by 30
-            size: useRealSize ? (SUN_SIZE / 109) * p.radiusMultiplier : p.size, // Scale relative to Sun (Size 7)
-            useRealDist,
-            useRealSize
-        }));
+        return PLANETS.map((p) => {
+            const derived = deriveAngularSpeeds(p);
+            return {
+                ...derived,
+                distance: useRealDist ? p.orbitAU * 30 : p.distance, // Scale AU by 30
+                size: useRealSize ? (SUN_SIZE / 109) * p.radiusMultiplier : p.size, // Scale relative to Sun (Size 7)
+                useRealDist,
+                useRealSize
+            };
+        });
     }, [useRealDist, useRealSize]);
 
     return (
