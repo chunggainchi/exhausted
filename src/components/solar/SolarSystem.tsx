@@ -1662,7 +1662,7 @@ export default function SolarSystem() {
         <div ref={containerRef} className="w-full h-screen relative bg-black overflow-hidden select-none touch-action-none">
 
             <Canvas
-                camera={{ position: [0, 60, 80], fov: 45 }}
+                camera={{ position: [0, 60, 80], fov: 45, near: 0.1, far: 6000 }}
                 dpr={[1, 2]}
                 gl={{ antialias: true, toneMappingExposure: 1.2 }}
             >
