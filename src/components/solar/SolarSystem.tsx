@@ -57,7 +57,7 @@ const PLANETS: PlanetData[] = [
         size: 0.8,
         distance: 12,
         speed: 8.26e-7,
-        rotationSpeed: 1.24e-7, // Adjusted to match orbital period ratio
+        rotationSpeed: 1.24e-6, // Adjusted to match orbital period ratio
         rotationAxisTilt: 0.034, // Almost no tilt
         textureUrl: `${TEXTURE_BASE}/Mercury.jpg`,
         travelTime: "~3 Months",
@@ -78,7 +78,7 @@ const PLANETS: PlanetData[] = [
         size: 1.5,
         distance: 18,
         speed: 3.23e-7,
-        rotationSpeed: 2.99e-8, // Adjusted to match orbital period ratio (177° tilt makes it retrograde)
+        rotationSpeed: 2.99e-7, // Adjusted to match orbital period ratio (177° tilt makes it retrograde)
         rotationAxisTilt: 177, // Nearly upside down - this causes retrograde rotation
         textureUrl: `${TEXTURE_BASE}/Venus.jpg`,
         travelTime: "~4 Months",
@@ -99,7 +99,7 @@ const PLANETS: PlanetData[] = [
         size: 1.6,
         distance: 26,
         speed: 1.99e-7,
-        rotationSpeed: 7.27e-6, // Adjusted: Earth rotates 365.25 times per orbit
+        rotationSpeed: 7.29e-5, // (Standard Earth angular velocity)
         rotationAxisTilt: 23.44, // Critical for seasons!
         textureUrl: `${TEXTURE_BASE}/Earth.jpg`,
         travelTime: "0",
@@ -121,7 +121,7 @@ const PLANETS: PlanetData[] = [
         size: 1.1,
         distance: 34,
         speed: 1.05e-7,
-        rotationSpeed: 7.08e-6, // Adjusted to match orbital period ratio
+        rotationSpeed: 7.08e-5, // Adjusted to match orbital period ratio
         rotationAxisTilt: 25.19, // Similar to Earth, causes seasons
         textureUrl: `${TEXTURE_BASE}/Mars.jpg`,
         travelTime: "~7 Months",
@@ -142,7 +142,7 @@ const PLANETS: PlanetData[] = [
         size: 4.5,
         distance: 55,
         speed: 1.67e-8,
-        rotationSpeed: 1.76e-5, // Adjusted to match orbital period ratio
+        rotationSpeed: 1.76e-4, // Adjusted to match orbital period ratio
         rotationAxisTilt: 3.13, // Minimal tilt
         textureUrl: `${TEXTURE_BASE}/Jupiter.jpg`,
         travelTime: "~5 Years",
@@ -163,7 +163,7 @@ const PLANETS: PlanetData[] = [
         size: 3.8,
         distance: 75,
         speed: 6.75e-9,
-        rotationSpeed: 1.64e-5, // Adjusted to match orbital period ratio
+        rotationSpeed: 1.64e-4, // Adjusted to match orbital period ratio
         rotationAxisTilt: 26.73, // Significant tilt, similar to Earth/Mars
         textureUrl: `${TEXTURE_BASE}/Saturn.jpg`,
         travelTime: "~7 Years",
@@ -185,7 +185,7 @@ const PLANETS: PlanetData[] = [
         size: 2.6,
         distance: 92,
         speed: 2.37e-9,
-        rotationSpeed: 1.01e-5, // Adjusted to match orbital period ratio (prograde, but axis tilted)
+        rotationSpeed: 1.01e-4, // Adjusted to match orbital period ratio (prograde, but axis tilted)
         rotationAxisTilt: 97.77, // Spins on its side (~97.77° tilt)
         textureUrl: `${TEXTURE_BASE}/Uranus.jpg`,
         travelTime: "~9 Years",
@@ -206,7 +206,7 @@ const PLANETS: PlanetData[] = [
         size: 2.5,
         distance: 110,
         speed: 1.20e-9,
-        rotationSpeed: 1.08e-5, // Adjusted to match orbital period ratio
+        rotationSpeed: 1.08e-4, // Adjusted to match orbital period ratio
         rotationAxisTilt: 28.32, // Significant tilt
         textureUrl: `${TEXTURE_BASE}/Neptune.jpg`,
         travelTime: "~12 Years",
@@ -460,7 +460,7 @@ const AsteroidBelt: React.FC<{ useRealDist: boolean; isPlaying: boolean; simTime
     useFrame(() => {
         if (meshRef.current && isPlaying) {
             // Use simulation time for realistic orbital motion, responds to time speed toggle
-            meshRef.current.rotation.y = simTimeRef.current * orbitalSpeed * 0.1;
+            meshRef.current.rotation.y = simTimeRef.current * orbitalSpeed;
         }
     });
 
@@ -619,7 +619,7 @@ const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: st
     useFrame(() => {
         if (orbitRef.current) {
             const time = simTimeRef.current;
-            const angle = initialAngle + (time * data.speed * 0.1);
+            const angle = initialAngle + (time * data.speed);
 
             orbitRef.current.position.x = Math.cos(angle) * data.distance;
             orbitRef.current.position.z = Math.sin(angle) * data.distance;
