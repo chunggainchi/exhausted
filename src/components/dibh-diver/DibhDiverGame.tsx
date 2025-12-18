@@ -196,7 +196,11 @@ export default function DibhDiverGame() {
         {/* ONBOARDING LAYER */}
         {currentPage === 'onboarding' && (
           <div className="absolute inset-0 z-20 bg-[#0d2b45]">
-            <Onboarding onComplete={handleNameSubmit} />
+            <Onboarding
+              onComplete={handleNameSubmit}
+              initialName={userName}
+              initialAgeGroup={ageGroup}
+            />
           </div>
         )}
 

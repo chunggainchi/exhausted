@@ -5,11 +5,13 @@ import { audioController } from './audio';
 
 interface OnboardingProps {
   onComplete: (name: string, ageGroup: 'child' | 'adult') => void;
+  initialAgeGroup?: 'child' | 'adult';
+  initialName?: string;
 }
 
-export default function Onboarding({ onComplete }: OnboardingProps) {
-  const [name, setName] = useState('');
-  const [ageGroup, setAgeGroup] = useState<'child' | 'adult'>('adult');
+export default function Onboarding({ onComplete, initialAgeGroup = 'adult', initialName = '' }: OnboardingProps) {
+  const [name, setName] = useState(initialName);
+  const [ageGroup, setAgeGroup] = useState<'child' | 'adult'>(initialAgeGroup);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,8 +63,8 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                 type="button"
                 onClick={() => { audioController.playClick(); setAgeGroup('child'); }}
                 className={`flex-1 py-3 px-2 border-2 font-black uppercase text-sm transition-all ${ageGroup === 'child'
-                    ? 'bg-[#ff9f1c] border-white text-[#0d2b45] shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)]'
-                    : 'bg-[#0d2b45] border-[#203c56] text-[#8da9c4] opacity-60 hover:opacity-100'
+                  ? 'bg-[#ff9f1c] border-white text-[#0d2b45] shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)]'
+                  : 'bg-[#0d2b45] border-[#203c56] text-[#8da9c4] opacity-60 hover:opacity-100'
                   }`}
               >
                 👶 Child
@@ -71,8 +73,8 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                 type="button"
                 onClick={() => { audioController.playClick(); setAgeGroup('adult'); }}
                 className={`flex-1 py-3 px-2 border-2 font-black uppercase text-sm transition-all ${ageGroup === 'adult'
-                    ? 'bg-[#4cc9f0] border-white text-[#0d2b45] shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)]'
-                    : 'bg-[#0d2b45] border-[#203c56] text-[#8da9c4] opacity-60 hover:opacity-100'
+                  ? 'bg-[#4cc9f0] border-white text-[#0d2b45] shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)]'
+                  : 'bg-[#0d2b45] border-[#203c56] text-[#8da9c4] opacity-60 hover:opacity-100'
                   }`}
               >
                 🎖️ Adult

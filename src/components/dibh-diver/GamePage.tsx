@@ -39,12 +39,14 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
     const latestCalibMax = useRef(calibMax);
     const latestGhostImage = useRef(ghostImage);
     const latestUserName = useRef(userName);
+    const latestAgeGroup = useRef(ageGroup);
 
     useEffect(() => { latestTrackingVal.current = trackingVal; }, [trackingVal]);
     useEffect(() => { latestCalibMin.current = calibMin; }, [calibMin]);
     useEffect(() => { latestCalibMax.current = calibMax; }, [calibMax]);
     useEffect(() => { latestGhostImage.current = ghostImage; }, [ghostImage]);
     useEffect(() => { latestUserName.current = userName; }, [userName]);
+    useEffect(() => { latestAgeGroup.current = ageGroup; }, [ageGroup]);
 
     useEffect(() => {
         if (videoPreviewRef.current && mediaStream) {
@@ -267,22 +269,29 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
 
             // 1. INPUT PROCESSING
             let targetY = state.diverY;
+            const currentAge = latestAgeGroup.current;
+            let currentSmoothFactor = currentAge === 'child' ? 0.05 : 0.08;
 
             if (cMin !== null && cMax !== null) {
                 let norm = 0;
-                if (Math.abs(cMax - cMin) > 1) {
+                const calibRange = Math.abs(cMax - cMin);
+                if (calibRange > 1) {
                     norm = (tVal - cMin) / (cMax - cMin);
+
+                    // Adaptive Logic: If range is tiny, make it even smoother to filter noise
+                    if (calibRange < 15) {
+                        const sensitivityMultiplier = Math.max(0.4, calibRange / 15);
+                        currentSmoothFactor *= sensitivityMultiplier;
+                    }
                 }
                 const clampedNorm = Math.max(0, Math.min(1, norm));
-                const padding = height * 0.1; // 10% padding
-                const mapY = padding + (1.0 - clampedNorm) * (height - 2 * padding);
-                targetY = mapY;
+                const padding = height * 0.1;
+                targetY = padding + (1.0 - clampedNorm) * (height - 2 * padding);
             }
 
             if (!state.isGameOver) {
-                const smoothFactor = 0.08;
+                state.diverY += (targetY - state.diverY) * currentSmoothFactor;
                 const prevY = state.diverY;
-                state.diverY += (targetY - state.diverY) * smoothFactor;
 
                 if (state.diverY < prevY - 1.5) {
                     if (state.frameCount % 5 === 0) {
@@ -304,12 +313,12 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
                 const difficultyLevel = Math.floor(state.score / 5);
 
                 // Child starts at 1, Adult starts at 3
-                const baseSpeed = ageGroup === 'child' ? 1 : 3;
+                const baseSpeed = currentAge === 'child' ? 1 : 3;
                 state.speed = baseSpeed * Math.pow(1.07, difficultyLevel);
 
                 // Spawn Obstacles
                 if (state.frameCount >= state.nextSpawnFrame) {
-                    const isChild = ageGroup === 'child';
+                    const isChild = currentAge === 'child';
                     const baseGap = height * (isChild ? 0.45 : 0.3);
                     const minGap = isChild ? 180 : 120;
                     const reductionRate = isChild ? 0.98 : 0.95;
@@ -355,7 +364,7 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
 
                     if (distance < diverRadius + 15) {
                         state.fishes.splice(i, 1);
-                        state.score += (ageGroup === 'child' ? 4 : 2); // Extra points (Double for children)
+                        state.score += (currentAge === 'child' ? 4 : 2); // Extra points (Double for children)
                         setScore(state.score);
                         audioController.playBite();
                         continue;
@@ -390,7 +399,11 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
                             state.isGameOver = true;
                             setGameOver(true);
                             audioController.stopAmbience();
-                            audioController.playCrash();
+                            if (currentAge === 'child') {
+                                audioController.playOops();
+                            } else {
+                                audioController.playCrash();
+                            }
                             takeSnapshot(state.score);
                         }
                     }
@@ -455,31 +468,76 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
             const diverRadius = Math.min(20, height * 0.03);
             ctx.save();
             ctx.translate(diverXPos, state.diverY);
-            ctx.rotate(0.1);
-            const scale = diverRadius / 15;
-            ctx.scale(scale, scale);
-            ctx.fillStyle = '#f4a261';
-            ctx.fillRect(-15, -10, 30, 20);
-            ctx.fillStyle = '#264653';
-            ctx.fillRect(-15, 0, 30, 15);
-            ctx.fillStyle = '#4cc9f0';
-            ctx.fillRect(5, -8, 12, 8);
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(5, -8, 12, 8);
-            ctx.strokeStyle = '#e76f51';
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.moveTo(0, -10);
-            ctx.lineTo(0, -20);
-            ctx.lineTo(-10, -25);
-            ctx.stroke();
-            ctx.fillStyle = '#e9c46a';
-            ctx.beginPath();
-            ctx.moveTo(-15, 5);
-            ctx.lineTo(-25, 0);
-            ctx.lineTo(-25, 10);
-            ctx.fill();
+
+            if (currentAge === 'child') {
+                // --- CUTE YELLOW SUBMARINE FOR KIDS ---
+                ctx.rotate(Math.sin(state.frameCount * 0.05) * 0.1); // Gentle rocking
+                const s = diverRadius / 15;
+                ctx.scale(s, s);
+
+                // Main Body
+                ctx.fillStyle = '#ff9f1c'; // Bright Orange/Yellow
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 25, 18, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#0d2b45';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Porthole
+                ctx.fillStyle = '#4cc9f0';
+                ctx.beginPath();
+                ctx.arc(5, -2, 8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Porthole Shine
+                ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                ctx.beginPath();
+                ctx.arc(3, -4, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Periscope
+                ctx.fillStyle = '#e76f51';
+                ctx.fillRect(-5, -25, 4, 10);
+                ctx.fillRect(-5, -25, 10, 4);
+
+                // Propeller (animated)
+                ctx.save();
+                ctx.translate(-25, 0);
+                ctx.rotate(state.frameCount * 0.5);
+                ctx.fillStyle = '#2a9d8f';
+                ctx.fillRect(-2, -8, 4, 16);
+                ctx.fillRect(-8, -2, 16, 4);
+                ctx.restore();
+            } else {
+                // --- STANDARD ADULT DIVER ---
+                ctx.rotate(0.1);
+                const scale = diverRadius / 15;
+                ctx.scale(scale, scale);
+                ctx.fillStyle = '#f4a261';
+                ctx.fillRect(-15, -10, 30, 20);
+                ctx.fillStyle = '#264653';
+                ctx.fillRect(-15, 0, 30, 15);
+                ctx.fillStyle = '#4cc9f0';
+                ctx.fillRect(5, -8, 12, 8);
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(5, -8, 12, 8);
+                ctx.strokeStyle = '#e76f51';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(0, -10);
+                ctx.lineTo(0, -20);
+                ctx.lineTo(-10, -25);
+                ctx.stroke();
+                ctx.fillStyle = '#e9c46a';
+                ctx.beginPath();
+                ctx.moveTo(-15, 5);
+                ctx.lineTo(-25, 0);
+                ctx.lineTo(-25, 10);
+                ctx.fill();
+            }
             ctx.restore();
 
             // Score
@@ -517,7 +575,7 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
                 <div className="absolute inset-0 bg-black/90 z-50 animate-fade-in backdrop-blur-md flex flex-col items-center justify-center p-4">
 
                     <h2 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b from-[#ff9f1c] to-[#ffbf69] uppercase italic drop-shadow-sm leading-none text-center mb-2 md:mb-6">
-                        Mission Report
+                        {ageGroup === 'child' ? 'Great Job!' : 'Mission Report'}
                     </h2>
 
                     {snapshotUrl && (
@@ -546,12 +604,12 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
                             onClick={handleTryAgain}
                             className="w-full md:w-auto bg-[#4cc9f0] text-[#0d2b45] font-black uppercase px-6 py-3 md:px-8 md:py-4 border-4 border-white shadow-[0px_0px_15px_rgba(76,201,240,0.5)] active:scale-95 transition-all text-lg rounded-sm"
                         >
-                            New Dive
+                            {ageGroup === 'child' ? "Let's Go Again!" : "New Dive"}
                         </button>
                     </div>
 
                     <p className="mt-3 md:mt-4 text-[#8da9c4] text-[10px] md:text-xs uppercase tracking-widest text-center">
-                        Who can beat your {score}m highscore?
+                        {ageGroup === 'child' ? "⭐ You did amazing! ⭐" : `Who can beat your ${score}m highscore?`}
                     </p>
                 </div>
             )}

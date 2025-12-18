@@ -195,6 +195,29 @@ class AudioController {
     osc.start(t);
     osc.stop(t + 0.1);
   }
+
+  playOops() {
+    this.init();
+    if (!this.ctx || !this.masterGain) return;
+
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    // A softer "slide down" sound
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(400, t);
+    osc.frequency.exponentialRampToValueAtTime(100, t + 0.5);
+
+    gain.gain.setValueAtTime(0.2, t);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+
+    osc.start(t);
+    osc.stop(t + 0.5);
+  }
 }
 
 export const audioController = new AudioController();
