@@ -20,6 +20,7 @@ export default function DibhDiverGame() {
 
   // User Identity
   const [userName, setUserName] = useState<string>('');
+  const [ageGroup, setAgeGroup] = useState<'child' | 'adult'>('adult');
 
   // Lifted State for Tracking
   const [globalTrackingVal, setGlobalTrackingVal] = useState(0);
@@ -37,6 +38,10 @@ export default function DibhDiverGame() {
     const storedName = localStorage.getItem('dibh_agent_name');
     if (storedName) {
       setUserName(storedName);
+    }
+    const storedAge = localStorage.getItem('dibh_agent_age');
+    if (storedAge === 'child' || storedAge === 'adult') {
+      setAgeGroup(storedAge);
     }
   }, []);
 
@@ -61,9 +66,11 @@ export default function DibhDiverGame() {
     }
   }
 
-  const handleNameSubmit = (name: string) => {
+  const handleNameSubmit = (name: string, age: 'child' | 'adult') => {
     setUserName(name);
+    setAgeGroup(age);
     localStorage.setItem('dibh_agent_name', name);
+    localStorage.setItem('dibh_agent_age', age);
     setCurrentPage('config');
   };
 
@@ -72,6 +79,15 @@ export default function DibhDiverGame() {
     handleFullReset();
     setCurrentPage('intro');
   }
+
+  const handleSwitchUser = () => {
+    audioController.playClick();
+    // Reset calibration state
+    setGhostImage(null);
+    setCalibMin(null);
+    setCalibMax(null);
+    setCurrentPage('onboarding');
+  };
 
   // Generate random bubbles for intro on the client to avoid SSR hydration mismatch
   const [bubbles, setBubbles] = useState<Array<{
@@ -117,10 +133,17 @@ export default function DibhDiverGame() {
 
         <div className="flex items-center gap-4">
           {userName && currentPage !== 'intro' && currentPage !== 'onboarding' && (
-            <div className="hidden md:flex flex-col items-end">
-              <span className="text-[8px] text-[#8da9c4] uppercase tracking-widest">Agent</span>
-              <span className="text-xs font-bold text-[#4cc9f0] uppercase">{userName} {!isCVReady && currentPage === 'config' ? '(Initializing...)' : ''}</span>
-            </div>
+            <button
+              onClick={handleSwitchUser}
+              className="flex flex-col items-end hover:bg-white/5 px-2 py-1 rounded transition-colors group/agent"
+              title="Switch Agent"
+            >
+              <span className="text-[8px] text-[#8da9c4] uppercase tracking-widest group-hover/agent:text-[#4cc9f0]">Switch Agent</span>
+              <span className="text-xs font-bold text-[#4cc9f0] uppercase flex items-center gap-1">
+                {userName} {!isCVReady && currentPage === 'config' ? '(Initializing...)' : ''}
+                <span className="text-[10px] opacity-0 group-hover/agent:opacity-100 transition-opacity">✎</span>
+              </span>
+            </button>
           )}
           {isTracking && currentPage === 'game' && <div className="w-2 h-2 bg-[#ff9f1c] rounded-full animate-pulse shadow-[0_0_8px_#ff9f1c]"></div>}
         </div>
@@ -212,6 +235,7 @@ export default function DibhDiverGame() {
               ghostImage={ghostImage}
               onReset={handleFullReset}
               userName={userName}
+              ageGroup={ageGroup}
             />
           </div>
         )}

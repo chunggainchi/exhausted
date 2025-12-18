@@ -11,6 +11,7 @@ interface GamePageProps {
     ghostImage: string | null;
     onReset: () => void;
     userName: string;
+    ageGroup: 'child' | 'adult';
 }
 
 interface Obstacle {
@@ -28,7 +29,7 @@ interface Fish {
     type: string;
 }
 
-export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream, ghostImage, onReset, userName }: GamePageProps) {
+export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream, ghostImage, onReset, userName, ageGroup }: GamePageProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const videoPreviewRef = useRef<HTMLVideoElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -302,15 +303,18 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
                 // Difficulty scales speed
                 const difficultyLevel = Math.floor(state.score / 5);
 
-                // Start at 3, increase gradually. No longer multiplier on mobile to avoid 'impossible' speed.
-                const baseSpeed = 3;
+                // Child starts at 1, Adult starts at 3
+                const baseSpeed = ageGroup === 'child' ? 1 : 3;
                 state.speed = baseSpeed * Math.pow(1.07, difficultyLevel);
 
                 // Spawn Obstacles
                 if (state.frameCount >= state.nextSpawnFrame) {
-                    const baseGap = height * 0.3;
-                    const minGap = 120;
-                    const gapHeight = Math.max(minGap, baseGap * Math.pow(0.95, difficultyLevel));
+                    const isChild = ageGroup === 'child';
+                    const baseGap = height * (isChild ? 0.45 : 0.3);
+                    const minGap = isChild ? 180 : 120;
+                    const reductionRate = isChild ? 0.98 : 0.95;
+
+                    const gapHeight = Math.max(minGap, baseGap * Math.pow(reductionRate, difficultyLevel));
 
                     const minGapY = height * 0.1;
                     const maxGapY = height * 0.9 - gapHeight;
@@ -329,7 +333,7 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
                 }
 
                 // Spawn Fish
-                if (Math.random() < 0.01) {
+                if (Math.random() < 0.015) {
                     state.fishes.push({
                         x: width + 50,
                         y: Math.random() * height,
@@ -342,6 +346,21 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
                 for (let i = state.fishes.length - 1; i >= 0; i--) {
                     const fish = state.fishes[i];
                     fish.x -= (state.speed * 0.5 + fish.speed);
+
+                    // --- FISH EATING LOGIC ---
+                    const diverRadius = Math.min(20, height * 0.03);
+                    const dx = fish.x - (width * 0.2);
+                    const dy = fish.y - state.diverY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < diverRadius + 15) {
+                        state.fishes.splice(i, 1);
+                        state.score += (ageGroup === 'child' ? 4 : 2); // Extra points (Double for children)
+                        setScore(state.score);
+                        audioController.playBite();
+                        continue;
+                    }
+
                     if (fish.x < -50) state.fishes.splice(i, 1);
                 }
 
@@ -406,7 +425,8 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
             }
 
             // Fish
-            ctx.font = '24px serif';
+            ctx.fillStyle = 'white';
+            ctx.font = `${Math.min(30, width * 0.05)}px serif`;
             state.fishes.forEach(fish => {
                 ctx.fillText(fish.type, fish.x, fish.y);
             });
