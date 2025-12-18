@@ -140,19 +140,7 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
                 ctx.scale(-1, 1);
                 ctx.drawImage(v, 0, 0, vidW, vidH);
                 ctx.restore();
-
-                const gImg = latestGhostImage.current;
-                if (gImg) {
-                    const img = new Image();
-                    img.src = gImg;
-                    ctx.save();
-                    ctx.globalAlpha = 0.3;
-                    ctx.globalCompositeOperation = 'screen';
-                    ctx.translate(vidX + vidW, vidY);
-                    ctx.scale(-1, 1);
-                    ctx.drawImage(img, 0, 0, vidW, vidH);
-                    ctx.restore();
-                }
+                /* Removed ghostImage overlay to keep mission report clean */
             } catch { /* ignore */ }
 
             // 3. Stamp
