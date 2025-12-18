@@ -64,6 +64,13 @@ export const allBlogPosts: BlogPostMeta[] = [
     description: 'How to build Twin Towers out of puzzle mats - a fun activity for kids.'
   },
   {
+    slug: '/blog/computer/dibh-diver',
+    title: 'DIBH Diver',
+    category: 'Computer',
+    image: '/images/blog/dibh-diver.png',
+    description: 'A breath-controlled underwater obstacle game that calibrates your normal and deep breaths with OpenCV before you dive.'
+  },
+  {
     slug: '/blog/computer/number-playground',
     title: 'Number Playground',
     category: 'Computer',

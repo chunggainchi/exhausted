@@ -19,6 +19,14 @@ export const metadata: Metadata = {
 // Placeholder for posts in this category
 const computerPosts: BlogPostCardProps[] = [
   {
+    title: "DIBH Diver",
+    subtitle: "(breath-controlled obstacle dive)",
+    description: "A breath-controlled underwater obstacle game that calibrates your normal and deep breaths with OpenCV before you dive.",
+    imageUrl: "/images/blog/dibh-diver.png",
+    href: "/blog/computer/dibh-diver",
+    imageAlt: "DIBH Diver breathing-controlled game preview"
+  },
+  {
     title: "Solar System Simulation",
     subtitle: "(a realistic, calm space travel)",
     description: "A realistic 3D solar system simulation with accurate physics and time control. Perfect for explaining space to kids or just zoning out.",
