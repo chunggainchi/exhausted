@@ -138,7 +138,27 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
                 ctx.save();
                 ctx.translate(vidX + vidW, vidY);
                 ctx.scale(-1, 1);
-                ctx.drawImage(v, 0, 0, vidW, vidH);
+
+                // --- OBJECT-COVER MAPPING ---
+                const vW = v.videoWidth;
+                const vH = v.videoHeight;
+                const canvasAspect = vidW / vidH;
+                const videoAspect = vW / vH;
+
+                let sx, sy, sWidth, sHeight;
+                if (videoAspect > canvasAspect) {
+                    sHeight = vH;
+                    sWidth = vH * canvasAspect;
+                    sx = (vW - sWidth) / 2;
+                    sy = 0;
+                } else {
+                    sWidth = vW;
+                    sHeight = vW / canvasAspect;
+                    sx = 0;
+                    sy = (vH - sHeight) / 2;
+                }
+
+                ctx.drawImage(v, sx, sy, sWidth, sHeight, 0, 0, vidW, vidH);
                 ctx.restore();
                 /* Removed ghostImage overlay to keep mission report clean */
             } catch { /* ignore */ }
@@ -280,11 +300,11 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
                 state.frameCount++;
 
                 // Difficulty scales speed
-                const difficultyLevel = Math.floor(state.score / 10);
+                const difficultyLevel = Math.floor(state.score / 5);
 
-                // Adjust Speed based on width to keep feel consistent
-                const baseSpeed = 4 * (width < 600 ? 1.5 : 1);
-                state.speed = baseSpeed * Math.pow(1.1, difficultyLevel);
+                // Start at 3, increase gradually. No longer multiplier on mobile to avoid 'impossible' speed.
+                const baseSpeed = 3;
+                state.speed = baseSpeed * Math.pow(1.07, difficultyLevel);
 
                 // Spawn Obstacles
                 if (state.frameCount >= state.nextSpawnFrame) {
@@ -511,7 +531,7 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
                     </div>
 
                     <p className="mt-3 md:mt-4 text-[#8da9c4] text-[10px] md:text-xs uppercase tracking-widest text-center">
-                        Beat my high score of {score}m
+                        Who can beat your {score}m highscore?
                     </p>
                 </div>
             )}
