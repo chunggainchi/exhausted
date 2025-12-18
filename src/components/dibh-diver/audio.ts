@@ -4,17 +4,39 @@ class AudioController {
   private ambientOsc: OscillatorNode | null = null;
   private ambientGain: GainNode | null = null;
   private ambientFilter: BiquadFilterNode | null = null;
+  private initialized: boolean = false;
 
   init() {
     if (typeof window === 'undefined') return;
-    if (!this.ctx) {
-      this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      this.masterGain = this.ctx.createGain();
-      this.masterGain.gain.value = 0.5;
-      this.masterGain.connect(this.ctx.destination);
+    if (this.initialized) return;
+    try {
+      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (AudioContextClass) {
+        this.ctx = new AudioContextClass();
+        this.initialized = true;
+        this.masterGain = this.ctx.createGain();
+        this.masterGain.gain.value = 0.5;
+        this.masterGain.connect(this.ctx.destination);
+      }
+    } catch {
+      console.warn("AudioContext not supported");
     }
-    if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
+  }
+
+  private async resume() {
+    if (this.ctx && this.ctx.state === 'suspended') {
+      await this.ctx.resume();
+    }
+  }
+
+  private async loadSound(url: string): Promise<AudioBuffer | null> {
+    if (!this.ctx) return null;
+    try {
+      const resp = await fetch(url);
+      const arrayBuf = await resp.arrayBuffer();
+      return await this.ctx.decodeAudioData(arrayBuf);
+    } catch {
+      return null;
     }
   }
 
@@ -29,17 +51,17 @@ class AudioController {
     const vol = this.ctx.createGain();
 
     osc.type = 'sawtooth';
-    osc.frequency.value = 35; 
-    
+    osc.frequency.value = 35;
+
     filter.type = 'lowpass';
     filter.frequency.value = 150;
     filter.Q.value = 1;
 
     lfo.type = 'sine';
     lfo.frequency.value = 0.1;
-    lfoGain.gain.value = 80; 
+    lfoGain.gain.value = 80;
 
-    vol.gain.value = 0.15; 
+    vol.gain.value = 0.15;
 
     lfo.connect(lfoGain);
     lfoGain.connect(filter.frequency);
@@ -62,38 +84,33 @@ class AudioController {
         this.ambientOsc.stop();
         this.ambientOsc.disconnect();
         this.ambientGain?.disconnect();
-      } catch (e) {}
+      } catch { }
       this.ambientOsc = null;
     }
   }
 
   playSonar() {
     this.init();
-    if (!this.ctx || !this.masterGain) return;
-
-    const t = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(800, t);
-    osc.frequency.exponentialRampToValueAtTime(1200, t + 0.1);
-
-    gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(0.3, t + 0.05);
-    gain.gain.exponentialRampToValueAtTime(0.01, t + 1.5); 
-
-    osc.connect(gain);
-    gain.connect(this.masterGain);
-
-    osc.start(t);
-    osc.stop(t + 1.5);
+    this.resume();
+    const osc = this.ctx?.createOscillator();
+    const gain = this.ctx?.createGain();
+    if (osc && gain && this.ctx) {
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1200, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.4);
+      gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.4);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.4);
+    }
   }
 
   playBubble(timeOffset = 0) {
     this.init();
     if (!this.ctx || !this.masterGain) return;
-    
+
     const t = this.ctx.currentTime + timeOffset;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
@@ -116,26 +133,22 @@ class AudioController {
 
   playCrash() {
     this.init();
-    if (!this.ctx || !this.masterGain) return;
+    const gain = this.ctx?.createGain();
+    if (gain && this.ctx) {
+      gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+      // noise simulation
+      for (let i = 0; i < 5; i++) {
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(100 + Math.random() * 200, this.ctx.currentTime);
+        osc.connect(gain);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.2);
+      }
+      gain.connect(this.ctx.destination);
+    }
 
-    const t = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(150, t);
-    osc.frequency.exponentialRampToValueAtTime(10, t + 0.5);
-
-    gain.gain.setValueAtTime(0.8, t);
-    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
-
-    osc.connect(gain);
-    gain.connect(this.masterGain);
-
-    osc.start(t);
-    osc.stop(t + 0.5);
-
-    for(let i = 0; i < 5; i++) {
+    for (let i = 0; i < 5; i++) {
       this.playBubble(i * 0.15 + 0.1);
     }
   }
@@ -143,14 +156,14 @@ class AudioController {
   playClick() {
     this.init();
     if (!this.ctx || !this.masterGain) return;
-    
+
     const t = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
 
     osc.type = 'square';
     osc.frequency.setValueAtTime(400, t);
-    
+
     gain.gain.setValueAtTime(0.1, t);
     gain.gain.exponentialRampToValueAtTime(0.01, t + 0.05);
 

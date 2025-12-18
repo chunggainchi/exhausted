@@ -3,14 +3,32 @@ export interface CVPoint {
   y: number;
 }
 
+export interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface Size {
+  width: number;
+  height: number;
+}
+
+export interface TermCriteria {
+  type: number;
+  maxCount: number;
+  epsilon: number;
+}
+
 export interface Mat {
   rows: number;
   cols: number;
-  data: any;
+  data: Uint8Array;
   data32F: Float32Array;
   delete: () => void;
   copyTo: (dest: Mat) => void;
-  roi: (rect: any) => Mat;
+  roi: (rect: Rect) => Mat;
 }
 
 export interface VideoCapture {
@@ -18,10 +36,10 @@ export interface VideoCapture {
 }
 
 export interface OpenCV {
-  Mat: any;
-  VideoCapture: any;
-  Size: any;
-  TermCriteria: any;
+  Mat: new (rows?: number, cols?: number, type?: number) => Mat;
+  VideoCapture: new (videoSource: HTMLVideoElement | string) => VideoCapture;
+  Size: new (width: number, height: number) => Size;
+  TermCriteria: new (type: number, count: number, epsilon: number) => TermCriteria;
   CV_8UC1: number;
   CV_8UC4: number;
   CV_32FC2: number;
@@ -35,9 +53,9 @@ export interface OpenCV {
     nextPts: Mat,
     status: Mat,
     err: Mat,
-    winSize: any,
+    winSize: Size,
     maxLevel: number,
-    criteria: any
+    criteria: TermCriteria
   ) => void;
   cvtColor: (src: Mat, dst: Mat, code: number) => void;
 }
