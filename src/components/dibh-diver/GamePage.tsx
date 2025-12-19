@@ -40,6 +40,8 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
     const latestGhostImage = useRef(ghostImage);
     const latestUserName = useRef(userName);
     const latestAgeGroup = useRef(ageGroup);
+    const diverSprite = useRef<HTMLImageElement | null>(null);
+    const childSprite = useRef<HTMLImageElement | null>(null);
 
     useEffect(() => { latestTrackingVal.current = trackingVal; }, [trackingVal]);
     useEffect(() => { latestCalibMin.current = calibMin; }, [calibMin]);
@@ -47,6 +49,20 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
     useEffect(() => { latestGhostImage.current = ghostImage; }, [ghostImage]);
     useEffect(() => { latestUserName.current = userName; }, [userName]);
     useEffect(() => { latestAgeGroup.current = ageGroup; }, [ageGroup]);
+
+    useEffect(() => {
+        const img = new Image();
+        img.src = '/images/games/dibh-diver/diver.png';
+        img.onload = () => {
+            diverSprite.current = img;
+        };
+
+        const childImg = new Image();
+        childImg.src = '/images/games/dibh-diver/baby diver.png';
+        childImg.onload = () => {
+            childSprite.current = childImg;
+        };
+    }, []);
 
     useEffect(() => {
         if (videoPreviewRef.current && mediaStream) {
@@ -420,10 +436,14 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
             // 3. RENDERING
             ctx.clearRect(0, 0, width, height);
 
-            // Background
+            // Background (Darkens with depth)
+            const darknessFactor = Math.max(0.1, 1.0 - (state.score * 0.01)); // 10% darker every 10m = 1% per meter
+            const topColor = `hsl(201, 100%, ${36 * darknessFactor}%)`;
+            const bottomColor = `hsl(214, 100%, ${27 * darknessFactor}%)`;
+
             const grad = ctx.createLinearGradient(0, 0, 0, height);
-            grad.addColorStop(0, '#0077b6');
-            grad.addColorStop(1, '#023e8a');
+            grad.addColorStop(0, topColor);
+            grad.addColorStop(1, bottomColor);
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, width, height);
 
@@ -470,73 +490,65 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
             ctx.translate(diverXPos, state.diverY);
 
             if (currentAge === 'child') {
-                // --- CUTE YELLOW SUBMARINE FOR KIDS ---
-                ctx.rotate(Math.sin(state.frameCount * 0.05) * 0.1); // Gentle rocking
-                const s = diverRadius / 15;
-                ctx.scale(s, s);
-
-                // Main Body
-                ctx.fillStyle = '#ff9f1c'; // Bright Orange/Yellow
-                ctx.beginPath();
-                ctx.ellipse(0, 0, 25, 18, 0, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.strokeStyle = '#0d2b45';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-
-                // Porthole
-                ctx.fillStyle = '#4cc9f0';
-                ctx.beginPath();
-                ctx.arc(5, -2, 8, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
-
-                // Porthole Shine
-                ctx.fillStyle = 'rgba(255,255,255,0.5)';
-                ctx.beginPath();
-                ctx.arc(3, -4, 3, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Periscope
-                ctx.fillStyle = '#e76f51';
-                ctx.fillRect(-5, -25, 4, 10);
-                ctx.fillRect(-5, -25, 10, 4);
-
-                // Propeller (animated)
-                ctx.save();
-                ctx.translate(-25, 0);
-                ctx.rotate(state.frameCount * 0.5);
-                ctx.fillStyle = '#2a9d8f';
-                ctx.fillRect(-2, -8, 4, 16);
-                ctx.fillRect(-8, -2, 16, 4);
-                ctx.restore();
+                // --- CHILD MODE HERO ---
+                if (childSprite.current) {
+                    ctx.rotate(Math.sin(state.frameCount * 0.05) * 0.1); // Gentle rocking
+                    const img = childSprite.current;
+                    const aspect = img.width / img.height;
+                    const drawW = diverRadius * 3.5;
+                    const drawH = drawW / aspect;
+                    ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+                } else {
+                    // Fallback to vector submarine (Simplified)
+                    ctx.rotate(Math.sin(state.frameCount * 0.05) * 0.1);
+                    const s = diverRadius / 15;
+                    ctx.scale(s, s);
+                    ctx.fillStyle = '#ff9f1c';
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, 25, 18, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#0d2b45';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
             } else {
-                // --- STANDARD ADULT DIVER ---
-                ctx.rotate(0.1);
-                const scale = diverRadius / 15;
-                ctx.scale(scale, scale);
-                ctx.fillStyle = '#f4a261';
-                ctx.fillRect(-15, -10, 30, 20);
-                ctx.fillStyle = '#264653';
-                ctx.fillRect(-15, 0, 30, 15);
-                ctx.fillStyle = '#4cc9f0';
-                ctx.fillRect(5, -8, 12, 8);
-                ctx.strokeStyle = '#000';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(5, -8, 12, 8);
-                ctx.strokeStyle = '#e76f51';
-                ctx.lineWidth = 4;
-                ctx.beginPath();
-                ctx.moveTo(0, -10);
-                ctx.lineTo(0, -20);
-                ctx.lineTo(-10, -25);
-                ctx.stroke();
-                ctx.fillStyle = '#e9c46a';
-                ctx.beginPath();
-                ctx.moveTo(-15, 5);
-                ctx.lineTo(-25, 0);
-                ctx.lineTo(-25, 10);
-                ctx.fill();
+                // --- IMAGE-BASED ADULT DIVER ---
+                if (diverSprite.current) {
+                    ctx.rotate(0.1);
+                    const img = diverSprite.current;
+                    const aspect = img.width / img.height;
+                    // base width on diverRadius, adjust height by aspect ratio
+                    const drawW = diverRadius * 3.5;
+                    const drawH = drawW / aspect;
+                    ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+                } else {
+                    // Fallback to vector if sprite not loaded
+                    ctx.rotate(0.1);
+                    const scale = diverRadius / 15;
+                    ctx.scale(scale, scale);
+                    ctx.fillStyle = '#f4a261';
+                    ctx.fillRect(-15, -10, 30, 20);
+                    ctx.fillStyle = '#264653';
+                    ctx.fillRect(-15, 0, 30, 15);
+                    ctx.fillStyle = '#4cc9f0';
+                    ctx.fillRect(5, -8, 12, 8);
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(5, -8, 12, 8);
+                    ctx.strokeStyle = '#e76f51';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -10);
+                    ctx.lineTo(0, -20);
+                    ctx.lineTo(-10, -25);
+                    ctx.stroke();
+                    ctx.fillStyle = '#e9c46a';
+                    ctx.beginPath();
+                    ctx.moveTo(-15, 5);
+                    ctx.lineTo(-25, 0);
+                    ctx.lineTo(-25, 10);
+                    ctx.fill();
+                }
             }
             ctx.restore();
 

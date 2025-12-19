@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import BreathingTracker from './BreathingTracker';
 import GamePage from '@/components/dibh-diver/GamePage';
 import Onboarding from '@/components/dibh-diver/Onboarding';
@@ -32,6 +32,8 @@ export default function DibhDiverGame() {
   // Store stream to pass to GamePage for thumbnail
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [ghostImage, setGhostImage] = useState<string | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const mainContainerRef = useRef<HTMLDivElement>(null);
 
   // Load User Name on Mount
   useEffect(() => {
@@ -44,6 +46,26 @@ export default function DibhDiverGame() {
       setAgeGroup(storedAge);
     }
   }, []);
+
+  // Fullscreen effect
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!mainContainerRef.current) return;
+    if (!document.fullscreenElement) {
+      mainContainerRef.current.requestFullscreen().catch((err) => {
+        console.error(`Error attempting to enable full-screen mode: ${err instanceof Error ? err.message : String(err)}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
 
   const handleTrackingUpdate = (val: number) => {
     setGlobalTrackingVal(val);
@@ -110,16 +132,19 @@ export default function DibhDiverGame() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0d2b45] text-[#ffecd1] font-sans selection:bg-[#ff9f1c] selection:text-[#0d2b45] overflow-hidden relative">
+    <div ref={mainContainerRef} className="min-h-screen bg-[#0d2b45] text-[#ffecd1] font-sans selection:bg-[#ff9f1c] selection:text-[#0d2b45] overflow-hidden relative">
 
       {/* HEADER / NAVBAR */}
       <nav className="border-b-4 border-[#203c56] bg-[#0d2b45] h-14 md:h-16 flex items-center px-4 md:px-6 justify-between shadow-xl relative z-50">
         <div className="flex items-center gap-3 cursor-pointer group" onClick={() => currentPage !== 'intro' && handleExit()}>
           {/* LOGO: Breathing Animation + Orange/Blue Theme */}
           <div className="relative">
-            <div className="absolute inset-0 bg-[#4cc9f0] rounded-full blur opacity-20 group-hover:opacity-40 transition-opacity animate-pulse"></div>
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-[#ff9f1c] to-[#e85d04] border-2 border-[#4cc9f0] rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(255,159,28,0.3)] animate-[bounce_3s_infinite]">
-              <span className="text-xl md:text-2xl drop-shadow-md transform group-hover:scale-110 transition-transform">🤿</span>
+            <div className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center relative z-10 group-hover:scale-110 transition-transform animate-[bounce_3s_infinite]">
+              <img
+                src="/images/games/dibh-diver/dibh logo.png"
+                alt="DIBH Diver Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
           </div>
 
@@ -145,6 +170,15 @@ export default function DibhDiverGame() {
               </span>
             </button>
           )}
+          {currentPage !== 'intro' && currentPage !== 'onboarding' && (
+            <button
+              onClick={toggleFullscreen}
+              className="hidden md:flex items-center justify-center w-10 h-10 rounded bg-[#163853] border-2 border-[#203c56] text-white hover:bg-[#203c56] transition-colors"
+              title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+            >
+              <span className="text-lg">{isFullscreen ? '✕' : '⛶'}</span>
+            </button>
+          )}
           {isTracking && currentPage === 'game' && <div className="w-2 h-2 bg-[#ff9f1c] rounded-full animate-pulse shadow-[0_0_8px_#ff9f1c]"></div>}
         </div>
       </nav>
@@ -167,12 +201,13 @@ export default function DibhDiverGame() {
             <div className="text-center animate-fade-in-up z-10 w-full max-w-4xl flex flex-col items-center">
 
               {/* BREATHING LOGO ANIMATION */}
-              <div className="mb-6 md:mb-8 relative">
-                <div className="absolute inset-0 bg-[#4cc9f0] rounded-full blur-xl opacity-20 animate-pulse"></div>
-                <div className="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br from-[#ff9f1c] to-[#e85d04] rounded-full flex items-center justify-center border-4 border-[#4cc9f0] shadow-2xl animate-[ping_4s_cubic-bezier(0,0,0.2,1)_infinite]">
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-5xl md:text-7xl drop-shadow-lg z-10">🤿</span>
+              <div className="mb-6 md:mb-8 relative flex items-center justify-center">
+                <div className="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center relative z-10 animate-[ping_4s_cubic-bezier(0,0,0.2,1)_infinite]">
+                  <img
+                    src="/images/games/dibh-diver/dibh logo.png"
+                    alt="DIBH Diver Logo"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
               </div>
 
@@ -245,6 +280,16 @@ export default function DibhDiverGame() {
         )}
 
       </div>
+
+      {/* Desktop Footer Link */}
+      <a
+        href="https://exhaustedrocket.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-1 right-2 text-[10px] text-white/20 hover:text-[#4cc9f0]/60 z-[60] pointer-events-auto transition-colors font-mono uppercase tracking-widest hidden md:block"
+      >
+        Product of exhaustedrocket.com
+      </a>
     </div>
   );
 }
