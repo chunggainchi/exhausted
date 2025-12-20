@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${jostHeader.variable}`}>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${jostHeader.variable}`} suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
@@ -48,7 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         {/* End Google tag (gtag.js) */}
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         {/* <GoogleAnalytics gaId={GA_TRACKING_ID} /> */}{/* Removed */}
         <Analytics />

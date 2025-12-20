@@ -30,10 +30,4 @@ export const categories: Category[] = [
     href: '/blog/category/anatomy',
     slug: 'anatomy',
   },
-  {
-    title: 'AI',
-    imageUrl: '/images/categories/ai routing.webp',
-    href: '/blog/category/ai',
-    slug: 'ai',
-  },
 ]; 

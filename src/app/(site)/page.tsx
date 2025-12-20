@@ -5,9 +5,6 @@ import AboutSection from '@/components/AboutSection';
 import { allBlogPosts } from '@/lib/blogData';
 
 export default function HomePage() {
-  // Find the specific blog posts by slug
-  const kineticSandPost = allBlogPosts.find(post => post.slug === '/blog/anatomy/kinetic-sand-surgery');
-  
   // Define Trichobezoar Post
   let trichobezoarPost = allBlogPosts.find(post => post.slug === '/blog/anatomy/play-dough-surgery-trichobezoar-removal');
   if (!trichobezoarPost) {
@@ -60,125 +57,90 @@ export default function HomePage() {
         <div>// Category links or previews here</div>
       </section> */}
 
-      {/* Game Shortcuts Section */}
+      {/* Game Shortcuts Section - App Icon Style */}
       <section className="py-12 sm:py-16 w-full">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-light text-slate-600 tracking-tight text-center mb-8 sm:mb-12">
-            Quick simple fun to occupy your toddler:
+            Quick games:
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 sm:gap-8 justify-center">
-            {/* Tile 1: Toddler Types */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8 sm:gap-8 max-w-4xl mx-auto">
+            {/* Solar System Sim */}
             <Link
-              href="/games/toddler-types.html"
-              className="block w-full rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300 ease-in-out bg-card group"
+              href="/solar"
+              className="flex flex-col items-center group"
             >
-              <div className="relative aspect-[1/1]">
+              <div className="relative w-28 h-28 sm:w-40 sm:h-40 mb-3 group-hover:-translate-y-1 transition-all duration-300">
                 <Image
-                  src="/images/blog/typing.webp"
-                  alt="Toddler Types Game Screenshot"
+                  src="/images/shortcuts/solar-system.webp"
+                  alt="Solar System Sim"
                   fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  unoptimized={true} // Added for static export if not globally configured
+                  className="object-contain"
+                  unoptimized={true}
                 />
               </div>
-              <div className="p-5">
-                <h3 className="text-xl font-semibold text-card-foreground text-center">
-                  Baby Typing Game
-                </h3>
-              </div>
+              <h3 className="text-sm sm:text-base font-medium text-slate-600 text-center">
+                Solar System Sim
+              </h3>
             </Link>
 
-            {/* Tile 2: Number Playground */}
+            {/* DIBH Diver */}
+            <Link
+              href="/dibh-diver"
+              className="flex flex-col items-center group"
+            >
+              <div className="relative w-28 h-28 sm:w-40 sm:h-40 mb-3 group-hover:-translate-y-1 transition-all duration-300">
+                <Image
+                  src="/images/shortcuts/dibh-diver.webp"
+                  alt="DIBH Diver"
+                  fill
+                  className="object-contain"
+                  unoptimized={true}
+                />
+              </div>
+              <h3 className="text-sm sm:text-base font-medium text-slate-600 text-center">
+                DIBH Diver
+              </h3>
+            </Link>
+
+            {/* Sudoku */}
+            <Link
+              href="/sudoku"
+              className="flex flex-col items-center group"
+            >
+              <div className="relative w-28 h-28 sm:w-40 sm:h-40 mb-3 group-hover:-translate-y-1 transition-all duration-300">
+                <Image
+                  src="/images/shortcuts/kids-sudoku.webp"
+                  alt="Sudoku for Kids"
+                  fill
+                  className="object-contain"
+                  unoptimized={true}
+                />
+              </div>
+              <h3 className="text-sm sm:text-base font-medium text-slate-600 text-center">
+                Sudoku for Kids
+              </h3>
+            </Link>
+
+            {/* Number Learning Playground */}
             <Link
               href="https://vps.heidekrueger.com/projects/numbers/"
               target="_blank"
               rel="noopener noreferrer"
-              className="block w-full rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300 ease-in-out bg-card group"
+              className="flex flex-col items-center group"
             >
-              <div className="relative aspect-[1/1]">
+              <div className="relative w-28 h-28 sm:w-40 sm:h-40 mb-3 group-hover:-translate-y-1 transition-all duration-300">
                 <Image
-                  src="/images/blog/numbers.webp"
-                  alt="Number Playground Game Screenshot"
+                  src="/images/shortcuts/numbers.webp"
+                  alt="Number Learning Playground"
                   fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  unoptimized={true} // Added for static export if not globally configured
+                  className="object-contain"
+                  unoptimized={true}
                 />
               </div>
-              <div className="p-5">
-                <h3 className="text-xl font-semibold text-card-foreground text-center">
-                  Number Learning Playground
-                </h3>
-              </div>
+              <h3 className="text-sm sm:text-base font-medium text-slate-600 text-center leading-tight">
+                Number Playground
+              </h3>
             </Link>
-
-            {/* Tile 3: Kinetic Sand Surgery Post */}
-            {kineticSandPost && (
-              <Link
-                href={kineticSandPost.slug}
-                className="block w-full rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300 ease-in-out bg-card group"
-              >
-                <div className="relative aspect-[1/1]">
-                  <Image
-                    src={kineticSandPost.image || '/images/placeholder.webp'} // Fallback image
-                    alt={kineticSandPost.title}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    unoptimized={true}
-                  />
-                </div>
-                <div className="p-5">
-                  <h3 className="text-xl font-semibold text-card-foreground text-center">
-                    {kineticSandPost.title}
-                  </h3>
-                </div>
-              </Link>
-            )}
-
-            {/* Tile 4: Play-Dough Surgery Trichobezoar Post */}
-            {trichobezoarPost && (
-              <Link
-                href={trichobezoarPost.slug}
-                className="block w-full rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300 ease-in-out bg-card group"
-              >
-                <div className="relative aspect-[1/1]">
-                  <Image
-                    src={trichobezoarPost.image || '/images/placeholder.webp'} // Fallback image
-                    alt={trichobezoarPost.title}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    unoptimized={true}
-                  />
-                </div>
-                <div className="p-5">
-                  <h3 className="text-xl font-semibold text-card-foreground text-center">
-                    Play-Dough Surgery
-                  </h3>
-                </div>
-              </Link>
-            )}
-
-            {/* Tile 5: Basketball Arcade Post */}
-            {basketballArcadePost && (
-              <Link
-                href={basketballArcadePost.slug}
-                className="block w-full rounded-xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow duration-300 ease-in-out bg-card group"
-              >
-                <div className="relative aspect-[1/1]">
-                  <Image
-                    src={basketballArcadePost.image || '/images/placeholder.webp'} // Fallback image
-                    alt={basketballArcadePost.title}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    unoptimized={true}
-                  />
-                </div>
-                <div className="p-5">
-                  <h3 className="text-xl font-semibold text-card-foreground text-center">
-                    {basketballArcadePost.title}
-                  </h3>
-                </div>
-              </Link>
-            )}
           </div>
         </div>
       </section>

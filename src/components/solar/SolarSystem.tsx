@@ -8,6 +8,13 @@ import * as THREE from 'three';
 import { Moon as MoonIcon, RotateCcw } from 'lucide-react';
 
 // --- TYPES ---
+interface InnerLayer {
+    name: string;
+    radiusRatio: number;
+    color: string;
+    description: string;
+}
+
 interface PlanetData {
     id: string;
     name: string;
@@ -36,6 +43,7 @@ interface PlanetData {
     // Dynamic props for display
     useRealDist?: boolean;
     useRealSize?: boolean;
+    innerLayers?: InnerLayer[];
 }
 
 interface MoonData {
@@ -142,7 +150,14 @@ const PLANETS: PlanetData[] = [
         moonsCount: 1,
         realSize: "1x Earth",
         dayLength: "24 Hours",
-        moons: [{ size: 0.45, distance: 3.5, speed: 2.66e-6, color: '#DDDDDD' }]
+        moons: [{ size: 0.45, distance: 3.5, speed: 2.66e-6, color: '#DDDDDD' }],
+        innerLayers: [
+            { name: "Inner Core", radiusRatio: 0.19, color: "#FFFFFF", description: "Solid iron and nickel sphere at the center. Extremely hot and under immense pressure." },
+            { name: "Outer Core", radiusRatio: 0.55, color: "#FFD700", description: "Liquid iron and nickel. Its movement creates Earth's magnetic field." },
+            { name: "Lower Mantle", radiusRatio: 0.88, color: "#FF4500", description: "Solid rock that behaves like a very slow-moving liquid over long periods." },
+            { name: "Upper Mantle", radiusRatio: 0.99, color: "#8B0000", description: "Includes the asthenosphere and the bottom of the lithosphere." },
+            { name: "Crust", radiusRatio: 1.0, color: "#2233FF", description: "The thin, outermost layer where we live." }
+        ]
     },
     {
         id: 'mars',
@@ -184,7 +199,7 @@ const PLANETS: PlanetData[] = [
         orbitAU: 5.20,
         radiusMultiplier: 11.2,
         description: "The Biggest One.",
-        funFact: "It is the biggest planet but it has the shortest day. Its year is nearly 12 Earth years long. It is a gas giant with a thick atmosphere of hydrogen and helium, meaning that it has no solid surface. It is the protector of the Earth by pulling in/deflecting many comets and asteroids that would otherwise be heading towards Earth.",    
+        funFact: "It is the biggest planet but it has the shortest day. Its year is nearly 12 Earth years long. It is a gas giant with a thick atmosphere of hydrogen and helium, meaning that it has no solid surface. It is the protector of the Earth by pulling in/deflecting many comets and asteroids that would otherwise be heading towards Earth.",
         temp: "❄️❄️",
         moonsCount: 95,
         realSize: "11.2x Earth",
@@ -283,34 +298,34 @@ interface SaturnRingBand {
 export const SATURN_RING_BANDS: SaturnRingBand[] = [
     // Innermost dusty D ring: very faint
     { start: 0.0, end: 0.04, color: [150, 140, 130], opacity: 0.2, label: 'D Ring' },
-    
+
     // C Ring: Visible gold/grey structure
     { start: 0.04, end: 0.12, color: [160, 140, 100], opacity: 0.5, label: 'C Ring' },
-    
+
     // B Ring (Inner): Intense gold scattering
     { start: 0.12, end: 0.28, color: [220, 200, 150], opacity: 0.9, label: 'B Ring' },
     // B Ring (Mid): Maximum density
     { start: 0.28, end: 0.46, color: [200, 180, 130], opacity: 1.0, label: 'B Ring' },
     // B Ring (Outer): Fading slightly
     { start: 0.46, end: 0.58, color: [180, 160, 120], opacity: 0.85, label: 'B Ring' },
-    
+
     // Cassini Division: Dark but not empty (dusty)
     { start: 0.58, end: 0.62, color: [60, 60, 70], opacity: 0.3, label: 'Cassini Division' },
-    
+
     // A Ring: Bright gold/white
     { start: 0.62, end: 0.72, color: [210, 200, 170], opacity: 0.8, label: 'A Ring' },
     // A Ring Outer Edge
     { start: 0.72, end: 0.76, color: [180, 170, 160], opacity: 0.6, label: 'A Ring Outer' },
-    
+
     // F Ring: Sharp, bright white strand
     { start: 0.76, end: 0.77, color: [255, 255, 255], opacity: 1.0, label: 'F Ring' },
-    
+
     // Gap
     { start: 0.77, end: 0.82, color: [10, 20, 30], opacity: 0.0, label: '' },
-    
+
     // G Ring: Diffuse, starting to shift blue
     { start: 0.82, end: 0.88, color: [100, 150, 200], opacity: 0.4, label: 'G Ring' },
-    
+
     // E Ring: The massive blue halo (Enceladus plume)
     // Brighter color value needed because it's very diffuse
     { start: 0.88, end: 1.0, color: [60, 120, 255], opacity: 0.4, label: 'E Ring' }
@@ -410,7 +425,7 @@ const Sun: React.FC<{ useRealSize: boolean; viewMoonPhase?: boolean; simTimeRef:
     const texture = useTexture(`${TEXTURE_BASE}/Sun.jpg`);
 
     const size = SUN_SIZE; // Sun size is constant, planets scale relative to it
-    
+
     // Sun rotates once every ~25 days at equator
     // Earth rotates at 7.27e-5, Sun rotates at ~1/25 of that: ~2.9e-6
     const sunRotationSpeed = 2.9e-6;
@@ -470,7 +485,7 @@ const AsteroidBelt: React.FC<{ useRealDist: boolean; isPlaying: boolean; simTime
     // Real mode: Between 2.2 AU (66) and 3.2 AU (96).
     const count = 1500;
     const dummy = useMemo(() => new THREE.Object3D(), []);
-    
+
     // Orbital speed for asteroid belt (average distance ~2.7 AU)
     // Using Kepler's laws: speed ∝ 1/a^(3/2), so for 2.7 AU: ~4.5e-8
     const orbitalSpeed = 5e-8;
@@ -581,7 +596,7 @@ const Moon: React.FC<{ data: { size: number, distance: number, speed: number, co
     );
 };
 
-const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: string) => void; simTimeRef: React.MutableRefObject<number>; isPlaying: boolean; userLocation?: { lat: number; long: number } | null }> = ({ data, isFocused, onSelect, simTimeRef, userLocation }) => {
+const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: string) => void; simTimeRef: React.MutableRefObject<number>; isPlaying: boolean; userLocation?: { lat: number; long: number } | null; viewInnerLayers?: boolean; onHoverLayer?: (layer: InnerLayer | null) => void; currentHoveredLayerName: string | null }> = ({ data, isFocused, onSelect, simTimeRef, userLocation, viewInnerLayers, onHoverLayer, currentHoveredLayerName }) => {
     const meshRef = useRef<THREE.Mesh>(null);
     const orbitRef = useRef<THREE.Group>(null);
     const ringRef = useRef<THREE.Mesh>(null);
@@ -636,8 +651,9 @@ const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: st
     }, [isSaturn, data.size]);
 
     useEffect(() => {
+        if (!saturnRingData) return;
         return () => {
-            saturnRingData?.geometry.dispose();
+            saturnRingData.geometry.dispose();
         };
     }, [saturnRingData]);
 
@@ -672,19 +688,18 @@ const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: st
                     const tiltRad = THREE.MathUtils.degToRad(data.rotationAxisTilt);
                     // Tilt the rotation axis around X-axis
                     meshRef.current.rotation.x = tiltRad;
-                    
+
                     // For Uranus (spinning on its side ~98°), rotate around Z-axis after tilt
                     if (data.id === 'uranus') {
                         meshRef.current.rotation.z = time * data.rotationSpeed;
                         meshRef.current.rotation.y = 0;
                     } else {
                         // All other planets (including Venus with 177° tilt) rotate around Y-axis
-                        // Venus's 177° tilt already makes it retrograde, so positive speed is correct
                         meshRef.current.rotation.y = time * data.rotationSpeed;
                         meshRef.current.rotation.z = 0;
                     }
                 } else {
-                    // Planets without explicit tilt (shouldn't happen now, but fallback)
+                    // Planets without explicit tilt (fallback)
                     meshRef.current.rotation.x = 0;
                     meshRef.current.rotation.z = 0;
                     meshRef.current.rotation.y = time * data.rotationSpeed;
@@ -714,19 +729,20 @@ const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: st
                         {data.name}
                     </Text>
 
-                    <mesh 
+                    <mesh
                         ref={meshRef}
                         onClick={(e) => { e.stopPropagation(); onSelect(data.id); }}
                         onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }}
                         onPointerOut={() => { document.body.style.cursor = 'auto'; }}
                     >
-                        <sphereGeometry args={[data.size, 64, 64]} />
+                        <sphereGeometry args={[data.size, 64, 64, 0, (data.id === 'earth' && viewInnerLayers) ? Math.PI * 2 * (240 / 360) : Math.PI * 2]} />
                         <meshStandardMaterial
                             map={texture}
                             metalness={metalness}
                             roughness={roughness}
                             emissive={isFocused ? "#111111" : "#000000"}
                             emissiveIntensity={isFocused ? 0.2 : 0}
+                            side={(data.id === 'earth' && viewInnerLayers) ? THREE.DoubleSide : THREE.FrontSide}
                         />
                         {data.id === 'earth' && userLocation && (
                             <mesh position={[
@@ -741,9 +757,21 @@ const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: st
                         )}
                     </mesh>
 
+                    {/* Inner Layers - rendered as sibling with its own rotation handling */}
+                    {data.id === 'earth' && isFocused && viewInnerLayers && (
+                        <PlanetInnerLayers
+                            planetData={data}
+                            simTimeRef={simTimeRef}
+                            useRealSize={data.useRealSize || false}
+                            onHoverLayer={onHoverLayer}
+                            currentHoveredLayerName={currentHoveredLayerName || null}
+                        />
+                    )}
+
                     {isFocused && <pointLight intensity={1.5} distance={50} decay={2} color="#ffffff" />}
 
                     {(data.id === 'venus' || isGasGiant) && !isFocused && (
+
                         <mesh scale={[1.05, 1.05, 1.05]}>
                             <sphereGeometry args={[data.size, 32, 32]} />
                             <meshBasicMaterial
@@ -1091,6 +1119,73 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
     );
 };
 
+// --- Planet Inner Layers Visualization ---
+const PlanetInnerLayers: React.FC<{
+    planetData: PlanetData;
+    simTimeRef: React.MutableRefObject<number>;
+    useRealSize: boolean;
+    onHoverLayer?: (layer: InnerLayer | null) => void;
+    currentHoveredLayerName: string | null; // New prop to receive hovered state from parent
+}> = ({ planetData, simTimeRef, useRealSize, onHoverLayer, currentHoveredLayerName }) => {
+    const groupRef = useRef<THREE.Group>(null);
+    const { innerLayers } = planetData;
+    // Removed local state for highlighting, now controlled by parent via currentHoveredLayerName
+
+    const handleHover = (layer: InnerLayer | null) => {
+        if (onHoverLayer) onHoverLayer(layer);
+    };
+
+    // Match the planet's rotation
+    useFrame(() => {
+        if (groupRef.current && planetData.rotationAxisTilt !== undefined) {
+            const time = simTimeRef.current;
+            const tiltRad = THREE.MathUtils.degToRad(planetData.rotationAxisTilt);
+            groupRef.current.rotation.x = tiltRad;
+            groupRef.current.rotation.y = time * planetData.rotationSpeed;
+        }
+    });
+
+    if (!innerLayers) return null;
+
+    const size = useRealSize ? (SUN_SIZE / 109) * planetData.radiusMultiplier : planetData.size;
+
+    // 120 degree cutout means 240 degrees of the sphere is visible (360 - 120 = 240)
+    const FILL_ANGLE = Math.PI * 2 * (240 / 360);
+
+    return (
+        <group ref={groupRef}>
+            {innerLayers.map((layer, index) => {
+                const radius = size * layer.radiusRatio;
+                // Skip crust layer since main planet mesh handles it
+                if (layer.radiusRatio >= 1.0) return null;
+
+                const isHovered = currentHoveredLayerName === layer.name;
+                const isAnyHovered = currentHoveredLayerName !== null;
+
+                return (
+                    <mesh
+                        key={layer.name}
+                        onPointerOver={(e) => { e.stopPropagation(); handleHover(layer); }}
+                        onPointerOut={(e) => { e.stopPropagation(); handleHover(null); }}
+                        onClick={(e) => { e.stopPropagation(); handleHover(layer); }}
+                    >
+                        <sphereGeometry args={[radius, 64, 64, 0, FILL_ANGLE]} />
+                        <meshStandardMaterial
+                            color={layer.color}
+                            side={THREE.DoubleSide}
+                            // Make it glow brightly when hovered, dim otherwise
+                            emissive={layer.color}
+                            emissiveIntensity={isHovered ? 1.5 : (isAnyHovered ? 0.1 : (index === 0 ? 0.8 : (index === 1 ? 0.5 : 0.2)))}
+                            roughness={0.7}
+                            metalness={0.2}
+                        />
+                    </mesh>
+                );
+            })}
+        </group>
+    );
+};
+
 const SimulationController: React.FC<{ isPlaying: boolean, speedMultiplier: number, simTimeRef: React.MutableRefObject<number> }> = ({ isPlaying, speedMultiplier, simTimeRef }) => {
     useFrame((_state, delta) => {
         if (isPlaying) simTimeRef.current += delta * speedMultiplier;
@@ -1118,8 +1213,10 @@ const UI: React.FC<{
     onToggleSpeed: () => void;
     viewMoonPhase: boolean;
     onToggleMoonPhase: () => void;
+    viewInnerLayers: boolean;
+    onToggleInnerLayers: () => void;
     isFullscreen: boolean;
-}> = ({ focusedId, onSelect, isPlaying, onTogglePlay, showInfo, onToggleInfo, onToggleFullscreen, useRealDist, onToggleRealDist, useRealSize, onToggleRealSize, showLocation, onToggleLocation, isMusicOn, onToggleMusic, simSpeed, onToggleSpeed, viewMoonPhase, onToggleMoonPhase, isFullscreen }) => {
+}> = ({ focusedId, onSelect, isPlaying, onTogglePlay, showInfo, onToggleInfo, onToggleFullscreen, useRealDist, onToggleRealDist, useRealSize, onToggleRealSize, showLocation, onToggleLocation, isMusicOn, onToggleMusic, simSpeed, onToggleSpeed, viewMoonPhase, onToggleMoonPhase, viewInnerLayers, onToggleInnerLayers, isFullscreen }) => {
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [hoveredInfo, setHoveredInfo] = useState<string | null>(null);
     const infoPanelRef = useRef<HTMLDivElement>(null);
@@ -1289,6 +1386,16 @@ const UI: React.FC<{
                                     <MoonIcon size={16} className={viewMoonPhase ? "fill-current" : ""} />
                                 </button>
                             )}
+                            {focusedId === 'earth' && (
+                                <button
+                                    onClick={onToggleInnerLayers}
+                                    onMouseEnter={() => setHoveredInfo(viewInnerLayers ? "Hide Earth Inner Layers" : "View Earth Inner Layers (L)")}
+                                    onMouseLeave={() => setHoveredInfo(null)}
+                                    className={`${viewInnerLayers ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/10 hover:text-white`}
+                                >
+                                    <span className="text-sm">🌍</span>
+                                </button>
+                            )}
                             <button
                                 onClick={() => { audioService.playClick(); onTogglePlay(); }}
                                 onMouseEnter={() => setHoveredInfo("Pause/Resume Time (Space)")}
@@ -1429,6 +1536,14 @@ const UI: React.FC<{
                                     </button>
                                 )}
 
+                                {/* Earth Inner Layers - Dedicated Button */}
+                                {focusedId === 'earth' && (
+                                    <button onClick={onToggleInnerLayers} className={`w-full py-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${viewInnerLayers ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                                        <span className="text-lg">🌍</span>
+                                        <span className="text-sm font-medium">Earth Inner Layers</span>
+                                    </button>
+                                )}
+
                                 {/* Location & Audio */}
                                 <div className="grid grid-cols-2 gap-2">
                                     <button onClick={onToggleLocation} className={`py-3 rounded-xl border transition-all ${showLocation ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
@@ -1523,8 +1638,10 @@ export default function SolarSystem() {
     const [isMusicOn, setIsMusicOn] = useState(true);
     const [simSpeed, setSimSpeed] = useState(86400); // Default 1 Day/s
     const [viewMoonPhase, setViewMoonPhase] = useState(false);
+    const [viewInnerLayers, setViewInnerLayers] = useState(false);
     const [zoomSignal, setZoomSignal] = useState(0);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [hoveredLayer, setHoveredLayer] = useState<InnerLayer | null>(null);
     const simTimeRef = useRef(0);
 
     // Audio Drone
@@ -1621,6 +1738,17 @@ export default function SolarSystem() {
             } else if (e.key === 'm' || e.key === 'M') {
                 e.preventDefault();
                 setIsMusicOn(m => !m);
+            } else if (e.key === 'l' || e.key === 'L') {
+                e.preventDefault();
+                if (focusedId === 'earth') {
+                    setViewInnerLayers(v => {
+                        if (!v) {
+                            setViewMoonPhase(false); // Turn off moon phase when enabling inner layers
+                            setSimSpeed(60); // Force speed to 1m/s
+                        }
+                        return !v;
+                    });
+                }
             }
         };
         window.addEventListener('keydown', handleKeyDown);
@@ -1681,6 +1809,9 @@ export default function SolarSystem() {
                                 simTimeRef={simTimeRef}
                                 isPlaying={isPlaying}
                                 userLocation={showLocation ? userLocation : null}
+                                viewInnerLayers={viewInnerLayers}
+                                onHoverLayer={setHoveredLayer}
+                                currentHoveredLayerName={hoveredLayer?.name || null}
                             />
                         </PlanetErrorBoundary>
                     ))}
@@ -1712,9 +1843,31 @@ export default function SolarSystem() {
                 useRealSize={useRealSize}
                 onToggleRealSize={() => setUseRealSize(!useRealSize)}
                 viewMoonPhase={viewMoonPhase}
-                onToggleMoonPhase={() => setViewMoonPhase(!viewMoonPhase)}
+                onToggleMoonPhase={() => {
+                    if (!viewMoonPhase) setViewInnerLayers(false); // Turn off inner layers when enabling moon phase
+                    setViewMoonPhase(!viewMoonPhase);
+                }}
+                viewInnerLayers={viewInnerLayers}
+                onToggleInnerLayers={() => {
+                    if (!viewInnerLayers) {
+                        setViewMoonPhase(false); // Turn off moon phase when enabling inner layers
+                        setSimSpeed(60); // Force speed to 1m/s
+                    }
+                    setViewInnerLayers(!viewInnerLayers);
+                }}
                 isFullscreen={isFullscreen}
             />
+
+            {/* Layer Info Overlay - Fixed position, top-left, outside 3D canvas */}
+            {viewInnerLayers && hoveredLayer && (
+                <div className="fixed top-20 left-4 z-50 bg-black/90 p-4 rounded-xl border border-white/20 text-white w-56 backdrop-blur-md shadow-2xl animate-in fade-in slide-in-from-left-2 duration-200">
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: hoveredLayer.color }} />
+                        <h3 className="font-bold text-sm" style={{ color: hoveredLayer.color }}>{hoveredLayer.name}</h3>
+                    </div>
+                    <p className="text-xs text-zinc-300 leading-relaxed">{hoveredLayer.description}</p>
+                </div>
+            )}
         </div>
     );
 }

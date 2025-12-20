@@ -10,17 +10,20 @@ import { categories } from '@/lib/categories'; // Import the centralized list
 export default function CategoryTiles() {
   return (
     <section className="my-12 w-full">
-      {/* Updated grid columns: 2 on mobile, 5 on large */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {categories.map((category) => (
-          <Link href={category.href} key={category.title} className="group block relative overflow-hidden rounded-lg shadow-md aspect-square">
+          <Link
+            href={category.href}
+            key={category.title}
+            className="group block relative overflow-hidden rounded-[2rem] shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 aspect-square"
+          >
             {/* Background Image */}
             <Image
               src={category.imageUrl}
               alt={`Category: ${category.title}`}
-              fill 
-              // Adjusted sizes based on new grid layout (2 or 5 columns)
-              sizes="(max-width: 1024px) 50vw, 20vw" 
+              fill
+              // Adjusted sizes based on new grid layout (2 or 4 columns)
+              sizes="(max-width: 1024px) 50vw, 25vw"
               className="object-cover transition-transform duration-300 group-hover:scale-105"
             />
             {/* Gradient Overlay at the bottom */}
