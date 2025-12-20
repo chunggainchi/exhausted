@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import React, { useState, useEffect, useRef } from 'react';
 import BreathingTracker from './BreathingTracker';
 import GamePage from '@/components/dibh-diver/GamePage';
@@ -140,10 +141,13 @@ export default function DibhDiverGame() {
           {/* LOGO: Breathing Animation + Orange/Blue Theme */}
           <div className="relative">
             <div className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center relative z-10 group-hover:scale-110 transition-transform animate-[bounce_3s_infinite]">
-              <img
+              <Image
                 src="/images/games/dibh-diver/dibh logo.png"
                 alt="DIBH Diver Logo"
-                className="w-full h-full object-contain"
+                fill
+                sizes="(max-width: 768px) 40px, 48px"
+                className="object-contain"
+                priority
               />
             </div>
           </div>
@@ -203,10 +207,13 @@ export default function DibhDiverGame() {
               {/* BREATHING LOGO ANIMATION */}
               <div className="mb-6 md:mb-8 relative flex items-center justify-center">
                 <div className="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center relative z-10 animate-[ping_4s_cubic-bezier(0,0,0.2,1)_infinite]">
-                  <img
+                  <Image
                     src="/images/games/dibh-diver/dibh logo.png"
                     alt="DIBH Diver Logo"
-                    className="w-full h-full object-contain"
+                    fill
+                    sizes="(max-width: 768px) 96px, 128px"
+                    className="object-contain"
+                    priority
                   />
                 </div>
               </div>

@@ -1,6 +1,7 @@
 
 'use client';
 
+import Image from 'next/image';
 import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useTexture, Text, OrbitControls, Stars, Loader, Preload } from '@react-three/drei';
@@ -152,12 +153,37 @@ const PLANETS: PlanetData[] = [
         dayLength: "24 Hours",
         moons: [{ size: 0.45, distance: 3.5, speed: 2.66e-6, color: '#DDDDDD' }],
         innerLayers: [
-            { name: "Inner Core", radiusRatio: 0.19, color: "#FFFFFF", description: "Solid iron and nickel sphere at the center. Extremely hot and under immense pressure." },
-            { name: "Outer Core", radiusRatio: 0.55, color: "#FFD700", description: "Liquid iron and nickel. Its movement creates Earth's magnetic field." },
-            { name: "Lower Mantle", radiusRatio: 0.88, color: "#FF4500", description: "Solid rock that behaves like a very slow-moving liquid over long periods." },
-            { name: "Upper Mantle", radiusRatio: 0.99, color: "#8B0000", description: "Includes the asthenosphere and the bottom of the lithosphere." },
-            { name: "Crust", radiusRatio: 1.0, color: "#2233FF", description: "The thin, outermost layer where we live." }
-        ]
+  { 
+    name: "Inner Core", 
+    radiusRatio: 0.19, 
+    color: "#FFFFFF", 
+    description: "🔥 Solid iron–nickel ball, ~1,220 km wide and ~5,400°C hot (almost Sun-level spicy). This ultra-dense jawbreaker spins quietly at Earth’s center and helps power our magnetic field." 
+  },
+  { 
+    name: "Outer Core", 
+    radiusRatio: 0.55, 
+    color: "#FFD700", 
+    description: "🧲🌊 A churning ocean of molten metal, ~2,300 km thick. This liquid dynamo sloshes around to create Earth’s magnetic shield—blocking solar chaos, lighting up auroras, and keeping compasses sane." 
+  },
+  { 
+    name: "Lower Mantle", 
+    radiusRatio: 0.88, 
+    color: "#FF4500", 
+    description: "🐢🔥 2,200 km of super-hot rock that *flows slower than fingernails grow*. It looks solid, moves like lava over millions of years, and quietly rearranges continents from below." 
+  },
+  { 
+    name: "Upper Mantle", 
+    radiusRatio: 0.99, 
+    color: "#8B0000", 
+    description: "🏄‍♂️🌍 The squishy engine room beneath the crust. Home to the asthenosphere—soft enough for tectonic plates to slide, crash, and stack mountains like geological LEGO." 
+  },
+  { 
+    name: "Crust", 
+    radiusRatio: 1.0, 
+    color: "#2233FF", 
+    description: "🍕🌊 Earth’s ultra-thin outer skin (5–70 km thick!). This crispy shell holds oceans, cities, forests—and *100% of human drama*." 
+  }
+]
     },
     {
         id: 'mars',
@@ -596,7 +622,7 @@ const Moon: React.FC<{ data: { size: number, distance: number, speed: number, co
     );
 };
 
-const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: string) => void; simTimeRef: React.MutableRefObject<number>; isPlaying: boolean; userLocation?: { lat: number; long: number } | null; viewInnerLayers?: boolean; onHoverLayer?: (layer: InnerLayer | null) => void; currentHoveredLayerName: string | null }> = ({ data, isFocused, onSelect, simTimeRef, userLocation, viewInnerLayers, onHoverLayer, currentHoveredLayerName }) => {
+const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: string) => void; simTimeRef: React.MutableRefObject<number>; isPlaying: boolean; userLocation?: { lat: number; long: number } | null; viewInnerLayers?: boolean; onHoverLayer?: (layer: InnerLayer | null) => void; currentHoveredLayerName: string | null; selectedLayerName?: string | null; onSelectLayer?: (layer: InnerLayer | null) => void; }> = ({ data, isFocused, onSelect, simTimeRef, userLocation, viewInnerLayers, onHoverLayer, currentHoveredLayerName, selectedLayerName, onSelectLayer }) => {
     const meshRef = useRef<THREE.Mesh>(null);
     const orbitRef = useRef<THREE.Group>(null);
     const ringRef = useRef<THREE.Mesh>(null);
@@ -765,6 +791,8 @@ const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: st
                             useRealSize={data.useRealSize || false}
                             onHoverLayer={onHoverLayer}
                             currentHoveredLayerName={currentHoveredLayerName || null}
+                            selectedLayerName={selectedLayerName || null}
+                            onSelectLayer={onSelectLayer}
                         />
                     )}
 
@@ -1125,14 +1153,23 @@ const PlanetInnerLayers: React.FC<{
     simTimeRef: React.MutableRefObject<number>;
     useRealSize: boolean;
     onHoverLayer?: (layer: InnerLayer | null) => void;
-    currentHoveredLayerName: string | null; // New prop to receive hovered state from parent
-}> = ({ planetData, simTimeRef, useRealSize, onHoverLayer, currentHoveredLayerName }) => {
+    currentHoveredLayerName: string | null;
+    selectedLayerName?: string | null;
+    onSelectLayer?: (layer: InnerLayer | null) => void;
+}> = ({ planetData, simTimeRef, useRealSize, onHoverLayer, currentHoveredLayerName, selectedLayerName, onSelectLayer }) => {
     const groupRef = useRef<THREE.Group>(null);
     const { innerLayers } = planetData;
-    // Removed local state for highlighting, now controlled by parent via currentHoveredLayerName
 
     const handleHover = (layer: InnerLayer | null) => {
         if (onHoverLayer) onHoverLayer(layer);
+    };
+    const handleSelect = (layer: InnerLayer) => {
+        if (!onSelectLayer) return;
+        if (selectedLayerName === layer.name) {
+            onSelectLayer(null);
+        } else {
+            onSelectLayer(layer);
+        }
     };
 
     // Match the planet's rotation
@@ -1148,6 +1185,7 @@ const PlanetInnerLayers: React.FC<{
     if (!innerLayers) return null;
 
     const size = useRealSize ? (SUN_SIZE / 109) * planetData.radiusMultiplier : planetData.size;
+    const crustLayer = innerLayers.find((layer) => layer.name === 'Crust');
 
     // 120 degree cutout means 240 degrees of the sphere is visible (360 - 120 = 240)
     const FILL_ANGLE = Math.PI * 2 * (240 / 360);
@@ -1156,35 +1194,177 @@ const PlanetInnerLayers: React.FC<{
         <group ref={groupRef}>
             {innerLayers.map((layer, index) => {
                 const radius = size * layer.radiusRatio;
-                // Skip crust layer since main planet mesh handles it
                 if (layer.radiusRatio >= 1.0) return null;
 
                 const isHovered = currentHoveredLayerName === layer.name;
-                const isAnyHovered = currentHoveredLayerName !== null;
+                const isSelected = selectedLayerName === layer.name;
+                const hasSelection = !!selectedLayerName || !!currentHoveredLayerName;
+                const isDimmed = hasSelection && !isSelected && !isHovered;
+                const baseGlow = index === 0 ? 0.8 : (index === 1 ? 0.5 : 0.2);
 
                 return (
-                    <mesh
+                    <InnerLayerShell
                         key={layer.name}
-                        onPointerOver={(e) => { e.stopPropagation(); handleHover(layer); }}
-                        onPointerOut={(e) => { e.stopPropagation(); handleHover(null); }}
-                        onClick={(e) => { e.stopPropagation(); handleHover(layer); }}
-                    >
-                        <sphereGeometry args={[radius, 64, 64, 0, FILL_ANGLE]} />
-                        <meshStandardMaterial
-                            color={layer.color}
-                            side={THREE.DoubleSide}
-                            // Make it glow brightly when hovered, dim otherwise
-                            emissive={layer.color}
-                            emissiveIntensity={isHovered ? 1.5 : (isAnyHovered ? 0.1 : (index === 0 ? 0.8 : (index === 1 ? 0.5 : 0.2)))}
-                            roughness={0.7}
-                            metalness={0.2}
-                        />
-                    </mesh>
+                        layer={layer}
+                        radius={radius}
+                        fillAngle={FILL_ANGLE}
+                        index={index}
+                        isHovered={isHovered}
+                        isSelected={isSelected}
+                        hasSelection={hasSelection}
+                        isDimmed={isDimmed}
+                        baseGlow={baseGlow}
+                        onHover={handleHover}
+                        onSelect={handleSelect}
+                    />
                 );
             })}
+            {crustLayer && (
+                <mesh
+                    onPointerOver={(e) => { e.stopPropagation(); handleHover(crustLayer); }}
+                    onPointerOut={(e) => {
+                        e.stopPropagation();
+                        handleHover(null);
+                        if (selectedLayerName === crustLayer.name && onSelectLayer && e.pointerType !== 'touch') {
+                            onSelectLayer(null);
+                        }
+                    }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleHover(crustLayer);
+                        handleSelect(crustLayer);
+                    }}
+                >
+                    <sphereGeometry args={[size * 1.02, 32, 32, 0, FILL_ANGLE]} />
+                    <meshBasicMaterial transparent opacity={0} />
+                </mesh>
+            )}
         </group>
     );
 };
+
+interface InnerLayerShellProps {
+    layer: InnerLayer;
+    radius: number;
+    fillAngle: number;
+    index: number;
+    isHovered: boolean;
+    isSelected: boolean;
+    hasSelection: boolean;
+    isDimmed: boolean;
+    baseGlow: number;
+    onHover: (layer: InnerLayer | null) => void;
+    onSelect: (layer: InnerLayer) => void;
+}
+
+function InnerLayerShell({ layer, radius, fillAngle, index, isHovered, isSelected, hasSelection, isDimmed, baseGlow, onHover, onSelect }: InnerLayerShellProps) {
+    const materialRef = useRef<THREE.MeshPhysicalMaterial | null>(null);
+    const geometryRef = useRef<THREE.SphereGeometry | null>(null);
+    const basePositionsRef = useRef<Float32Array | null>(null);
+    const tempNormal = useRef(new THREE.Vector3()).current;
+    const isInnerCore = layer.name === 'Inner Core';
+    const isOuterCore = layer.name === 'Outer Core';
+    const isActive = isHovered || isSelected;
+
+    useEffect(() => {
+        if (isOuterCore && geometryRef.current) {
+            const positionAttr = geometryRef.current.getAttribute('position') as THREE.BufferAttribute;
+            const arr = positionAttr.array as Float32Array;
+            basePositionsRef.current = arr.slice() as Float32Array;
+        }
+    }, [isOuterCore, radius]);
+
+    const materialProps = useMemo(() => {
+        if (isInnerCore) {
+            return {
+                color: layer.color,
+                side: THREE.DoubleSide,
+                emissive: layer.color,
+                emissiveIntensity: isDimmed ? 0.2 : 2.8,
+                roughness: 0.05,
+                metalness: 1,
+                transparent: isDimmed,
+                opacity: isDimmed ? 0.08 : 1,
+            };
+        }
+        if (isOuterCore) {
+            return {
+                color: layer.color,
+                side: THREE.DoubleSide,
+                emissive: layer.color,
+                emissiveIntensity: isDimmed ? 0.1 : 1.1,
+                roughness: 0.25,
+                metalness: 1,
+                transparent: true,
+                opacity: isDimmed ? 0.05 : 0.75,
+                clearcoat: 1,
+                clearcoatRoughness: 0.1,
+                transmission: 0.25,
+                thickness: radius * 0.35,
+            };
+        }
+        return {
+            color: layer.color,
+            side: THREE.DoubleSide,
+            emissive: layer.color,
+            emissiveIntensity: isActive ? 1.6 : (isDimmed ? 0.01 : baseGlow),
+            roughness: 0.7,
+            metalness: 0.2,
+            transparent: hasSelection,
+            opacity: isDimmed ? 0.05 : 0.95,
+        };
+    }, [layer.color, baseGlow, hasSelection, isDimmed, isActive, isInnerCore, isOuterCore, radius]);
+
+    useFrame(({ clock }) => {
+        if (!materialRef.current) return;
+        if (isOuterCore) {
+            const t = clock.getElapsedTime();
+            const molten = 0.6 + 0.4 * Math.sin(t * 1.4 + radius * 3 + index);
+            materialRef.current.emissiveIntensity = isDimmed ? 0.1 : (isActive ? 1.6 : 1.0) + molten * 0.4;
+            materialRef.current.opacity = isDimmed ? 0.04 : THREE.MathUtils.clamp(0.55 + 0.2 * Math.sin(t * 1.1 + index), 0.35, 0.95);
+            materialRef.current.clearcoatRoughness = isDimmed ? 0.2 : 0.08 + 0.04 * Math.cos(t * 1.2);
+            materialRef.current.transmission = isDimmed ? 0.05 : 0.2 + 0.1 * Math.sin(t * 0.9 + radius);
+            if (geometryRef.current && basePositionsRef.current) {
+                const positionAttr = geometryRef.current.getAttribute('position') as THREE.BufferAttribute;
+                const positions = positionAttr.array as Float32Array;
+                const base = basePositionsRef.current;
+                const amplitude = (isDimmed ? 0.004 : 0.02) * radius;
+                for (let i = 0; i < positions.length; i += 3) {
+                    const ox = base[i];
+                    const oy = base[i + 1];
+                    const oz = base[i + 2];
+                    const len = Math.sqrt(ox * ox + oy * oy + oz * oz) || 1;
+                    tempNormal.set(ox / len, oy / len, oz / len);
+                    const wave = Math.sin(t * 0.8 + tempNormal.x * 8 + tempNormal.y * 6 + tempNormal.z * 5 + index);
+                    const offset = amplitude * wave;
+                    positions[i] = ox + tempNormal.x * offset;
+                    positions[i + 1] = oy + tempNormal.y * offset;
+                    positions[i + 2] = oz + tempNormal.z * offset;
+                }
+                positionAttr.needsUpdate = true;
+                geometryRef.current.computeVertexNormals();
+            }
+        } else if (isInnerCore) {
+            const blaze = 2.6 + 0.5 * Math.sin(clock.getElapsedTime() * 0.8);
+            materialRef.current.emissiveIntensity = isDimmed ? 0.2 : blaze;
+            materialRef.current.opacity = isDimmed ? 0.08 : 1;
+        } else {
+            materialRef.current.emissiveIntensity = isActive ? 1.4 : (isDimmed ? 0.01 : baseGlow);
+            materialRef.current.opacity = isDimmed ? 0.05 : 0.95;
+        }
+    });
+
+    return (
+        <mesh
+            onPointerOver={(e) => { e.stopPropagation(); onHover(layer); }}
+            onPointerOut={(e) => { e.stopPropagation(); onHover(null); }}
+            onClick={(e) => { e.stopPropagation(); onHover(layer); onSelect(layer); }}
+        >
+            <sphereGeometry ref={geometryRef} args={[radius, 64, 64, 0, fillAngle]} />
+            <meshPhysicalMaterial ref={materialRef} {...materialProps} />
+        </mesh>
+    );
+}
 
 const SimulationController: React.FC<{ isPlaying: boolean, speedMultiplier: number, simTimeRef: React.MutableRefObject<number> }> = ({ isPlaying, speedMultiplier, simTimeRef }) => {
     useFrame((_state, delta) => {
@@ -1473,7 +1653,7 @@ const UI: React.FC<{
                     <button onClick={() => handleSelect(null)} className={`flex flex-col items-center justify-center w-20 h-20 rounded-xl transition-all duration-300 ${!focusedId ? 'bg-white/20 scale-105 ring-2 ring-white/30' : 'bg-white/5 hover:bg-white/10 border border-white/10'}`}>
                         {/* Sun Texture for Home Button */}
                         <div className="w-10 h-10 rounded-full mb-1 shadow-md ring-1 ring-white/20 overflow-hidden relative">
-                            <img src="/textures/Sun.jpg" alt="Sun" className="w-full h-full object-cover" />
+                            <Image src="/textures/Sun.jpg" alt="Sun" fill sizes="40px" className="object-cover" />
                         </div>
                         <span className="text-[10px] font-light text-white uppercase tracking-wider">Sun</span>
                     </button>
@@ -1482,7 +1662,7 @@ const UI: React.FC<{
                         <button key={planet.id} onClick={() => handleSelect(planet.id)} className={`flex flex-col items-center justify-center w-16 h-16 rounded-xl transition-all duration-300 border relative ${focusedId === planet.id ? 'border-white/40 bg-white/10 scale-105 -translate-y-1 shadow-xl z-10' : 'border-white/10 hover:bg-white/5 opacity-70 hover:opacity-100 hover:scale-105'}`}>
                             {/* Planet Texture for Buttons */}
                             <div className="w-8 h-8 rounded-full mb-1 shadow-md ring-1 ring-white/20 overflow-hidden relative" style={{ boxShadow: `0 0 10px ${planet.color}40` }}>
-                                <img src={planet.textureUrl} alt={planet.name} className="w-full h-full object-cover" />
+                                <Image src={planet.textureUrl} alt={planet.name} fill sizes="32px" className="object-cover" />
                             </div>
                             <span className="text-[9px] font-light text-white uppercase tracking-wide">{planet.name}</span>
                             {focusedId === planet.id && <div className="absolute -bottom-1.5 w-1 h-1 bg-white rounded-full animate-pulse"></div>}
@@ -1557,14 +1737,14 @@ const UI: React.FC<{
                             <div className="grid grid-cols-3 gap-3">
                                 <button onClick={() => handleSelect(null)} className={`flex flex-col items-center justify-center w-16 h-16 rounded-xl transition-all duration-300 ${!focusedId ? 'bg-white/20 ring-2 ring-white/30' : 'bg-white/5 border border-white/10'}`}>
                                     <div className="w-8 h-8 rounded-full mb-1 shadow-md ring-1 ring-white/20 overflow-hidden relative">
-                                        <img src="/textures/Sun.jpg" alt="Sun" className="w-full h-full object-cover" />
+                                        <Image src="/textures/Sun.jpg" alt="Sun" fill sizes="32px" className="object-cover" />
                                     </div>
                                     <span className="text-[8px] font-light text-white uppercase">Sun</span>
                                 </button>
                                 {PLANETS.map((planet) => (
                                     <button key={planet.id} onClick={() => handleSelect(planet.id)} className={`flex flex-col items-center justify-center w-16 h-16 rounded-xl transition-all duration-300 border ${focusedId === planet.id ? 'border-white/40 bg-white/10' : 'border-white/10 bg-white/5'}`}>
                                         <div className="w-6 h-6 rounded-full mb-1 shadow-md ring-1 ring-white/20 overflow-hidden relative" style={{ boxShadow: `0 0 5px ${planet.color}40` }}>
-                                            <img src={planet.textureUrl} alt={planet.name} className="w-full h-full object-cover" />
+                                            <Image src={planet.textureUrl} alt={planet.name} fill sizes="24px" className="object-cover" />
                                         </div>
                                         <span className="text-[8px] font-light text-white uppercase">{planet.name}</span>
                                     </button>
@@ -1642,7 +1822,36 @@ export default function SolarSystem() {
     const [zoomSignal, setZoomSignal] = useState(0);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [hoveredLayer, setHoveredLayer] = useState<InnerLayer | null>(null);
+    const [selectedLayer, setSelectedLayer] = useState<InnerLayer | null>(null);
+    const [isMobileViewport, setIsMobileViewport] = useState(false);
     const simTimeRef = useRef(0);
+
+    const handleLayerSelect = useCallback((layer: InnerLayer | null) => {
+        setSelectedLayer(prev => {
+            if (!layer) return null;
+            if (prev?.name === layer.name) {
+                return null;
+            }
+            return layer;
+        });
+    }, []);
+
+    useEffect(() => {
+        if (!viewInnerLayers || focusedId !== 'earth') {
+            setHoveredLayer(null);
+            setSelectedLayer(null);
+        }
+    }, [viewInnerLayers, focusedId]);
+
+    useEffect(() => {
+        const updateViewport = () => {
+            if (typeof window === 'undefined') return;
+            setIsMobileViewport(window.innerWidth < 768);
+        };
+        updateViewport();
+        window.addEventListener('resize', updateViewport);
+        return () => window.removeEventListener('resize', updateViewport);
+    }, []);
 
     // Audio Drone
     useEffect(() => {
@@ -1786,6 +1995,8 @@ export default function SolarSystem() {
         });
     }, [useRealDist, useRealSize]);
 
+    const activeLayer = hoveredLayer || selectedLayer;
+
     return (
         <div ref={containerRef} className="w-full h-screen relative bg-black overflow-hidden select-none touch-action-none">
 
@@ -1810,8 +2021,10 @@ export default function SolarSystem() {
                                 isPlaying={isPlaying}
                                 userLocation={showLocation ? userLocation : null}
                                 viewInnerLayers={viewInnerLayers}
-                                onHoverLayer={setHoveredLayer}
+                        onHoverLayer={setHoveredLayer}
                                 currentHoveredLayerName={hoveredLayer?.name || null}
+                                selectedLayerName={selectedLayer?.name || null}
+                                onSelectLayer={handleLayerSelect}
                             />
                         </PlanetErrorBoundary>
                     ))}
@@ -1859,13 +2072,35 @@ export default function SolarSystem() {
             />
 
             {/* Layer Info Overlay - Fixed position, top-left, outside 3D canvas */}
-            {viewInnerLayers && hoveredLayer && (
-                <div className="fixed top-20 left-4 z-50 bg-black/90 p-4 rounded-xl border border-white/20 text-white w-56 backdrop-blur-md shadow-2xl animate-in fade-in slide-in-from-left-2 duration-200">
-                    <div className="flex items-center gap-2 mb-2">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: hoveredLayer.color }} />
-                        <h3 className="font-bold text-sm" style={{ color: hoveredLayer.color }}>{hoveredLayer.name}</h3>
+            {viewInnerLayers && activeLayer && (
+                <div
+                    className={`fixed z-50 pointer-events-none animate-in fade-in ${isMobileViewport ? 'slide-in-from-bottom-2 bottom-6 left-1/2 -translate-x-1/2 transform' : 'slide-in-from-left-2 top-24 right-6'} duration-200`}
+                >
+                    <div className={`bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl rounded-2xl p-5 ${isMobileViewport ? 'w-[90vw] max-w-sm' : 'w-64 max-w-xs'} text-white pointer-events-auto`}>
+                        <div className="flex items-start justify-between mb-3">
+                            <div>
+                                <p className="text-[10px] uppercase tracking-[0.35em] text-white/60 mb-1">Earth Layer</p>
+                                <h3 className="text-2xl font-light tracking-wide flex items-center gap-2">
+                                    {activeLayer.name}
+                                </h3>
+                            </div>
+                            <span
+                                className="w-3 h-3 rounded-full mt-1.5 shadow-[0_0_12px_rgba(255,255,255,0.3)]"
+                                style={{ backgroundColor: activeLayer.color }}
+                            />
+                        </div>
+                        <p className="text-sm text-gray-300 italic font-light leading-relaxed">
+                            {activeLayer.description}
+                        </p>
+                        {selectedLayer && activeLayer.name === selectedLayer.name && (
+                            <div className="mt-4 bg-white/5 border border-white/10 rounded-xl p-3">
+                                <p className="text-[10px] uppercase tracking-[0.3em] text-emerald-200/80 mb-1">Focus Locked</p>
+                                <p className="text-xs text-gray-200 leading-relaxed">
+                                    Tap this layer again to bring the rest of Earth back into view.
+                                </p>
+                            </div>
+                        )}
                     </div>
-                    <p className="text-xs text-zinc-300 leading-relaxed">{hoveredLayer.description}</p>
                 </div>
             )}
         </div>

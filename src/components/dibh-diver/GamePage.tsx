@@ -1,5 +1,6 @@
 'use client';
 
+import NextImage from 'next/image';
 import React, { useEffect, useRef, useState } from 'react';
 import { audioController } from './audio';
 
@@ -593,10 +594,13 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
                     {snapshotUrl && (
                         <div className="relative group perspective-1000 w-full max-w-[320px] md:max-w-[400px] mb-4 md:mb-8">
                             <div className="relative bg-white p-2 transform rotate-1 shadow-2xl">
-                                <img
+                                <NextImage
                                     src={snapshotUrl}
-                                    className="w-full h-auto object-contain max-h-[35vh] md:max-h-[40vh] border border-gray-200"
                                     alt="Score Snapshot"
+                                    width={800}
+                                    height={600}
+                                    className="w-full h-auto object-contain max-h-[35vh] md:max-h-[40vh] border border-gray-200"
+                                    sizes="(max-width: 768px) 90vw, 320px"
                                 />
                                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-10 md:w-8 md:h-12 rounded-full border-4 border-gray-300 bg-gray-100 z-10 shadow-sm"></div>
                             </div>
@@ -639,7 +643,15 @@ export default function GamePage({ trackingVal, calibMin, calibMax, mediaStream,
                     />
                     {ghostImage && (
                         <div className="absolute inset-0 opacity-40 mix-blend-screen pointer-events-none">
-                            <img src={ghostImage} className="w-full h-full object-cover scale-x-[-1]" alt="Ghost constraint" />
+                            <div className="relative w-full h-full">
+                                <NextImage
+                                    src={ghostImage}
+                                    alt="Ghost constraint"
+                                    fill
+                                    sizes="(max-width: 768px) 80px, 120px"
+                                    className="object-cover scale-x-[-1]"
+                                />
+                            </div>
                         </div>
                     )}
                     <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-[6px] md:text-[8px] text-white text-center py-0.5 font-mono uppercase tracking-widest">

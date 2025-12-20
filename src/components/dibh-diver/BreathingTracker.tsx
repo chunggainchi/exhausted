@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import React, { useEffect, useRef, useState } from 'react';
 import { AppStatus, OpenCV } from '@/components/dibh-diver/types';
 import { audioController } from './audio';
@@ -424,7 +425,15 @@ export default function BreathingTracker({
 
             {ghostImage && (
               <div className="absolute inset-0 z-10 pointer-events-none opacity-40">
-                <img src={ghostImage} className="w-full h-full object-cover scale-x-[-1] filter grayscale contrast-125" alt="ghost" />
+                <div className="relative w-full h-full">
+                  <Image
+                    src={ghostImage}
+                    alt="ghost"
+                    fill
+                    sizes="100vw"
+                    className="object-cover scale-x-[-1] filter grayscale contrast-125"
+                  />
+                </div>
               </div>
             )}
 
