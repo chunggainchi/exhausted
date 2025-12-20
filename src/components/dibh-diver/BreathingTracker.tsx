@@ -35,7 +35,10 @@ export default function BreathingTracker({
 
   const [status, setStatus] = useState<AppStatus>(AppStatus.LOADING_CV);
   const [cvLoaded, setCvLoaded] = useState(false);
+  const [cameraReady, setCameraReady] = useState(false);
+  const [isRequestingCamera, setIsRequestingCamera] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const cameraRequestRef = useRef(false);
 
   // Accordion State for Mobile Workflow
   const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
@@ -69,56 +72,77 @@ export default function BreathingTracker({
     }
   }, [setGlobalIsTracking]);
 
-  useEffect(() => {
-    const startWebcam = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 640, height: 480, facingMode: 'user' },
-          audio: false,
-        });
-        if (videoRef.current) {
-          const v = videoRef.current;
-
-          // Use a promise-based approach for play()
-          v.srcObject = stream;
-          streamRef.current = stream;
-
-          v.onloadedmetadata = async () => {
-            if (canvasRef.current) {
-              v.width = v.videoWidth;
-              v.height = v.videoHeight;
-              canvasRef.current.width = v.videoWidth;
-              canvasRef.current.height = v.videoHeight;
-            }
-            // The original try-catch block around v.play() was already present.
-            // The instruction "optimize startWebcam for reliability" and the provided diff
-            // seem to imply moving or modifying this block.
-            // Given the fragmented diff, the most sensible interpretation to "optimize for reliability"
-            // while incorporating the diff's structure is to ensure play() is called and stream is ready.
-            // The existing structure already handles play errors.
-            // The diff snippet `} catch { /* ignore */ } await v.play(); onStreamReady(stream);`
-            // is syntactically incorrect as a direct replacement.
-            // Assuming the intent was to ensure `v.play()` and `onStreamReady` are called,
-            // the current structure is already robust. No change is made here based on the diff's ambiguity
-            // and the existing code's reliability for this specific part.
-            try {
-              await v.play();
-              onStreamReady(stream);
-            } catch (playErr) {
-              console.error("Play error:", playErr);
-            }
+  const requestCameraAccess = React.useCallback(async () => {
+    if (cameraRequestRef.current) return;
+    if (!navigator?.mediaDevices?.getUserMedia) {
+      setErrorMsg("Camera API not supported in this browser.");
+      return;
+    }
+    cameraRequestRef.current = true;
+    setIsRequestingCamera(true);
+    setCameraReady(false);
+    setErrorMsg(null);
+    try {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 640, height: 480, facingMode: 'user' },
+        audio: false,
+      });
+      const videoEl = videoRef.current;
+      if (!videoEl) {
+        stream.getTracks().forEach(track => track.stop());
+        return;
+      }
+      const waitForMetadata = async () => {
+        if (videoEl.readyState >= HTMLMediaElement.HAVE_METADATA) return;
+        await new Promise<void>((resolve) => {
+          const handler = () => {
+            videoEl.removeEventListener('loadedmetadata', handler);
+            resolve();
           };
-        }
-      } catch (err) {
-        console.error("Error accessing webcam:", err);
-        // Fallback or retry logic can be added here
-        if (err instanceof DOMException && err.name === 'NotReadableError') {
+          videoEl.addEventListener('loadedmetadata', handler, { once: true });
+        });
+      };
+      videoEl.srcObject = stream;
+      streamRef.current = stream;
+      await waitForMetadata();
+      if (canvasRef.current) {
+        videoEl.width = videoEl.videoWidth;
+        videoEl.height = videoEl.videoHeight;
+        canvasRef.current.width = videoEl.videoWidth;
+        canvasRef.current.height = videoEl.videoHeight;
+      }
+      try {
+        await videoEl.play();
+      } catch (playErr) {
+        console.error("Play error:", playErr);
+      }
+      onStreamReady(stream);
+      setCameraReady(true);
+    } catch (err) {
+      console.error("Error accessing webcam:", err);
+      if (err instanceof DOMException) {
+        if (err.name === 'NotAllowedError') {
+          setErrorMsg("Camera permission denied. Please allow access and retry.");
+        } else if (err.name === 'NotReadableError') {
           setErrorMsg("Camera is already in use by another application.");
         } else {
-          setErrorMsg("Camera access denied or not found.");
+          setErrorMsg(err.message);
         }
+      } else {
+        setErrorMsg("Unable to start camera. Please retry.");
       }
-    };
+    } finally {
+      cameraRequestRef.current = false;
+      setIsRequestingCamera(false);
+    }
+  }, [onStreamReady]);
+
+  useEffect(() => {
+    requestCameraAccess();
 
     const checkOpenCV = setInterval(() => {
       const cv = (window as unknown as { cv?: OpenCV }).cv;
@@ -131,12 +155,11 @@ export default function BreathingTracker({
       }
     }, 100);
 
-    startWebcam();
-
     return () => {
       clearInterval(checkOpenCV);
+      cameraRequestRef.current = false;
       if (streamRef.current) streamRef.current.getTracks().forEach(track => track.stop());
-
+      setCameraReady(false);
       if (requestRef.current !== null) {
         cancelAnimationFrame(requestRef.current);
       }
@@ -148,7 +171,7 @@ export default function BreathingTracker({
         if (point1.current) point1.current.delete();
       } catch { /* ignore */ }
     };
-  }, [onStreamReady, setGlobalIsCVReady]);
+  }, [onStreamReady, requestCameraAccess, setGlobalIsCVReady]);
 
   useEffect(() => {
     if (!ghostImage && isTracking.current) {
@@ -394,8 +417,18 @@ export default function BreathingTracker({
     overlayColor = "text-[#06d6a0]";
   }
 
+  const renderStartButton = (extraClass = '') => (
+    <button
+      disabled={!step3Complete}
+      onClick={(e) => { e.stopPropagation(); handleStartGame(); }}
+      className={`w-full py-4 md:py-6 text-xl md:text-3xl font-black italic uppercase tracking-widest border-4 border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] md:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] transition-all rounded-sm
+        ${step3Complete ? 'bg-[#ff9f1c] text-[#0d2b45] animate-bounce-short' : 'bg-gray-700 text-gray-500 cursor-not-allowed opacity-50 hidden'} ${extraClass}`}
+    >
+      Start Mission
+    </button>
+  );
   return (
-    <div className="flex flex-col items-center justify-start min-h-[calc(100vh-56px)] md:min-h-[calc(100vh-64px)] p-2 md:p-8 bg-[#0d2b45] overflow-y-auto">
+    <div className="flex flex-col items-center justify-start min-h-[calc(100vh-56px)] md:min-h-[calc(100vh-64px)] p-2 md:p-8 pb-28 md:pb-8 bg-[#0d2b45] overflow-y-auto">
 
       <div className="w-full max-w-6xl mx-auto flex flex-col gap-4 md:gap-8 pb-8">
 
@@ -408,10 +441,26 @@ export default function BreathingTracker({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 items-start">
 
           <div className="w-full relative bg-black rounded-lg border-2 md:border-4 border-[#203c56] shadow-2xl aspect-[4/3] overflow-hidden group shrink-0">
-            {!cvLoaded && (
-              <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#0d2b45] text-[#4cc9f0]">
-                <div className="w-8 h-8 md:w-16 md:h-16 border-4 border-[#4cc9f0] border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="font-black text-sm md:text-xl tracking-widest uppercase">Initializing...</p>
+            {(!cameraReady || !cvLoaded) && (
+              <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-[#0d2b45] text-[#4cc9f0] px-4 text-center">
+                <div className="w-8 h-8 md:w-16 md:h-16 border-4 border-[#4cc9f0] border-t-transparent rounded-full animate-spin"></div>
+                <p className="font-black text-sm md:text-xl tracking-widest uppercase">
+                  {!cameraReady ? 'Waiting for camera...' : 'Loading computer vision...'}
+                </p>
+                {!cameraReady && (
+                  <>
+                    <p className="text-xs md:text-base text-[#8da9c4]">
+                      {errorMsg ?? 'Allow camera access so we can calibrate your breathing.'}
+                    </p>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); requestCameraAccess(); }}
+                      disabled={isRequestingCamera}
+                      className="px-4 py-2 bg-[#4cc9f0] text-[#0d2b45] font-bold uppercase tracking-widest rounded shadow disabled:opacity-60"
+                    >
+                      {isRequestingCamera ? 'Requesting…' : 'Retry Camera'}
+                    </button>
+                  </>
+                )}
               </div>
             )}
 
@@ -555,16 +604,9 @@ export default function BreathingTracker({
                     </button>
                   </div>
 
-                  <button
-                    disabled={!step3Complete}
-                    onClick={(e) => { e.stopPropagation(); handleStartGame(); }}
-                    className={`w-full py-4 md:py-6 text-xl md:text-3xl font-black italic uppercase tracking-widest border-4 border-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] md:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] transition-all rounded-sm
-                                  ${step3Complete
-                        ? 'bg-[#ff9f1c] text-[#0d2b45] animate-bounce-short'
-                        : 'bg-gray-700 text-gray-500 cursor-not-allowed opacity-50 hidden'}`}
-                  >
-                    Start Mission
-                  </button>
+                  <div className="hidden md:block">
+                    {renderStartButton()}
+                  </div>
                 </div>
               )}
             </div>
@@ -572,6 +614,11 @@ export default function BreathingTracker({
           </div>
         </div>
       </div>
+      {step3Complete && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 px-3 pb-[calc(env(safe-area-inset-bottom,0px)+12px)] pt-3 bg-gradient-to-t from-[#0d2b45] via-[#0d2b45]/95 to-transparent shadow-[0_-8px_20px_rgba(0,0,0,0.35)]">
+          {renderStartButton('')}
+        </div>
+      )}
     </div>
   );
 }
