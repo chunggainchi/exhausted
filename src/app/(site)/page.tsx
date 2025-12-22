@@ -63,7 +63,7 @@ export default function HomePage() {
           <h2 className="text-3xl font-light text-slate-600 tracking-tight text-center mb-8 sm:mb-12">
             Quick games:
           </h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8 sm:gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-8 sm:gap-8 max-w-5xl mx-auto">
             {/* Solar System Sim */}
             <Link
               href="/solar"
@@ -139,6 +139,44 @@ export default function HomePage() {
               </div>
               <h3 className="text-sm sm:text-base font-medium text-slate-600 text-center leading-tight">
                 Number Playground
+              </h3>
+            </Link>
+
+            {/* CantoPlay */}
+            <Link
+              href="games/learn-cantonese.html"
+              className="flex flex-col items-center group"
+            >
+              <div className="relative w-28 h-28 sm:w-40 sm:h-40 mb-3 group-hover:-translate-y-1 transition-all duration-300">
+                <Image
+                  src="/images/shortcuts/cantoplay.webp"
+                  alt="CantoPlay"
+                  fill
+                  className="object-contain"
+                  unoptimized={true}
+                />
+              </div>
+              <h3 className="text-sm sm:text-base font-medium text-slate-600 text-center leading-tight">
+                CantoPlay
+              </h3>
+            </Link>
+
+            {/* LeseSpaß */}
+            <Link
+              href="/games/new-lesen/index.html"
+              className="flex flex-col items-center group"
+            >
+              <div className="relative w-28 h-28 sm:w-40 sm:h-40 mb-3 group-hover:-translate-y-1 transition-all duration-300">
+                <Image
+                  src="/images/shortcuts/lesenlernen.webp"
+                  alt="LeseSpaß"
+                  fill
+                  className="object-contain"
+                  unoptimized={true}
+                />
+              </div>
+              <h3 className="text-sm sm:text-base font-medium text-slate-600 text-center leading-tight">
+                LeseSpaß
               </h3>
             </Link>
           </div>
