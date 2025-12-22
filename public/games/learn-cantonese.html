@@ -14,6 +14,8 @@
       --success: #22c55e;
       --warn: #f59e0b;
       --danger: #ef4444;
+      --panel: rgba(255,255,255,0.06);
+      --panel-strong: rgba(255,255,255,0.12);
     }
     html, body { margin: 0; height: 100%; background: radial-gradient(1200px 800px at 70% 20%, rgba(139,92,246,0.15), transparent 50%), radial-gradient(900px 600px at 30% 80%, rgba(34,211,238,0.12), transparent 50%), var(--bg);
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
@@ -265,7 +267,27 @@ const canvas = document.getElementById('app');
 const ctx = canvas.getContext('2d');
 const LOGO = new Image();
 LOGO.src = '/images/logo.svg';
+
+const THEME = {
+  accent: '#8b5cf6',
+  accentAlt: '#22d3ee',
+  panel: 'rgba(255,255,255,0.06)',
+  panelStrong: 'rgba(255,255,255,0.12)'
+};
+
+function refreshThemeFromCSS() {
+  const style = getComputedStyle(document.documentElement);
+  THEME.accent = style.getPropertyValue('--accent').trim() || THEME.accent;
+  THEME.accentAlt = style.getPropertyValue('--accent-2').trim() || THEME.accentAlt;
+  THEME.panel = style.getPropertyValue('--panel').trim() || THEME.panel;
+  THEME.panelStrong = style.getPropertyValue('--panel-strong').trim() || THEME.panelStrong;
+}
+refreshThemeFromCSS();
 let DPR = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
+
+function getSafeTopPadding(){
+  return (isMobileView && !isNavOpen) ? burgerBox.y + burgerBox.h + 16 : 0;
+}
 
 function resize() {
   DPR = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
@@ -276,6 +298,7 @@ function resize() {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   
   isMobileView = window.innerWidth <= MOBILE_BREAKPOINT;
+  refreshThemeFromCSS();
   if (!isMobileView) isNavOpen = false; // Close nav if we resize to desktop
   
   if (activeScene?.layout) activeScene.layout();
@@ -301,7 +324,7 @@ function shadow(fn){
   ctx.save(); ctx.shadowColor='rgba(0,0,0,0.45)'; ctx.shadowBlur=18; ctx.shadowOffsetY=8; fn(); ctx.restore();
 }
 function drawBadge(x,y,text){
-  const pad=10; ctx.fillStyle='rgba(255,255,255,0.08)'; rrect(x,y,Math.max(120, ctx.measureText(text).width+pad*2),32,14); ctx.fill();
+  const pad=10; ctx.fillStyle=THEME.panelStrong; rrect(x,y,Math.max(120, ctx.measureText(text).width+pad*2),32,14); ctx.fill();
   ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText(text,x+pad,y+21);
 }
 
@@ -470,7 +493,24 @@ let actx=null; function ensureAC(){ if(!actx){ try{ actx=new (window.AudioContex
 function tone(freq, dur=0.15, type='sine', gain=0.05){ ensureAC(); if(!actx) return; const t=actx.currentTime; const o=actx.createOscillator(); const g=actx.createGain(); o.type=type; o.frequency.value=freq; g.gain.value=gain; o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+dur); }
 function fxPositive(){ [523,659,784].forEach((f,i)=> setTimeout(()=>tone(f,0.12,'triangle',0.06), i*120)); }
 function fxNegative(){ tone(220,0.18,'sawtooth',0.05); setTimeout(()=>tone(196,0.2,'sawtooth',0.04),140); }
-class Button { constructor(label, emoji, x, y, w, h, onClick){ this.label=label; this.emoji=emoji; this.x=x; this.y=y; this.w=w; this.h=h; this.onClick=onClick; this.hover=false; } contains(px,py){ return px>=this.x && py>=this.y && px<=this.x+this.w && py<=this.y+this.h; } draw(){ ctx.save(); const c1=this.hover?'#8b5cf6':'#6d28d9', c2=this.hover?'#22d3ee':'#0ea5e9'; shadow(()=>{ ctx.fillStyle=gradient(this.x,this.y,this.w,this.h,c1,c2); rrect(this.x,this.y,this.w,this.h,20); ctx.fill();}); ctx.fillStyle='rgba(255,255,255,0.92)'; ctx.font='20px system-ui'; const text=`${this.emoji?this.emoji+'  ':''}${this.label}`; const tw=ctx.measureText(text).width; ctx.fillText(text,this.x+(this.w-tw)/2,this.y+this.h/2+6); ctx.restore(); } }
+class Button {
+  constructor(label, emoji, x, y, w, h, onClick){
+    this.label=label; this.emoji=emoji; this.x=x; this.y=y; this.w=w; this.h=h; this.onClick=onClick; this.hover=false;
+  }
+  contains(px,py){ return px>=this.x && py>=this.y && px<=this.x+this.w && py<=this.y+this.h; }
+  draw(){
+    ctx.save();
+    const c1 = this.hover ? THEME.accentAlt : THEME.accent;
+    const c2 = this.hover ? THEME.accent : THEME.accentAlt;
+    shadow(()=>{ ctx.fillStyle=gradient(this.x,this.y,this.w,this.h,c1,c2); rrect(this.x,this.y,this.w,this.h,20); ctx.fill();});
+    ctx.fillStyle='rgba(255,255,255,0.94)';
+    ctx.font='20px system-ui';
+    const text=`${this.emoji?this.emoji+'  ':''}${this.label}`;
+    const tw=ctx.measureText(text).width;
+    ctx.fillText(text,this.x+(this.w-tw)/2,this.y+this.h/2+6);
+    ctx.restore();
+  }
+}
 
 // ========= Navigation (left sidebar) =========
 const SIDEBAR_W = 230; let navBoxes=[];
@@ -492,7 +532,7 @@ function drawSidebar(activeId){
   const sbw = getActiveSidebarWidth();
   if (sbw <= 0) return;
   
-  shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(12,12,sbw-24,H-24,22); ctx.fill();});
+  shadow(()=>{ ctx.fillStyle=THEME.panel; rrect(12,12,sbw-24,H-24,22); ctx.fill();});
 
   // --- Draw logo on top ---
   let logoBottom = 76;
@@ -520,7 +560,7 @@ function drawSidebar(activeId){
   NAV.forEach(item=>{ 
     const isActive=item.id===activeId; 
     const h=54, x=22, w=sbw-44; 
-    const c1=isActive?'#22d3ee':'#334155', c2=isActive?'#8b5cf6':'#475569'; 
+    const c1=isActive?THEME.accent:'rgba(51,65,85,0.95)', c2=isActive?THEME.accentAlt:'rgba(71,85,105,0.95)'; 
     shadow(()=>{ ctx.fillStyle=gradient(x,y,w,h,c1,c2); rrect(x,y,w,h,14); ctx.fill();}); 
     ctx.fillStyle='white'; ctx.font='18px system-ui'; 
     const txt=`${item.emoji?item.emoji+' ':''}${item.label}`; 
@@ -558,7 +598,7 @@ function drawBurgerMenu() {
   // Draw burger button
   const {x, y, w, h} = burgerBox;
   shadow(() => {
-    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.fillStyle = THEME.panelStrong;
     rrect(x, y, w, h, 12);
     ctx.fill();
   });
@@ -584,9 +624,10 @@ function drawParticles(){ particles.forEach(p=>{ ctx.globalAlpha=Math.max(0,p.a)
 class HomeScene extends Scene{ get id(){return 'home';}
   constructor(){ super(); this.buttons=[]; this.layout(); }
   layout(){ const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth-sbw, H=canvas.clientHeight; const bw=Math.min(360, W*0.8), bh=56; let y = H*0.38; const X = sbw + (W-bw)/2; this.buttons=[ new Button('Flashcards','🃏',X,y,bw,bh,()=> setScene(new CardsOverviewScene())), new Button('Quiz','🧠',X,y+=bh+16,bw,bh,()=> setScene(new QuizScene())), new Button('Spiel: Maus & Käse','🐭🧀',X,y+=bh+16,bw,bh,()=> setScene(new MouseCheeseScene())), ]; }
-  draw(){ const W=canvas.clientWidth, H=canvas.clientHeight; drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const CW=W-sbw;
-    ctx.fillStyle='rgba(255,255,255,0.95)'; ctx.font = (CW>520? 'bold 46px' : 'bold 34px') + ' system-ui'; const title='CantoPlay 粵語'; ctx.fillText(title, sbw + (CW-ctx.measureText(title).width)/2, H*0.18); ctx.font='18px system-ui'; ctx.fillStyle='#AFB6C3'; const sub='Lerne Kantonesisch spielerisch (auf Deutsch)'; ctx.fillText(sub, sbw + (CW-ctx.measureText(sub).width)/2, H*0.18+28);
-    drawBadge(sbw+16,16,'🎯 Ziel: Hören • Sprechen • Sehen'); this.buttons.forEach(b=>{ b.hover=b.contains(pointer.x,pointer.y); b.draw(); }); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; const tip='Tipp: Tippe auf 🔊, um die Aussprache zu hören.'; ctx.fillText(tip, sbw + (CW-ctx.measureText(tip).width)/2, H-20);
+  draw(){ const W=canvas.clientWidth, H=canvas.clientHeight; drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const CW=W-sbw; const safeTop=getSafeTopPadding();
+    const heroY = safeTop + Math.max(60, H*0.12);
+    ctx.fillStyle='rgba(255,255,255,0.95)'; ctx.font = (CW>520? 'bold 46px' : 'bold 34px') + ' system-ui'; const title='CantoPlay 粵語'; ctx.fillText(title, sbw + (CW-ctx.measureText(title).width)/2, heroY); ctx.font='18px system-ui'; ctx.fillStyle='#AFB6C3'; const sub='Lerne Kantonesisch spielerisch (auf Deutsch)'; ctx.fillText(sub, sbw + (CW-ctx.measureText(sub).width)/2, heroY+28);
+    drawBadge(sbw+16,safeTop+16,'🎯 Ziel: Hören • Sprechen • Sehen'); this.buttons.forEach(b=>{ b.hover=b.contains(pointer.x,pointer.y); b.draw(); }); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; const tip='Tipp: Tippe auf 🔊, um die Aussprache zu hören.'; ctx.fillText(tip, sbw + (CW-ctx.measureText(tip).width)/2, H-20);
     drawBurgerMenu();
   }
   onPointer(type,p){ if(type==='down'){ const b=this.buttons.find(b=>b.contains(p.x,p.y)); if(b) b.onClick(); } }
@@ -594,7 +635,25 @@ class HomeScene extends Scene{ get id(){return 'home';}
 
 class CardsOverviewScene extends Scene{ get id(){return 'cards';}
   constructor(themeId=null){ super(); this.themeId=themeId; this.tileBoxes=[]; this.themeBoxes=[]; this.scrollY=0; this.contentHeight=0; this.pointerStart=null; this.wordList=this.themeId?getWordsForTheme(this.themeId):null; this.backBtn=new Button('Zur Übersicht','📚',0,0,180,44,()=>setScene(new CardsOverviewScene())); this.layout(); }
-  layout(){ const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; this.backBtn.x=W-196; this.backBtn.y=16; }
+  layout(){ this.positionBackButton(); }
+  positionBackButton(){
+      const sbw = getActiveSidebarWidth();
+      const W = canvas.clientWidth;
+      const CW = W - sbw;
+      const margin = 16;
+      const safeTop = getSafeTopPadding();
+      const compact = CW < 560;
+      this.backBtnCompact = compact;
+      if (compact) {
+          this.backBtn.w = Math.min(260, Math.max(160, CW - margin * 2));
+          this.backBtn.x = sbw + (CW - this.backBtn.w) / 2;
+          this.backBtn.y = safeTop + 56;
+      } else {
+          this.backBtn.w = 180;
+          this.backBtn.x = W - this.backBtn.w - margin;
+          this.backBtn.y = safeTop + 16;
+      }
+  }
   onScroll(deltaY) {
       if (!this.wordList) return; // no scroll on theme grid
       const H = canvas.clientHeight;
@@ -603,29 +662,48 @@ class CardsOverviewScene extends Scene{ get id(){return 'cards';}
       const maxScroll = Math.max(0, this.contentHeight - H);
       if (this.scrollY > maxScroll) this.scrollY = maxScroll;
   }
-  draw(){ drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const CW=W-sbw; ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui';
+  draw(){ drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const CW=W-sbw; const safeTop=getSafeTopPadding(); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui';
     if(!this.wordList){
       // Theme grid
-      ctx.fillText('🃏 Flashcards — Themen auswählen', sbw+16, 48);
+      ctx.fillText('🃏 Flashcards — Themen auswählen', sbw+16, safeTop+48);
       const themes = getAvailableThemes();
-      const cols = Math.max(1, Math.floor(CW/300)); const gap=16; const tileW = Math.min(280, (CW - (cols+1)*gap)/cols); const tileH=86; let x=sbw+gap, y=80; this.themeBoxes=[];
-      themes.forEach(t=>{ if(x+tileW>sbw+CW-gap){ x=sbw+gap; y+=tileH+gap; } shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,tileW,tileH,16); ctx.fill();}); ctx.fillStyle='#e6ebf2'; ctx.font='20px system-ui'; const label=`${t.emoji||''} ${t.label}`.trim(); ctx.fillText(label, x+16, y+36); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText(`${t.count} Karten`, x+16, y+60); this.themeBoxes.push({x,y,w:tileW,h:tileH,id:t.id}); x+=tileW+gap; });
+      const gap = Math.max(12, Math.min(24, CW * 0.02));
+      const cols = CW < 640 ? 1 : Math.max(1, Math.floor(CW / 320));
+      const rawTileW = Math.max(160, (CW - (cols + 1) * gap) / cols);
+      const maxFullWidth = Math.max(160, CW - gap * 2);
+      const tileW = cols === 1 ? Math.min(maxFullWidth, rawTileW) : Math.min(320, rawTileW);
+      const tileH = Math.max(86, tileW * 0.38 + 60);
+      let x=sbw+gap, y=safeTop+80; this.themeBoxes=[];
+      themes.forEach(t=>{
+        if(x+tileW>sbw+CW-gap){ x=sbw+gap; y+=tileH+gap; }
+        shadow(()=>{ ctx.fillStyle=THEME.panel; rrect(x,y,tileW,tileH,16); ctx.fill();});
+        ctx.fillStyle='#e6ebf2'; ctx.font='20px system-ui';
+        const label=`${t.emoji||''} ${t.label}`.trim();
+        ctx.fillText(label, x+16, y+36);
+        ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui';
+        ctx.fillText(`${t.count} Karten`, x+16, y+60);
+        this.themeBoxes.push({x,y,w:tileW,h:tileH,id:t.id}); x+=tileW+gap;
+      });
       drawBurgerMenu();
       return;
     }
     // Word grid for specific theme
-    const theme=THEMES.find(t=>t.id===this.themeId); const header=theme?`🃏 ${theme.label}`:'🃏 Flashcards'; ctx.fillText(header, sbw+16, 48);
+    this.positionBackButton();
+    const theme=THEMES.find(t=>t.id===this.themeId); const header=theme?`🃏 ${theme.label}`:'🃏 Flashcards'; ctx.fillText(header, sbw+16, safeTop+48);
     // Consistent back button (top-right)
     this.backBtn.hover=this.backBtn.contains(pointer.x,pointer.y);
     this.backBtn.draw();
-    const gap=16; const cols = Math.max(1, Math.floor(CW/260));
+    const gap = Math.max(12, Math.min(24, CW * 0.02));
+    const singleColumn = CW < 720;
+    const cols = singleColumn ? 1 : Math.max(1, Math.floor(CW/260));
     const rawTileW = (CW - (cols+1)*gap)/cols;
-    const tileW = Math.max(120, Math.min(240, Number.isFinite(rawTileW) ? rawTileW : 240));
-    const tileH = Math.max(100, tileW*0.72 + 60);
-    let x=sbw+gap, y=76; this.tileBoxes=[];
+    const maxFullWidth = Math.max(160, CW - gap*2);
+    const tileW = Math.max(160, singleColumn ? Math.min(maxFullWidth, rawTileW) : Math.min(320, rawTileW));
+    const tileH = Math.max(140, tileW*0.72 + (singleColumn ? 80 : 60));
+    let x=sbw+gap, y=this.backBtnCompact ? this.backBtn.y + this.backBtn.h + 24 : safeTop + 76; this.tileBoxes=[];
     if (CW <= 0 || tileW <= 0 || tileH <= 0) { drawBurgerMenu(); return; }
     ctx.save(); ctx.beginPath(); rrect(sbw, 0, CW, H, 0); ctx.clip(); ctx.translate(0, -this.scrollY);
-    this.wordList.forEach((w,i)=>{ if(!w) return; if(x+tileW>sbw+CW-gap){ x=sbw+gap; y+=tileH+gap; } shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,tileW,tileH,18); ctx.fill(); }); const img=IMAGES[w.photo]; if(img&&img.complete&&img.naturalWidth>0&&img.naturalHeight>0){ const ar=img.naturalWidth/img.naturalHeight; let dw=tileW, dh=dw/ar; if(dh>tileH-60){ dh=tileH-60; dw=dh*ar; } if (dh>0 && dw>0){ const ix=x+(tileW-dw)/2, iy=y+(tileH-60-dh)/2; ctx.drawImage(img,ix,iy,dw,dh);} } ctx.fillStyle='#e6ebf2'; ctx.font='18px system-ui'; ctx.fillText(w.yue, x+12, y+tileH-26); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText(w.de, x+12, y+tileH-8); this.tileBoxes.push({x,y,w:tileW,h:tileH,index:i}); x+=tileW+gap; });
+    this.wordList.forEach((w,i)=>{ if(!w) return; if(x+tileW>sbw+CW-gap){ x=sbw+gap; y+=tileH+gap; } shadow(()=>{ ctx.fillStyle=THEME.panel; rrect(x,y,tileW,tileH,18); ctx.fill(); }); const img=IMAGES[w.photo]; if(img&&img.complete&&img.naturalWidth>0&&img.naturalHeight>0){ const ar=img.naturalWidth/img.naturalHeight; let dw=tileW, dh=dw/ar; if(dh>tileH-60){ dh=tileH-60; dw=dh*ar; } if (dh>0 && dw>0){ const ix=x+(tileW-dw)/2, iy=y+(tileH-60-dh)/2; ctx.drawImage(img,ix,iy,dw,dh);} } ctx.fillStyle='#e6ebf2'; ctx.font='18px system-ui'; ctx.fillText(w.yue, x+12, y+tileH-26); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText(w.de, x+12, y+tileH-8); this.tileBoxes.push({x,y,w:tileW,h:tileH,index:i}); x+=tileW+gap; });
     this.contentHeight = y + tileH + gap;
     ctx.restore();
     drawBurgerMenu();
@@ -656,22 +734,72 @@ class CardDetailScene extends Scene{ get id(){return 'cards';}
   constructor(index, wordList, themeId=null){ super(); this.i=index; this.wordList=wordList||WORDS; this.themeId=themeId; this.hkBtn=new Button('中文 🇭🇰','',0,0,150,44,()=>speakYue(this.current().yue)); this.deBtn=new Button('Deutsch 🇩🇪','',0,0,170,44,()=>speakDe(this.current().de)); this.enBtn=new Button('English 🇬🇧','',0,0,170,44,()=>speakEn(this.current().en || this.current().de)); this.prevBtn=new Button('⬅','',0,0,56,56,()=>this.prev()); this.nextBtn=new Button('⮕','',0,0,56,56,()=>this.next()); this.homeBtn=new Button('Zur Übersicht','📚',0,0,180,44,()=>setScene(new CardsOverviewScene(this.themeId))); this.layout(); speakYue(this.current().yue); }
   current(){ return this.wordList[this.i]; }
   layout(){
-    const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const CW=W-sbw;
+    const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const CW=W-sbw; const safeTop=getSafeTopPadding();
     const cardW=Math.min(640,CW*0.7), cardH=Math.min(420,H*0.55);
     const cardX=sbw + (CW-cardW)/2, cardY=(H-cardH)/2-20;
-    this.prevBtn.x = cardX - this.prevBtn.w - 20;
-    this.prevBtn.y = cardY + (cardH - this.prevBtn.h) / 2;
-    this.nextBtn.x = cardX + cardW + 20;
-    this.nextBtn.y = cardY + (cardH - this.nextBtn.h) / 2;
-    const bottomY=H-64; const centerX=sbw+CW/2;
-    this.hkBtn.x=centerX-250; this.hkBtn.y=bottomY;
-    this.deBtn.x=centerX-60; this.deBtn.y=bottomY;
-    this.enBtn.x=centerX+130; this.enBtn.y=bottomY;
-    this.homeBtn.x=W-196; this.homeBtn.y=16;
+    const compact = CW < 720;
+    if (compact) {
+      this.prevBtn.x = sbw + 16;
+      this.prevBtn.y = cardY + cardH + 12;
+      this.nextBtn.x = sbw + CW - this.nextBtn.w - 16;
+      this.nextBtn.y = this.prevBtn.y;
+    } else {
+      this.prevBtn.x = cardX - this.prevBtn.w - 20;
+      this.prevBtn.y = cardY + (cardH - this.prevBtn.h) / 2;
+      this.nextBtn.x = cardX + cardW + 20;
+      this.nextBtn.y = cardY + (cardH - this.nextBtn.h) / 2;
+    }
+    const bottomY=compact ? H - 180 : H-64; const centerX=sbw+CW/2;
+    if (compact) {
+      const buttonWidth = Math.min(240, CW - 32);
+      const startX = sbw + (CW - buttonWidth) / 2;
+      this.hkBtn.w = buttonWidth; this.deBtn.w = buttonWidth; this.enBtn.w = buttonWidth;
+      this.hkBtn.x=startX; this.hkBtn.y=bottomY;
+      this.deBtn.x=startX; this.deBtn.y=bottomY + this.hkBtn.h + 12;
+      this.enBtn.x=startX; this.enBtn.y=this.deBtn.y + this.deBtn.h + 12;
+    } else {
+      this.hkBtn.w = 150; this.deBtn.w = 170; this.enBtn.w = 170;
+      this.hkBtn.x=centerX-250; this.hkBtn.y=bottomY;
+      this.deBtn.x=centerX-60; this.deBtn.y=bottomY;
+      this.enBtn.x=centerX+130; this.enBtn.y=bottomY;
+    }
+    const btnMargin = 16;
+    if (compact) {
+      this.homeBtn.w = Math.min(220, CW - btnMargin*2);
+      this.homeBtn.x = sbw + (CW - this.homeBtn.w)/2;
+      this.homeBtn.y = safeTop + 12;
+    } else {
+      this.homeBtn.w = 180;
+      this.homeBtn.x = W - this.homeBtn.w - btnMargin;
+      this.homeBtn.y = safeTop + 16;
+    }
   }
   next(){ this.i=(this.i+1)%this.wordList.length; speakYue(this.current().yue); }
   prev(){ this.i=(this.i-1+this.wordList.length)%this.wordList.length; speakYue(this.current().yue); }
-  draw(){ drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth,H=canvas.clientHeight; const w=this.current(); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText(`🃏 Flashcards — ${this.i+1}/${this.wordList.length}`, sbw+16, 48); const CW = W-sbw; const cardW=Math.min(640,CW*0.7), cardH=Math.min(420,H*0.55), x=sbw + (CW-cardW)/2, y=(H-cardH)/2-20; shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,cardW,cardH,26); ctx.fill();}); const img=IMAGES[w.photo]; if(img&&img.complete&&img.naturalWidth>0&&img.naturalHeight>0){ const ar=img.naturalWidth/img.naturalHeight; let dw=cardW, dh=dw/ar; if(dh>cardH){ dh=cardH; dw=dh*ar; } if (dw>0 && dh>0){ const ix=x+(cardW-dw)/2, iy=y+(cardH-dh)/2; ctx.drawImage(img,ix,iy,dw,dh);} } ctx.fillStyle='#e6ebf2'; ctx.font='32px system-ui'; const yue=w.yue || ''; ctx.fillText(yue, sbw + (CW-ctx.measureText(yue).width)/2, y+cardH+44); ctx.fillStyle='#AFB6C3'; ctx.font='20px system-ui'; const de=w.de || ''; ctx.fillText(de, sbw + (CW-ctx.measureText(de).width)/2, y+cardH+72); ctx.fillStyle='#94a3b8'; ctx.font='18px system-ui'; const en=w.en || ''; ctx.fillText(en, sbw + (CW-ctx.measureText(en).width)/2, y+cardH+98);
+  draw(){
+    drawSidebar(this.id);
+    const sbw=getActiveSidebarWidth();
+    const W=canvas.clientWidth,H=canvas.clientHeight;
+    const safeTop=getSafeTopPadding();
+    const w=this.current();
+    ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui';
+    ctx.fillText(`🃏 Flashcards — ${this.i+1}/${this.wordList.length}`, sbw+16, safeTop+48);
+    const CW = W-sbw;
+    const cardW=Math.min(640,CW*0.7), cardH=Math.min(420,H*0.55);
+    const x=sbw + (CW-cardW)/2, y=(H-cardH)/2-20;
+    shadow(()=>{ ctx.fillStyle=THEME.panel; rrect(x,y,cardW,cardH,26); ctx.fill();});
+    const img=IMAGES[w.photo];
+    if(img&&img.complete&&img.naturalWidth>0&&img.naturalHeight>0){
+      const ar=img.naturalWidth/img.naturalHeight; let dw=cardW, dh=dw/ar;
+      if(dh>cardH){ dh=cardH; dw=dh*ar; }
+      if (dw>0 && dh>0){ const ix=x+(cardW-dw)/2, iy=y+(cardH-dh)/2; ctx.drawImage(img,ix,iy,dw,dh);}
+    }
+    ctx.fillStyle='#e6ebf2'; ctx.font='32px system-ui'; const yue=w.yue || '';
+    ctx.fillText(yue, sbw + (CW-ctx.measureText(yue).width)/2, y+cardH+44);
+    ctx.fillStyle='#AFB6C3'; ctx.font='20px system-ui'; const de=w.de || '';
+    ctx.fillText(de, sbw + (CW-ctx.measureText(de).width)/2, y+cardH+72);
+    ctx.fillStyle='#94a3b8'; ctx.font='18px system-ui'; const en=w.en || '';
+    ctx.fillText(en, sbw + (CW-ctx.measureText(en).width)/2, y+cardH+98);
     [this.prevBtn,this.nextBtn,this.hkBtn,this.deBtn,this.enBtn,this.homeBtn].forEach(b=>{ b.hover=b.contains(pointer.x,pointer.y); b.draw();});
     drawBurgerMenu();
   }
@@ -716,36 +844,36 @@ class QuizScene extends Scene{ get id(){return 'quiz';}
       speakYue(this.current.yue);
   }
   layout(){
-      const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth,H=canvas.clientHeight; const CW=W-sbw;
+      const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth,H=canvas.clientHeight; const CW=W-sbw; const safeTop=getSafeTopPadding();
       const bottomY = H-64; const centerX = sbw + CW / 2;
       this.hkBtn.x = centerX - 250; this.hkBtn.y = bottomY;
       this.deBtn.x = centerX - 60; this.deBtn.y = bottomY;
       this.enBtn.x = centerX + 130; this.enBtn.y = bottomY;
-      this.themeDropdown.x = sbw + 16; this.themeDropdown.y = 56; this.themeDropdown.w = Math.min(260, CW-32);
+      this.themeDropdown.x = sbw + 16; this.themeDropdown.y = safeTop + 56; this.themeDropdown.w = Math.min(260, CW-32);
   }
-  draw(){ drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth,H=canvas.clientHeight; const CW=W-sbw; ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText('🧠 Quiz — Höre und wähle das richtige Bild', sbw+16, 48);
+  draw(){ drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth,H=canvas.clientHeight; const CW=W-sbw; const safeTop=getSafeTopPadding(); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText('🧠 Quiz — Höre und wähle das richtige Bild', sbw+16, safeTop+48);
     // Theme filter dropdown (simple)
     const dd=this.themeDropdown; const currentTheme = this.selectedThemeId ? THEMES.find(t=>t.id===this.selectedThemeId) : {label:'Alle Themen', emoji:'🌐'};
-    shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.08)'; rrect(dd.x,dd.y,dd.w,dd.h,10); ctx.fill();});
+    shadow(()=>{ ctx.fillStyle=THEME.panelStrong; rrect(dd.x,dd.y,dd.w,dd.h,10); ctx.fill();});
     ctx.fillStyle='#e6ebf2'; ctx.font='16px system-ui'; const ddLabel=`${currentTheme.emoji||''} ${currentTheme.label}`.trim(); ctx.fillText(ddLabel, dd.x+12, dd.y+26);
     ctx.fillText('▾', dd.x+dd.w-24, dd.y+26);
     if (dd.open && this.ddItems){
       const itemH=36; const x=dd.x, y=dd.y+dd.h+6, w=dd.w; const h=this.ddItems.length*itemH;
-      shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.08)'; rrect(x,y,w,h,10); ctx.fill();});
+      shadow(()=>{ ctx.fillStyle=THEME.panelStrong; rrect(x,y,w,h,10); ctx.fill();});
       ctx.fillStyle='#e6ebf2'; ctx.font='15px system-ui';
       this.ddItems.forEach((it,idx)=>{ const iy=y+idx*itemH+24; const lab=`${it.emoji||''} ${it.label}`.trim(); ctx.fillText(lab, x+12, iy); });
     }
 
-    ctx.fillStyle='#e6ebf2'; ctx.font='26px system-ui'; const q=this.current.yue; ctx.fillText(q, sbw + (CW-ctx.measureText(q).width)/2, 92);
+    ctx.fillStyle='#e6ebf2'; ctx.font='26px system-ui'; const q=this.current.yue; const questionY = safeTop + 120; ctx.fillText(q, sbw + (CW-ctx.measureText(q).width)/2, questionY);
     
     const gap=18; const gridW=Math.min(CW-48, 800); const tileW=(gridW-gap)/2, tileH=Math.min(260, tileW*0.66);
-    const gx=sbw + (CW - gridW)/2, gy=130;
-    this.options.forEach((opt,i)=>{ const row=Math.floor(i/2), col=i%2; const x=gx + col*(tileW+gap), y=gy + row*(tileH+gap); shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(x,y,tileW,tileH,18); ctx.fill();}); const img=IMAGES[opt.photo]; if(img&&img.complete){ const ar=img.width/img.height; let dw=tileW, dh=dw/ar; if(dh>tileH){ dh=tileH; dw=dh*ar; } const ix=x+(tileW-dw)/2, iy=y+(tileH-dh)/2; ctx.drawImage(img,ix,iy,dw,dh);} opt._box={x,y,w:tileW,h:tileH}; });
+    const gx=sbw + (CW - gridW)/2, gy=questionY+38;
+    this.options.forEach((opt,i)=>{ const row=Math.floor(i/2), col=i%2; const x=gx + col*(tileW+gap), y=gy + row*(tileH+gap); shadow(()=>{ ctx.fillStyle=THEME.panel; rrect(x,y,tileW,tileH,18); ctx.fill();}); const img=IMAGES[opt.photo]; if(img&&img.complete){ const ar=img.width/img.height; let dw=tileW, dh=dw/ar; if(dh>tileH){ dh=tileH; dw=dh*ar; } const ix=x+(tileW-dw)/2, iy=y+(tileH-dh)/2; ctx.drawImage(img,ix,iy,dw,dh);} opt._box={x,y,w:tileW,h:tileH}; });
 
     const gridBottom = gy + 2*tileH + gap;
     const trackY = gridBottom + 40;
     const trackX=sbw+60, trackW=CW-120, trackH=18;
-    shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.08)'; rrect(trackX,trackY,trackW,trackH,12); ctx.fill();});
+    shadow(()=>{ ctx.fillStyle=THEME.panelStrong; rrect(trackX,trackY,trackW,trackH,12); ctx.fill();});
     const stepW=trackW/this.steps; ctx.fillStyle='#22d3ee'; rrect(trackX,trackY, Math.max(0,(this.progress)*stepW), trackH,12); ctx.fill();
     ctx.font='28px system-ui'; ctx.fillText('🐭', trackX + Math.max(0,(this.progress-0.9))*stepW, trackY+trackH+4);
     ctx.fillText('🧀', trackX + trackW-6, trackY+trackH+4);
@@ -803,19 +931,19 @@ class MouseCheeseScene extends Scene{ get id(){return 'game';}
       this.dpad.bounds = { x: cx-size-gap, y: cy-size-gap, w: (size*3+gap*2), h:(size*3+gap*2)};
   }
   playArea(){
-      const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight;
+      const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const safeTop=getSafeTopPadding();
       let right = W-this.margin;
       if (W > (sbw + this.dpad.bounds.w + 2 * this.margin)) {
           right = this.dpad.bounds.x - this.margin;
       }
-      const left=sbw+this.margin, top=120, bottom=H-this.margin;
+      const left=sbw+this.margin, top=safeTop+120, bottom=H-this.margin;
       return {left,top,right,bottom,width:right-left,height:bottom-top};
   }
   reset(){ const a=this.playArea(); this.cols=Math.max(1, Math.floor(a.width/this.grid)); this.rows=Math.max(1, Math.floor(a.height/this.grid)); const cx=Math.floor(this.cols/2), cy=Math.floor(this.rows/2); this.body=[{x:cx,y:cy}]; this.placeCheese(); this.score=0; this.wordIndex=0; this.wordOrder=shuffle([...WORDS]); }
   placeCheese(){ this.cheese={x:Math.floor(Math.random()*this.cols), y:Math.floor(Math.random()*this.rows)}; if(this.body.some(s=>s.x===this.cheese.x && s.y===this.cheese.y)) this.placeCheese(); }
   drawGrid(){ const a=this.playArea(); ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.lineWidth=1; for(let x=0;x<=this.cols;x++){ ctx.beginPath(); ctx.moveTo(a.left+x*this.grid, a.top); ctx.lineTo(a.left+x*this.grid, a.bottom); ctx.stroke(); } for(let y=0;y<=this.rows;y++){ ctx.beginPath(); ctx.moveTo(a.left, a.top+y*this.grid); ctx.lineTo(a.right, a.top+y*this.grid); ctx.stroke(); } }
-  draw(){ drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const a=this.playArea(); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText('🐭 Maus & Käse — Pfeiltasten oder Touch-Controller', sbw+16, 48);
-    const word=this.wordOrder[this.wordIndex % this.wordOrder.length]; const bannerW=Math.min(560,(W-sbw-60)), bannerH=56, bx=sbw + ((W-sbw)-bannerW)/2, by=56; shadow(()=>{ ctx.fillStyle='rgba(255,255,255,0.06)'; rrect(bx,by,bannerW,bannerH,18); ctx.fill(); }); ctx.fillStyle='#e6ebf2'; ctx.font='20px system-ui'; const line=`🧀 Der nächster Käse sagt: ${word.yue}  (${word.de})`; ctx.fillText(line, bx+16, by+36);
+  draw(){ drawSidebar(this.id); const sbw=getActiveSidebarWidth(); const W=canvas.clientWidth, H=canvas.clientHeight; const a=this.playArea(); const safeTop=getSafeTopPadding(); ctx.fillStyle='#AFB6C3'; ctx.font='14px system-ui'; ctx.fillText('🐭 Maus & Käse — Pfeiltasten oder Touch-Controller', sbw+16, safeTop+48);
+    const word=this.wordOrder[this.wordIndex % this.wordOrder.length]; const bannerW=Math.min(560,(W-sbw-60)), bannerH=56, bx=sbw + ((W-sbw)-bannerW)/2, by=safeTop+56; shadow(()=>{ ctx.fillStyle=THEME.panel; rrect(bx,by,bannerW,bannerH,18); ctx.fill(); }); ctx.fillStyle='#e6ebf2'; ctx.font='20px system-ui'; const line=`🧀 Der nächster Käse sagt: ${word.yue}  (${word.de})`; ctx.fillText(line, bx+16, by+36);
     this.drawGrid();
     // Draw cheese larger and centered with a soft target ring for tolerance
     const cx = a.left + (this.cheese.x+0.5)*this.grid;
