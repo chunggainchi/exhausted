@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import React, { useState, useEffect } from 'react';
 import { WORDS, THEMES, getWordsForTheme, PHOTO_URLS } from '../data';
 import { Word } from '../types';

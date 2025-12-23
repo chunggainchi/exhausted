@@ -1,7 +1,7 @@
-"use client"; 
+"use client";
 
 import React, { useRef, useEffect, useState } from 'react';
-import { WORDS, PHOTO_URLS } from '../data';
+import { WORDS } from '../data';
 import { Word } from '../types';
 import { speak, fxPositive } from '../services/audioService';
 
@@ -33,7 +33,6 @@ export const Game: React.FC = () => {
         x: Math.floor(Math.random() * s.cols),
         y: Math.floor(Math.random() * s.rows)
       };
-      // eslint-disable-next-line no-loop-func
       valid = !s.body.some(part => part.x === s.cheese.x && part.y === s.cheese.y);
     }
   };

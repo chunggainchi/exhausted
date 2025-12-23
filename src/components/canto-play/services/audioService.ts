@@ -9,11 +9,12 @@ let actx: AudioContext | null = null;
 function waitForVoices(): Promise<SpeechSynthesisVoice[]> {
   return new Promise(resolve => {
     const tryLoad = () => {
+      if (typeof window === 'undefined') return;
       const vs = window.speechSynthesis.getVoices();
       if (vs && vs.length) { resolve(vs); }
       else { setTimeout(tryLoad, 120); }
     };
-    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+    if (typeof window !== 'undefined' && window.speechSynthesis.onvoiceschanged !== undefined) {
         window.speechSynthesis.onvoiceschanged = tryLoad;
     }
     tryLoad();
@@ -44,7 +45,7 @@ export async function initAudio() {
 }
 
 export function speak(text: string, lang: 'yue' | 'de' | 'en') {
-  if (!('speechSynthesis' in window)) return;
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
   
   if (!voicesReady) {
     // Attempt init if not ready
@@ -70,16 +71,26 @@ export function speak(text: string, lang: 'yue' | 'de' | 'en') {
     }
     
     window.speechSynthesis.speak(u);
-  } catch (e) {
-    console.error("Speech error", e);
+  } catch {
+    // ignore errors
   }
 }
 
+interface IWindow extends Window {
+  webkitAudioContext?: typeof AudioContext;
+}
+
 function ensureAC() {
-  if (!actx) {
+  if (!actx && typeof window !== 'undefined') {
     try {
-      actx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    } catch (e) {}
+      const win = window as unknown as IWindow;
+      const AudioContextClass = window.AudioContext || win.webkitAudioContext;
+      if (AudioContextClass) {
+        actx = new AudioContextClass();
+      }
+    } catch {
+      // ignore
+    }
   }
 }
 
