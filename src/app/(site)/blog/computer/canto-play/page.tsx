@@ -62,7 +62,7 @@ export default function CantoPlayPostPage() {
             </p>
 
             <p className="mt-4 mb-4">
-              👉 Play it here: <a href="/games/learn-cantonese.html" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-500 hover:underline">CantoPlay (learn Cantonese)</a>
+              👉 Play it here: <a href="/canto-play" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-500 hover:underline">CantoPlay (learn Cantonese)</a>
             </p>
 
             <h3 className="text-xl font-semibold mt-8 mb-2">Details</h3>
