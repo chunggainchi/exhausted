@@ -78,7 +78,7 @@ export default function ReadPlayPostPage() {
             <p className="mt-4 mb-4">
               👉 Play it here:{' '}
               <a
-                href="/games/new-lesen/index.html"
+                href="/lese-spass"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 dark:text-blue-500 hover:underline"
