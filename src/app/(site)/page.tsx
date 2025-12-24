@@ -164,7 +164,7 @@ export default function HomePage() {
 
             {/* LeseSpaß */}
             <Link
-              href="/games/new-lesen/index.html"
+              href="/lese-spass"
               className="flex flex-col items-center group"
             >
               <div className="relative w-28 h-28 sm:w-40 sm:h-40 mb-3 group-hover:-translate-y-1 transition-all duration-300">
