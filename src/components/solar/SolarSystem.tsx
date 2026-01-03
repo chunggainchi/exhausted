@@ -6,7 +6,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense } fr
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useTexture, Text, OrbitControls, Stars, Loader, Preload, Billboard } from '@react-three/drei';
 import * as THREE from 'three';
-import { Moon as MoonIcon, RotateCcw, CloudSun, Calendar, Milestone, ArrowUpRight } from 'lucide-react';
+import { Moon as MoonIcon, RotateCcw, CloudSun, Calendar } from 'lucide-react';
 
 // --- TYPES ---
 interface InnerLayer {
@@ -35,27 +35,29 @@ interface PlanetData {
     orbitAU: number;
     radiusMultiplier: number;
     hasRings?: boolean;
-    moons?: MoonData[];
+    rings?: { innerRadius: number; outerRadius: number; color: string; opacity?: number }[];
+    moons?: { name: string; size: number; distance: number; speed: number; color: string; useRealDist?: boolean; useRealSize?: boolean }[];
     dayLength?: string;
-    rotationAxisTilt?: number; // Axial tilt in degrees (e.g., Uranus ~98°, Venus ~177°)
-    orbitPeriodDays?: number; // Orbital period in Earth days
-    rotationPeriodHours?: number; // Rotation period in Earth hours
-    rotationRetrograde?: boolean; // Explicit retrograde rotation flag
-    // Dynamic props for display
+    rotationAxisTilt?: number;
+    orbitPeriodDays?: number;
+    rotationPeriodHours?: number;
+    rotationRetrograde?: boolean;
     useRealDist?: boolean;
     useRealSize?: boolean;
     innerLayers?: InnerLayer[];
 }
 
-interface MoonData {
-    size: number;
-    distance: number;
-    speed: number;
-    color: string;
-    // Dynamic props
-    useRealDist?: boolean;
-    useRealSize?: boolean;
+// Custom ref types for three components to satisfy ESLint
+interface TextRef extends THREE.Mesh {
+    text: string;
+    color?: string | THREE.Color | number;
 }
+
+// OrbitControls from drei doesn't easily expose its internal type
+// Using a safe extension of any for the specific methods we use
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type OrbitControlsRef = any;
+
 
 // --- CONSTANTS & DATA ---
 // Using local texture assets
@@ -151,7 +153,7 @@ const PLANETS: PlanetData[] = [
         moonsCount: 1,
         realSize: "1x Earth",
         dayLength: "24 Hours",
-        moons: [{ size: 0.45, distance: 3.5, speed: 2.66e-6, color: '#DDDDDD' }],
+        moons: [{ name: "Moon", size: 0.45, distance: 3.5, speed: 2.66e-6, color: '#DDDDDD' }],
         innerLayers: [
             {
                 name: "Inner Core",
@@ -505,7 +507,7 @@ const CityMarker: React.FC<{
     sunPos: THREE.Vector3
 }> = ({ radius, city }) => {
     const meshRef = useRef<THREE.Group>(null);
-    const textRef = useRef<any>(null);
+    const textRef = useRef<TextRef>(null);
 
     const pos = useMemo(() => {
         const phi = THREE.MathUtils.degToRad(city.lat);
@@ -904,7 +906,7 @@ const SeasonsCityMarker: React.FC<{
     orbitalAngle: number // To calc sun declination
 }> = ({ radius, city, orbitalAngle }) => {
     const meshRef = useRef<THREE.Group>(null);
-    const textRef = useRef<any>(null);
+    const textRef = useRef<TextRef>(null);
 
     // Calculate Day Length
     // obliquity epsilon = 23.5 deg
@@ -1391,8 +1393,7 @@ class PlanetErrorBoundary extends React.Component<
     { children: React.ReactNode, data: PlanetData, simTimeRef: React.MutableRefObject<number>, onSelect: (id: string) => void },
     { hasError: boolean }
 > {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    constructor(props: any) {
+    constructor(props: { children: React.ReactNode, data: PlanetData, simTimeRef: React.MutableRefObject<number>, onSelect: (id: string) => void }) {
         super(props);
         this.state = { hasError: false };
     }
@@ -1409,7 +1410,7 @@ class PlanetErrorBoundary extends React.Component<
 // Updated CameraManager signature to accept override options
 const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; useRealSize: boolean; simTimeRef: React.MutableRefObject<number>, viewMoonPhase: boolean, zoomSignal: number, seasonsMode?: boolean, overrideOrbitalAngle?: number }> = ({ focusedId, useRealDist, useRealSize, simTimeRef, viewMoonPhase, zoomSignal, seasonsMode, overrideOrbitalAngle }) => {
     const { camera } = useThree();
-    const controlsRef = useRef<any>(null);
+    const controlsRef = useRef<OrbitControlsRef>(null);
     const isTransitioning = useRef(false);
     const previousPlanetPos = useRef(new THREE.Vector3());
     const lastSimTime = useRef(simTimeRef.current);
