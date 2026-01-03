@@ -2210,110 +2210,102 @@ const UI: React.FC<{
                 {showMobileMenu && (
                     <>
                         <div className="fixed inset-0 bg-transparent z-40 pointer-events-auto" onClick={() => setShowMobileMenu(false)} />
-                        <div className="absolute bottom-20 right-4 bg-black/90 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl z-50 pointer-events-auto">
-                            {/* Mobile Controls */}
-                            <div className="flex flex-col gap-3 mb-4 pb-4 border-b border-white/10">
-                                {/* Playback Controls */}
-                                <div className="flex gap-2">
-                                    <button onClick={() => { audioService.playClick(); onTogglePlay(); }} className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border transition-all ${isPlaying ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
-                                        <span className="text-lg">{isPlaying ? "⏸" : "▶︎"}</span>
-                                        <span className="text-sm font-medium">{isPlaying ? "Time" : "Time"}</span>
+                        <div className="absolute bottom-20 left-4 right-4 bg-black/95 backdrop-blur-2xl border border-white/20 rounded-3xl p-6 shadow-2xl z-50 pointer-events-auto max-h-[75vh] flex flex-col">
+                            <div className="overflow-y-auto pr-1 custom-scrollbar">
+                                {/* Planetary Navigation Grid - Priority #1 */}
+                                <div className="grid grid-cols-4 gap-2 justify-items-center mb-6 pb-6 border-b border-white/10">
+                                    <button onClick={() => handleSelect(null)} className={`flex flex-col items-center justify-center w-16 h-16 rounded-2xl transition-all duration-300 ${!focusedId ? 'bg-white/20 ring-2 ring-white/30' : 'bg-white/5 border border-white/10'}`}>
+                                        <div className="w-8 h-8 rounded-full mb-1 shadow-md ring-1 ring-white/20 overflow-hidden relative">
+                                            <Image src="/textures/Sun.jpg" alt="Sun" fill sizes="32px" className="object-cover" />
+                                        </div>
+                                        <span className="text-[9px] font-light text-white uppercase tracking-tighter">Sun</span>
                                     </button>
-                                    <button onClick={onToggleSpeed} className="w-20 flex items-center justify-center py-3 rounded-xl text-white bg-white/5 border border-white/10 font-mono text-xs">
-                                        {TIME_SPEEDS.find(s => s.value === simSpeed)?.label}
-                                    </button>
+                                    {PLANETS.map((planet) => (
+                                        <button key={planet.id} onClick={() => handleSelect(planet.id)} className={`flex flex-col items-center justify-center w-16 h-16 rounded-2xl transition-all duration-300 border ${focusedId === planet.id ? 'border-white/40 bg-white/10' : 'border-white/10 bg-white/5'}`}>
+                                            <div className="w-6 h-6 rounded-full mb-1 shadow-md ring-1 ring-white/20 overflow-hidden relative" style={{ boxShadow: `0 0 8px ${planet.color}40` }}>
+                                                <Image src={planet.textureUrl} alt={planet.name} fill sizes="24px" className="object-cover" />
+                                            </div>
+                                            <span className="text-[9px] font-light text-white uppercase tracking-tighter">{planet.name}</span>
+                                        </button>
+                                    ))}
                                 </div>
 
-                                {/* View Options */}
-                                <div className="grid grid-cols-2 gap-2">
-                                    <button onClick={onToggleRealDist} className={`py-3 rounded-xl border transition-all ${useRealDist ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
-                                        <span className="mr-2">📏</span><span className="text-xs">Scale Dist</span>
-                                    </button>
-                                    <button onClick={onToggleRealSize} className={`py-3 rounded-xl border transition-all ${useRealSize ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
-                                        <span className="mr-2">⚪</span><span className="text-xs">Scale Size</span>
-                                    </button>
-                                </div>
-
-                                {/* Moon Phase - Dedicated Button */}
-                                {focusedId === 'earth' && (
-                                    <button onClick={onToggleMoonPhase} className={`w-full py-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${viewMoonPhase ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
-                                        <MoonIcon size={18} className={viewMoonPhase ? "fill-current" : ""} />
-                                        <span className="text-sm font-medium">View Moon Phases</span>
-                                    </button>
-                                )}
-
-                                {/* Earth Inner Layers - Dedicated Button */}
-                                <button onClick={onToggleInnerLayers} className={`w-full py-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${viewInnerLayers ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
-                                    <span className="text-lg">🌍</span>
-                                    <span className="text-sm font-medium">Earth Inner Layers</span>
-                                </button>
-
-
-                                {/* Day/Night Demo - Dedicated Button */}
-                                <button onClick={onToggleDayNight} className={`w-full py-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${dayNightMode ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
-                                    <CloudSun size={18} className={dayNightMode ? "fill-current" : ""} />
-                                    <span className="text-sm font-medium">Day & Night Demo</span>
-                                </button>
-
-                                {/* Seasons Mode - Dedicated Button */}
-                                <button onClick={onToggleSeasons} className={`w-full py-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${seasonsMode ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
-                                    <Calendar size={18} />
-                                    <span className="text-sm font-medium">Seasons: Winter Days</span>
-                                </button>
-
-                                {/* Season Progress Slider (only when Seasons Mode Active) */}
-                                {seasonsMode && (
-                                    <div className="bg-black/40 backdrop-blur-md rounded-xl p-4 border border-white/10">
-                                        <div className="flex justify-between text-xs text-gray-300 mb-2">
-                                            <span>Dec Solstice</span>
-                                            <span>Mar Eq</span>
-                                            <span>Jun Solstice</span>
-                                            <span>Sep Eq</span>
-                                            <span>Dec</span>
-                                        </div>
-                                        <input
-                                            type="range"
-                                            min="0"
-                                            max="365"
-                                            value={seasonProgress}
-                                            onChange={(e) => setSeasonProgress(Number(e.target.value))}
-                                            className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-white"
-                                        />
-                                        <div className="text-center text-white text-sm mt-1 font-mono">
-                                            Day of Year: {Math.floor(seasonProgress)}
-                                        </div>
+                                {/* Mobile Controls */}
+                                <div className="flex flex-col gap-3">
+                                    {/* Playback Controls */}
+                                    <div className="flex gap-2">
+                                        <button onClick={() => { audioService.playClick(); onTogglePlay(); }} className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl border transition-all ${isPlaying ? 'bg-white text-black border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                                            <span className="text-base">{isPlaying ? "⏸" : "▶︎"}</span>
+                                            <span className="text-xs font-medium">{isPlaying ? "Pause" : "Play"}</span>
+                                        </button>
+                                        <button onClick={onToggleSpeed} className="w-16 flex items-center justify-center py-2 rounded-xl text-white bg-white/5 border border-white/10 font-mono text-[10px]">
+                                            {TIME_SPEEDS.find(s => s.value === simSpeed)?.label}
+                                        </button>
                                     </div>
-                                )}
 
-                                {/* Location & Audio */}
-                                <div className="grid grid-cols-2 gap-2">
-                                    <button onClick={onToggleLocation} className={`py-3 rounded-xl border transition-all ${showLocation ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
-                                        <span className="mr-2">⚲</span><span className="text-xs">Location</span>
-                                    </button>
-                                    <button onClick={onToggleMusic} className={`py-3 rounded-xl border transition-all ${isMusicOn ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
-                                        <span className="mr-2">♬</span><span className="text-xs">Music</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-3 gap-3">
-                                <button onClick={() => handleSelect(null)} className={`flex flex-col items-center justify-center w-16 h-16 rounded-xl transition-all duration-300 ${!focusedId ? 'bg-white/20 ring-2 ring-white/30' : 'bg-white/5 border border-white/10'}`}>
-                                    <div className="w-8 h-8 rounded-full mb-1 shadow-md ring-1 ring-white/20 overflow-hidden relative">
-                                        <Image src="/textures/Sun.jpg" alt="Sun" fill sizes="32px" className="object-cover" />
+                                    {/* Main Toggles - 4 Column Grid */}
+                                    <div className="grid grid-cols-4 gap-2">
+                                        <button onClick={onToggleRealDist} className={`flex flex-col items-center justify-center py-2 rounded-xl border transition-all ${useRealDist ? 'bg-white text-black border-white' : 'bg-white/5 border-white/10 text-gray-400'}`}>
+                                            <span className="text-xs mb-1">📏</span>
+                                            <span className="text-[9px] uppercase font-bold tracking-tighter">Dist</span>
+                                        </button>
+                                        <button onClick={onToggleRealSize} className={`flex flex-col items-center justify-center py-2 rounded-xl border transition-all ${useRealSize ? 'bg-white text-black border-white' : 'bg-white/5 border-white/10 text-gray-400'}`}>
+                                            <span className="text-xs mb-1">⚪</span>
+                                            <span className="text-[9px] uppercase font-bold tracking-tighter">Size</span>
+                                        </button>
+                                        <button onClick={onToggleLocation} className={`flex flex-col items-center justify-center py-2 rounded-xl border transition-all ${showLocation ? 'bg-white text-black border-white' : 'bg-white/5 border-white/10 text-gray-400'}`}>
+                                            <span className="text-xs mb-1">⚲</span>
+                                            <span className="text-[9px] uppercase font-bold tracking-tighter">Loc</span>
+                                        </button>
+                                        <button onClick={onToggleMusic} className={`flex flex-col items-center justify-center py-2 rounded-xl border transition-all ${isMusicOn ? 'bg-white text-black border-white' : 'bg-white/5 border-white/10 text-gray-400'}`}>
+                                            <span className="text-xs mb-1">♬</span>
+                                            <span className="text-[9px] uppercase font-bold tracking-tighter">Music</span>
+                                        </button>
                                     </div>
-                                    <span className="text-[8px] font-light text-white uppercase">Sun</span>
-                                </button>
-                                {PLANETS.map((planet) => (
-                                    <button key={planet.id} onClick={() => handleSelect(planet.id)} className={`flex flex-col items-center justify-center w-16 h-16 rounded-xl transition-all duration-300 border ${focusedId === planet.id ? 'border-white/40 bg-white/10' : 'border-white/10 bg-white/5'}`}>
-                                        <div className="w-6 h-6 rounded-full mb-1 shadow-md ring-1 ring-white/20 overflow-hidden relative" style={{ boxShadow: `0 0 5px ${planet.color}40` }}>
-                                            <Image src={planet.textureUrl} alt={planet.name} fill sizes="24px" className="object-cover" />
+
+                                    {/* Feature Modes - 2 Column Grid */}
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <button onClick={onToggleInnerLayers} className={`py-2 rounded-xl border flex items-center justify-center gap-2 transition-all ${viewInnerLayers ? 'bg-white text-black border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                                            <span className="text-sm">🌍</span>
+                                            <span className="text-[10px] font-bold uppercase tracking-tight">Inner Layers</span>
+                                        </button>
+                                        <button onClick={onToggleDayNight} className={`py-2 rounded-xl border flex items-center justify-center gap-2 transition-all ${dayNightMode ? 'bg-white text-black border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                                            <CloudSun size={14} className={dayNightMode ? "fill-current" : ""} />
+                                            <span className="text-[10px] font-bold uppercase tracking-tight">Day/Night</span>
+                                        </button>
+                                        <button onClick={onToggleSeasons} className={`py-2 rounded-xl border flex items-center justify-center gap-2 transition-all ${seasonsMode ? 'bg-white text-black border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                                            <Calendar size={14} />
+                                            <span className="text-[10px] font-bold uppercase tracking-tight">Seasons</span>
+                                        </button>
+                                        {focusedId === 'earth' && (
+                                            <button onClick={onToggleMoonPhase} className={`py-2 rounded-xl border flex items-center justify-center gap-2 transition-all ${viewMoonPhase ? 'bg-white text-black border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                                                <MoonIcon size={14} className={viewMoonPhase ? "fill-current" : ""} />
+                                                <span className="text-[10px] font-bold uppercase tracking-tight">Moon Phase</span>
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {/* Season Progress Slider (only when Seasons Mode Active) */}
+                                    {seasonsMode && (
+                                        <div className="bg-black/40 backdrop-blur-md rounded-xl p-3 border border-white/10 mt-1">
+                                            <div className="flex justify-between text-[9px] text-gray-400 mb-1">
+                                                <span>Dec</span><span>Mar</span><span>Jun</span><span>Sep</span><span>Dec</span>
+                                            </div>
+                                            <input
+                                                type="range"
+                                                min="0"
+                                                max="365"
+                                                value={seasonProgress}
+                                                onChange={(e) => setSeasonProgress(Number(e.target.value))}
+                                                className="w-full h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-white"
+                                            />
                                         </div>
-                                        <span className="text-[8px] font-light text-white uppercase">{planet.name}</span>
-                                    </button>
-                                ))}
+                                    )}
+                                </div>
+                                <a href="https://exhaustedrocket.com" target="_blank" rel="noopener noreferrer" className="block mt-4 text-center text-[10px] text-white/40 hover:text-white transition-colors">
+                                    Product of exhaustedrocket.com
+                                </a>
                             </div>
-                            <a href="https://exhaustedrocket.com" target="_blank" rel="noopener noreferrer" className="block mt-4 text-center text-[10px] text-white/40 hover:text-white transition-colors">
-                                Product of exhaustedrocket.com
-                            </a>
                         </div>
                     </>
                 )}
@@ -2325,45 +2317,47 @@ const UI: React.FC<{
             </a>
 
             {/* Debug overlay for quick physics sanity-check */}
-            {DEBUG_OVERLAY_ENABLED && (
-                <div className="fixed top-2 left-2 z-50 pointer-events-auto flex flex-col gap-2">
-                    <button
-                        onClick={() => setShowDebugOverlay(v => !v)}
-                        className="bg-black/70 text-white text-[11px] px-3 py-2 rounded border border-white/10 shadow-lg hover:bg-black/80"
-                    >
-                        {showDebugOverlay ? 'Hide' : 'Show'} debug
-                    </button>
-                    {showDebugOverlay && (
-                        <div className="bg-black/80 text-white text-[11px] px-3 py-2 rounded border border-white/10 shadow-lg space-y-2 min-w-[200px]">
-                            {moonDebug && (
-                                <div className="space-y-1">
-                                    <div className="font-semibold">Moon debug</div>
-                                    <div>Orbit: {moonDebug.orbitDays.toFixed(2)} days</div>
-                                    {moonSynodicDays && (
-                                        <div>Moon phase cycle: {moonSynodicDays.toFixed(2)} days</div>
-                                    )}
-                                </div>
-                            )}
-                            {derivedFocused && (
-                                <div className="space-y-1">
-                                    <div className="font-semibold">{derivedFocused.name} debug</div>
-                                    {debugOrbitDays !== null && (
-                                        <div>Orbit: {debugOrbitDays.toFixed(2)} days</div>
-                                    )}
-                                    {debugRotationHours !== null && (
-                                        <div>Day: {debugRotationHours.toFixed(2)} hours</div>
-                                    )}
-                                </div>
-                            )}
-                            {!derivedFocused && !moonDebug && (
-                                <div className="opacity-80">Select a planet or enable Moon phase</div>
-                            )}
-                            <div className="opacity-60">Speeds → periods (rad/s)</div>
-                        </div>
-                    )}
-                </div>
-            )}
-        </div>
+            {
+                DEBUG_OVERLAY_ENABLED && (
+                    <div className="fixed top-2 left-2 z-50 pointer-events-auto flex flex-col gap-2">
+                        <button
+                            onClick={() => setShowDebugOverlay(v => !v)}
+                            className="bg-black/70 text-white text-[11px] px-3 py-2 rounded border border-white/10 shadow-lg hover:bg-black/80"
+                        >
+                            {showDebugOverlay ? 'Hide' : 'Show'} debug
+                        </button>
+                        {showDebugOverlay && (
+                            <div className="bg-black/80 text-white text-[11px] px-3 py-2 rounded border border-white/10 shadow-lg space-y-2 min-w-[200px]">
+                                {moonDebug && (
+                                    <div className="space-y-1">
+                                        <div className="font-semibold">Moon debug</div>
+                                        <div>Orbit: {moonDebug.orbitDays.toFixed(2)} days</div>
+                                        {moonSynodicDays && (
+                                            <div>Moon phase cycle: {moonSynodicDays.toFixed(2)} days</div>
+                                        )}
+                                    </div>
+                                )}
+                                {derivedFocused && (
+                                    <div className="space-y-1">
+                                        <div className="font-semibold">{derivedFocused.name} debug</div>
+                                        {debugOrbitDays !== null && (
+                                            <div>Orbit: {debugOrbitDays.toFixed(2)} days</div>
+                                        )}
+                                        {debugRotationHours !== null && (
+                                            <div>Day: {debugRotationHours.toFixed(2)} hours</div>
+                                        )}
+                                    </div>
+                                )}
+                                {!derivedFocused && !moonDebug && (
+                                    <div className="opacity-80">Select a planet or enable Moon phase</div>
+                                )}
+                                <div className="opacity-60">Speeds → periods (rad/s)</div>
+                            </div>
+                        )}
+                    </div>
+                )
+            }
+        </div >
     );
 };
 
