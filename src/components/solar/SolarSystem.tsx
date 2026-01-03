@@ -4,9 +4,9 @@
 import Image from 'next/image';
 import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useTexture, Text, OrbitControls, Stars, Loader, Preload } from '@react-three/drei';
+import { useTexture, Text, OrbitControls, Stars, Loader, Preload, Billboard } from '@react-three/drei';
 import * as THREE from 'three';
-import { Moon as MoonIcon, RotateCcw } from 'lucide-react';
+import { Moon as MoonIcon, RotateCcw, CloudSun, Calendar, Milestone, ArrowUpRight } from 'lucide-react';
 
 // --- TYPES ---
 interface InnerLayer {
@@ -153,37 +153,37 @@ const PLANETS: PlanetData[] = [
         dayLength: "24 Hours",
         moons: [{ size: 0.45, distance: 3.5, speed: 2.66e-6, color: '#DDDDDD' }],
         innerLayers: [
-  { 
-    name: "Inner Core", 
-    radiusRatio: 0.19, 
-    color: "#FFFFFF", 
-    description: "🔥 Solid iron–nickel ball, ~1,220 km wide and ~5,400°C hot (almost Sun-level spicy). This ultra-dense jawbreaker spins quietly at Earth’s center and helps power our magnetic field." 
-  },
-  { 
-    name: "Outer Core", 
-    radiusRatio: 0.55, 
-    color: "#FFD700", 
-    description: "🧲🌊 A churning ocean of molten metal, ~2,300 km thick. This liquid dynamo sloshes around to create Earth’s magnetic shield—blocking solar chaos, lighting up auroras, and keeping compasses sane." 
-  },
-  { 
-    name: "Lower Mantle", 
-    radiusRatio: 0.88, 
-    color: "#FF4500", 
-    description: "🐢🔥 2,200 km of super-hot rock that *flows slower than fingernails grow*. It looks solid, moves like lava over millions of years, and quietly rearranges continents from below." 
-  },
-  { 
-    name: "Upper Mantle", 
-    radiusRatio: 0.99, 
-    color: "#8B0000", 
-    description: "🏄‍♂️🌍 The squishy engine room beneath the crust. Home to the asthenosphere—soft enough for tectonic plates to slide, crash, and stack mountains like geological LEGO." 
-  },
-  { 
-    name: "Crust", 
-    radiusRatio: 1.0, 
-    color: "#2233FF", 
-    description: "🍕🌊 Earth’s ultra-thin outer skin (5–70 km thick!). This crispy shell holds oceans, cities, forests—and *100% of human drama*." 
-  }
-]
+            {
+                name: "Inner Core",
+                radiusRatio: 0.19,
+                color: "#FFFFFF",
+                description: "🔥 Solid iron–nickel ball, ~1,220 km wide and ~5,400°C hot (almost Sun-level spicy). This ultra-dense jawbreaker spins quietly at Earth’s center and helps power our magnetic field."
+            },
+            {
+                name: "Outer Core",
+                radiusRatio: 0.55,
+                color: "#FFD700",
+                description: "🧲🌊 A churning ocean of molten metal, ~2,300 km thick. This liquid dynamo sloshes around to create Earth’s magnetic shield—blocking solar chaos, lighting up auroras, and keeping compasses sane."
+            },
+            {
+                name: "Lower Mantle",
+                radiusRatio: 0.88,
+                color: "#FF4500",
+                description: "🐢🔥 2,200 km of super-hot rock that *flows slower than fingernails grow*. It looks solid, moves like lava over millions of years, and quietly rearranges continents from below."
+            },
+            {
+                name: "Upper Mantle",
+                radiusRatio: 0.99,
+                color: "#8B0000",
+                description: "🏄‍♂️🌍 The squishy engine room beneath the crust. Home to the asthenosphere—soft enough for tectonic plates to slide, crash, and stack mountains like geological LEGO."
+            },
+            {
+                name: "Crust",
+                radiusRatio: 1.0,
+                color: "#2233FF",
+                description: "🍕🌊 Earth’s ultra-thin outer skin (5–70 km thick!). This crispy shell holds oceans, cities, forests—and *100% of human drama*."
+            }
+        ]
     },
     {
         id: 'mars',
@@ -444,6 +444,164 @@ const audioService = new class {
     }
 }();
 
+// --- DAY & NIGHT DEMO COMPONENTS ---
+const CITIES = [
+    { name: "Tromsø", lat: 69.6492, long: 18.9553 },    // Far north, Norway - extreme variation (Polar Night/Midnight Sun)
+    { name: "Munich", lat: 48.137, long: 11.575 },
+    { name: "Hong Kong", lat: 22.319, long: 114.169 },
+    { name: "Sydney", lat: -33.8688, long: 151.2093 }  // Southern Hemisphere for contrast
+];
+
+const SunlightBeams: React.FC = () => {
+    const groupRef = useRef<THREE.Group>(null);
+    const { scene } = useThree();
+    const dummyVec = useRef(new THREE.Vector3());
+
+    useFrame(() => {
+        const earth = scene.getObjectByName('Earth'); // Must ensure Earth mesh is named 'Earth'
+        if (groupRef.current && earth) {
+            earth.getWorldPosition(dummyVec.current);
+            groupRef.current.lookAt(dummyVec.current);
+        }
+    });
+
+    return (
+        <group ref={groupRef}>
+            {/* Multiple semi-transparent cones to simulate light shafts */}
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 15]}>
+                <cylinderGeometry args={[SUN_SIZE * 0.4, SUN_SIZE * 3, 100, 32, 1, true]} />
+                <meshBasicMaterial color="#FFD700" transparent opacity={0.06} side={THREE.DoubleSide} blending={THREE.AdditiveBlending} depthWrite={false} />
+            </mesh>
+            <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 15]}>
+                <cylinderGeometry args={[SUN_SIZE * 0.2, SUN_SIZE * 1.5, 80, 32, 1, true]} />
+                <meshBasicMaterial color="#FFF9C4" transparent opacity={0.08} side={THREE.DoubleSide} blending={THREE.AdditiveBlending} depthWrite={false} />
+            </mesh>
+        </group>
+    );
+}
+
+const TerminatorRing: React.FC<{ radius: number }> = ({ radius }) => {
+    // A ring that always faces the sun (0,0,0).
+    const meshRef = useRef<THREE.Mesh>(null);
+
+    useFrame(() => {
+        if (meshRef.current) {
+            // Look at World Origin (Sun)
+            meshRef.current.lookAt(0, 0, 0);
+        }
+    });
+
+    return (
+        <mesh ref={meshRef}>
+            <ringGeometry args={[radius * 1.01, radius * 1.05, 64]} />
+            <meshBasicMaterial color="#FF4500" side={THREE.DoubleSide} transparent opacity={0.6} blending={THREE.AdditiveBlending} />
+        </mesh>
+    );
+};
+
+const CityMarker: React.FC<{
+    radius: number,
+    city: { name: string, lat: number, long: number },
+    sunPos: THREE.Vector3
+}> = ({ radius, city }) => {
+    const meshRef = useRef<THREE.Group>(null);
+    const textRef = useRef<any>(null);
+
+    const pos = useMemo(() => {
+        const phi = THREE.MathUtils.degToRad(city.lat);
+        const theta = THREE.MathUtils.degToRad(city.long + 90);
+
+        const r = radius * 1.01;
+        const y = r * Math.sin(phi);
+        const h = r * Math.cos(phi);
+        const x = h * Math.sin(theta);
+        const z = h * Math.cos(theta);
+
+        return new THREE.Vector3(x, y, z);
+    }, [radius, city]);
+
+    useFrame(() => {
+        if (meshRef.current && textRef.current) {
+            const worldPos = new THREE.Vector3();
+            meshRef.current.getWorldPosition(worldPos);
+
+            // Vector To Sun = -WorldPos (since Sun is 0,0,0)
+            // Normal (approx) = WorldPos - EarthCenter.
+            const earthPos = new THREE.Vector3();
+            if (meshRef.current.parent) {
+                meshRef.current.parent.getWorldPosition(earthPos);
+            }
+
+            const normal = new THREE.Vector3().subVectors(worldPos, earthPos).normalize();
+            const toSun = new THREE.Vector3().subVectors(new THREE.Vector3(0, 0, 0), worldPos).normalize();
+
+            const dot = normal.dot(toSun);
+            const nowDay = dot > 0;
+
+            textRef.current.text = `${city.name}\n${nowDay ? "☀️" : "🌙"}`;
+            textRef.current.color = nowDay ? "#FFFF00" : "#AAAAAA";
+        }
+    });
+
+    // Southern Hemisphere cities get label below the dot
+    const isSouthern = city.lat < 0;
+    const labelYOffset = isSouthern ? -radius * 0.1 : radius * 0.1;
+    const labelAnchor = isSouthern ? "top" : "bottom";
+
+    return (
+        <group position={pos} ref={meshRef}>
+            <mesh>
+                <sphereGeometry args={[radius * 0.02, 8, 8]} />
+                <meshBasicMaterial color="red" toneMapped={false} />
+            </mesh>
+            <Billboard follow={true} lockX={false} lockY={false} lockZ={false}>
+                <Text
+                    ref={textRef}
+                    position={[0, labelYOffset, 0]}
+                    fontSize={radius * 0.1}
+                    color="white"
+                    anchorX="center"
+                    anchorY={labelAnchor}
+                    outlineWidth={radius * 0.01}
+                    outlineColor="black"
+                >
+                    {city.name}
+                </Text>
+            </Billboard>
+        </group>
+    );
+};
+
+const RotationIndicator: React.FC<{ radius: number }> = ({ radius }) => {
+    // Fixed relative to Earth orbit, showing spin
+    const groupRef = useRef<THREE.Group>(null);
+
+    useFrame(({ camera }) => {
+        if (groupRef.current) {
+            // Billboard the text/arrow to face camera? 
+            // Or just keep it fixed relative to Earth-Sun line?
+            // "Make it visibly obvious Earth rotates".
+            // A fixed curved arrow near Earth is enough.
+            groupRef.current.lookAt(camera.position); // Look at camera for readability
+        }
+    });
+
+    return (
+        <group position={[0, radius * 1.4, 0]}>
+            <Text
+                fontSize={radius * 0.4}
+                color="#DDD"
+                anchorX="center"
+                anchorY="bottom"
+                outlineWidth={0.02}
+                outlineColor="black"
+            >
+                Earth Spins ⟳
+            </Text>
+        </group>
+    );
+};
+
 // --- SUB COMPONENTS ---
 
 const Sun: React.FC<{ useRealSize: boolean; viewMoonPhase?: boolean; simTimeRef: React.MutableRefObject<number> }> = ({ useRealSize, viewMoonPhase, simTimeRef }) => {
@@ -622,10 +780,219 @@ const Moon: React.FC<{ data: { size: number, distance: number, speed: number, co
     );
 };
 
-const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: string) => void; simTimeRef: React.MutableRefObject<number>; isPlaying: boolean; userLocation?: { lat: number; long: number } | null; viewInnerLayers?: boolean; onHoverLayer?: (layer: InnerLayer | null) => void; currentHoveredLayerName: string | null; selectedLayerName?: string | null; onSelectLayer?: (layer: InnerLayer | null) => void; }> = ({ data, isFocused, onSelect, simTimeRef, userLocation, viewInnerLayers, onHoverLayer, currentHoveredLayerName, selectedLayerName, onSelectLayer }) => {
+
+
+// --- SEASONS MODE COMPONENTS ---
+
+const EarthAxis: React.FC<{ radius: number }> = ({ radius }) => {
+    // Axis visual - NO rotation here! The parent tiltRef group handles the tilt.
+    const axisLen = radius * 3;
+
+    return (
+        <group>
+            {/* The Axis Line */}
+            <mesh>
+                <cylinderGeometry args={[radius * 0.02, radius * 0.02, axisLen, 8]} />
+                <meshBasicMaterial color="#FFD700" opacity={0.8} transparent />
+            </mesh>
+            {/* Arrow Head */}
+            <mesh position={[0, axisLen / 2, 0]}>
+                <coneGeometry args={[radius * 0.1, radius * 0.3, 16]} />
+                <meshBasicMaterial color="#FFD700" />
+            </mesh>
+            {/* Label - Billboard to always face camera */}
+            <Billboard follow={true} lockX={false} lockY={false} lockZ={false}>
+                <Text
+                    position={[0, axisLen / 2 + radius * 0.4, 0]}
+                    fontSize={radius * 0.18}
+                    color="#FFD700"
+                    outlineWidth={0.02}
+                    outlineColor="black"
+                >
+                    Axial Tilt
+                </Text>
+            </Billboard>
+        </group>
+    );
+};
+
+const SeasonsOrbitMarkers: React.FC<{ distance: number }> = ({ distance }) => {
+    // Simplified labels: emoji + month only
+    const markers = [
+        { angle: 0, label: "❄️ Dec" },
+        { angle: Math.PI / 2, label: "🌸 Mar" },
+        { angle: Math.PI, label: "☀️ Jun" },
+        { angle: Math.PI * 1.5, label: "🍂 Sep" },
+    ];
+
+    return (
+        <group rotation={[THREE.MathUtils.degToRad(0), 0, 0]}>
+            {markers.map(m => (
+                <group key={m.label} position={[
+                    Math.cos(m.angle) * distance,
+                    0,
+                    Math.sin(m.angle) * distance
+                ]}>
+                    <Billboard follow={true} lockX={false} lockY={false} lockZ={false}>
+                        <Text
+                            position={[0, 2, 0]}
+                            fontSize={distance * 0.03}
+                            color="#FFF"
+                            anchorX="center"
+                            anchorY="middle"
+                            outlineWidth={0.03}
+                            outlineColor="black"
+                        >
+                            {m.label.includes("Equinox") ? m.label.replace("Vernal ", "Spring ").replace("Autumnal ", "Fall ") : m.label}
+                        </Text>
+                    </Billboard>
+                </group>
+            ))}
+        </group>
+    )
+}
+
+const LatCircle: React.FC<{ radius: number; lat: number; color: string; label: string }> = ({ radius, lat, color, label }) => {
+    const phi = THREE.MathUtils.degToRad(lat);
+    const circleRadius = radius * 1.001 * Math.cos(phi);
+    const y = radius * 1.001 * Math.sin(phi);
+
+    return (
+        <group position={[0, y, 0]}>
+            <mesh rotation={[Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[circleRadius, radius * 0.003, 8, 128]} />
+                <meshBasicMaterial color={color} transparent opacity={0.5} />
+            </mesh>
+            <Billboard follow={true}>
+                <Text
+                    position={[circleRadius + radius * 0.05, 0, 0]}
+                    fontSize={radius * 0.035}
+                    color={color}
+                    anchorX="left"
+                    outlineWidth={radius * 0.005}
+                    outlineColor="black"
+                    fillOpacity={0.7}
+                >
+                    {label}
+                </Text>
+            </Billboard>
+        </group>
+    );
+};
+
+const EarthReferenceLines: React.FC<{ radius: number }> = ({ radius }) => {
+    const tilt = 23.44; // Exact axial tilt for science
+    return (
+        <group>
+            {/* Equator (0 deg) */}
+            <LatCircle radius={radius} lat={0} color="#FFFFFF" label="Equator" />
+
+            {/* Tropics (~23.4° N/S) */}
+            <LatCircle radius={radius} lat={tilt} color="#FFA500" label="Tropic (Cancer)" />
+            <LatCircle radius={radius} lat={-tilt} color="#FFA500" label="Tropic (Capr.)" />
+
+            {/* Polar Circles (~66.6° N/S) */}
+            <LatCircle radius={radius} lat={90 - tilt} color="#87CEEB" label="Arctic" />
+            <LatCircle radius={radius} lat={-(90 - tilt)} color="#87CEEB" label="Antarctic" />
+        </group>
+    );
+};
+
+const SeasonsCityMarker: React.FC<{
+    radius: number,
+    city: { name: string, lat: number, long: number },
+    orbitalAngle: number // To calc sun declination
+}> = ({ radius, city, orbitalAngle }) => {
+    const meshRef = useRef<THREE.Group>(null);
+    const textRef = useRef<any>(null);
+
+    // Calculate Day Length
+    // obliquity epsilon = 23.5 deg
+    const eps = THREE.MathUtils.degToRad(23.44);
+    // Solar Declination delta approx:
+    // Angle 0 = Dec Solstice (Winter N) -> delta should be -23.5
+    // Angle PI = Jun Solstice (Summer N) -> delta should be +23.5
+    const declination = -eps * Math.cos(orbitalAngle);
+
+    const latRad = THREE.MathUtils.degToRad(city.lat);
+
+    // Hour angle H0
+    const tanLat = Math.tan(latRad);
+    const tanDec = Math.tan(declination);
+
+    const cosH0 = Math.max(-1, Math.min(1, -tanLat * tanDec));
+    const H0 = Math.acos(cosH0); // Radians (0 to PI)
+
+    const dayLengthHours = (H0 / Math.PI) * 24;
+
+    const pos = useMemo(() => {
+        const phi = THREE.MathUtils.degToRad(city.lat);
+        const theta = THREE.MathUtils.degToRad(city.long + 90);
+        const r = radius * 1.01;
+        const y = r * Math.sin(phi);
+        const h = r * Math.cos(phi);
+        const x = h * Math.sin(theta);
+        const z = h * Math.cos(theta);
+        return new THREE.Vector3(x, y, z);
+    }, [radius, city]);
+
+    useFrame(() => {
+        if (meshRef.current) {
+            const worldPos = new THREE.Vector3();
+            meshRef.current.getWorldPosition(worldPos);
+            const earthPos = new THREE.Vector3();
+            if (meshRef.current.parent) meshRef.current.parent.getWorldPosition(earthPos);
+
+            const normal = new THREE.Vector3().subVectors(worldPos, earthPos).normalize();
+            const toSun = new THREE.Vector3().subVectors(new THREE.Vector3(0, 0, 0), worldPos).normalize();
+
+            const dot = normal.dot(toSun);
+            const nowDay = dot > 0;
+
+            if (textRef.current) {
+                textRef.current.text = `${city.name}\n${nowDay ? "Day" : "Night"} (${Math.round(dayLengthHours)}h)`;
+                textRef.current.color = nowDay ? "#FFFF00" : "#AAAAAA";
+            }
+        }
+    })
+
+    // Southern Hemisphere cities get label below the dot
+    const isSouthern = city.lat < 0;
+    const labelYOffset = isSouthern ? -radius * 0.12 : radius * 0.12;
+    const labelAnchor = isSouthern ? "top" : "bottom";
+
+    return (
+        <group position={pos} ref={meshRef}>
+            <mesh>
+                <sphereGeometry args={[radius * 0.025, 8, 8]} />
+                <meshBasicMaterial color="cyan" toneMapped={false} />
+            </mesh>
+            <Billboard follow={true} lockX={false} lockY={false} lockZ={false}>
+                <Text
+                    ref={textRef}
+                    position={[0, labelYOffset, 0]}
+                    fontSize={radius * 0.075}
+                    color="white"
+                    anchorX="center"
+                    anchorY={labelAnchor}
+                    outlineWidth={radius * 0.008}
+                    outlineColor="black"
+                >
+                    {city.name}
+                </Text>
+            </Billboard>
+        </group>
+    );
+}
+
+const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: string) => void; simTimeRef: React.MutableRefObject<number>; isPlaying: boolean; userLocation?: { lat: number; long: number } | null; viewInnerLayers?: boolean; onHoverLayer?: (layer: InnerLayer | null) => void; currentHoveredLayerName: string | null; selectedLayerName?: string | null; onSelectLayer?: (layer: InnerLayer | null) => void; dayNightMode?: boolean; seasonsMode?: boolean; overrideOrbitalAngle?: number; }> = ({ data, isFocused, onSelect, simTimeRef, userLocation, viewInnerLayers, onHoverLayer, currentHoveredLayerName, selectedLayerName, onSelectLayer, dayNightMode, seasonsMode, overrideOrbitalAngle }) => {
     const meshRef = useRef<THREE.Mesh>(null);
     const orbitRef = useRef<THREE.Group>(null);
     const ringRef = useRef<THREE.Mesh>(null);
+
+    // New Refs for Seasons Mode Hierarchy
+    const tiltRef = useRef<THREE.Group>(null);
+    const spinRef = useRef<THREE.Group>(null);
 
     // Apply Orbital Inclination
     const inclinationRad = THREE.MathUtils.degToRad(data.inclination || 0);
@@ -701,34 +1068,69 @@ const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: st
 
     useFrame(() => {
         if (orbitRef.current) {
-            const time = simTimeRef.current;
-            const angle = initialAngle + (time * data.speed);
+            // Orbital Position
+            let angle = 0;
+            if (seasonsMode && data.id === 'earth' && overrideOrbitalAngle !== undefined) {
+                // Use Override Angle for position
+                angle = overrideOrbitalAngle;
+            } else {
+                // Normal Simulation Time
+                const time = simTimeRef.current;
+                angle = initialAngle + (time * data.speed);
+            }
 
             orbitRef.current.position.x = Math.cos(angle) * data.distance;
             orbitRef.current.position.z = Math.sin(angle) * data.distance;
 
-            // Rotate planet based on sim time
-            if (meshRef.current) {
-                // Apply rotation axis tilt if specified
-                if (data.rotationAxisTilt !== undefined) {
-                    const tiltRad = THREE.MathUtils.degToRad(data.rotationAxisTilt);
-                    // Tilt the rotation axis around X-axis
-                    meshRef.current.rotation.x = tiltRad;
+            // Planet Rotation Update
+            if (data.id === 'earth' && seasonsMode) {
+                // SEASONS MODE PHYSICS:
+                // 1. Tilt Group (Fixed Z Rotation)
+                if (tiltRef.current) {
+                    // -23.5 degrees: Leans AWAY from Sun at angle 0 (right side of screen/orbit usually)
+                    // Actually at Angle 0 (Dec Solst), Earth is at X=Dist, Z=0. 
+                    // Vector to Sun is (-1, 0, 0). 
+                    // If we tilt Z by -23.5 deg: Top moves Right (+X), Bottom moves Left (-X).
+                    // Wait, +Z rotation moves X to Y. 
+                    // Let's standard: Z axis points OUT of screen (if Y up, X right).
+                    // Rot Z positive: X axis moves towards Y axis (CCW).
+                    // North Pole (Y+) moves towards West (-X).
+                    // We want North Pole to lean AWAY from Sun at Dec Solstice.
+                    // Earth at +X. Sun at 0.
+                    // Axis should point AWAY from Sun (towards +X). 
+                    // So we need North Pole (+Y) to rotate towards +X.
+                    // That is a NEGATIVE Z rotation.
+                    tiltRef.current.rotation.z = THREE.MathUtils.degToRad(-23.5);
+                }
 
-                    // For Uranus (spinning on its side ~98°), rotate around Z-axis after tilt
-                    if (data.id === 'uranus') {
-                        meshRef.current.rotation.z = time * data.rotationSpeed;
-                        meshRef.current.rotation.y = 0;
+                // 2. Spin Group (Daily Y Rotation)
+                if (spinRef.current) {
+                    spinRef.current.rotation.y = simTimeRef.current * data.rotationSpeed;
+                }
+
+                // 3. Mesh (Identity)
+                if (meshRef.current) {
+                    meshRef.current.rotation.set(0, 0, 0);
+                }
+
+            } else {
+                // STANDARD MODE
+                if (meshRef.current) {
+                    if (data.rotationAxisTilt !== undefined && !seasonsMode) {
+                        const tiltRad = THREE.MathUtils.degToRad(data.rotationAxisTilt);
+                        meshRef.current.rotation.x = tiltRad;
+                        if (data.id === 'uranus') {
+                            meshRef.current.rotation.z = simTimeRef.current * data.rotationSpeed;
+                            meshRef.current.rotation.y = 0;
+                        } else {
+                            meshRef.current.rotation.y = simTimeRef.current * data.rotationSpeed;
+                            meshRef.current.rotation.z = 0;
+                        }
                     } else {
-                        // All other planets (including Venus with 177° tilt) rotate around Y-axis
-                        meshRef.current.rotation.y = time * data.rotationSpeed;
+                        meshRef.current.rotation.x = 0;
                         meshRef.current.rotation.z = 0;
+                        meshRef.current.rotation.y = simTimeRef.current * data.rotationSpeed;
                     }
-                } else {
-                    // Planets without explicit tilt (fallback)
-                    meshRef.current.rotation.x = 0;
-                    meshRef.current.rotation.z = 0;
-                    meshRef.current.rotation.y = time * data.rotationSpeed;
                 }
             }
         }
@@ -741,6 +1143,14 @@ const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: st
             </lineLoop>
 
             <group ref={orbitRef}>
+
+                {/* Day/Night Demo Overlays - Fixed relative to Orbit */}
+                {data.id === 'earth' && dayNightMode && !seasonsMode && (
+                    <>
+                        <TerminatorRing radius={data.size} />
+                        <RotationIndicator radius={data.size} />
+                    </>
+                )}
                 <group onClick={(e) => { e.stopPropagation(); onSelect(data.id); }}>
 
                     <Text
@@ -755,33 +1165,86 @@ const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: st
                         {data.name}
                     </Text>
 
-                    <mesh
-                        ref={meshRef}
-                        onClick={(e) => { e.stopPropagation(); onSelect(data.id); }}
-                        onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }}
-                        onPointerOut={() => { document.body.style.cursor = 'auto'; }}
-                    >
-                        <sphereGeometry args={[data.size, 64, 64, 0, (data.id === 'earth' && viewInnerLayers) ? Math.PI * 2 * (240 / 360) : Math.PI * 2]} />
-                        <meshStandardMaterial
-                            map={texture}
-                            metalness={metalness}
-                            roughness={roughness}
-                            emissive={isFocused ? "#111111" : "#000000"}
-                            emissiveIntensity={isFocused ? 0.2 : 0}
-                            side={(data.id === 'earth' && viewInnerLayers) ? THREE.DoubleSide : THREE.FrontSide}
-                        />
-                        {data.id === 'earth' && userLocation && (
-                            <mesh position={[
-                                data.size * Math.cos(THREE.MathUtils.degToRad(userLocation.lat)) * Math.sin(THREE.MathUtils.degToRad(userLocation.long + 90)),
-                                data.size * Math.sin(THREE.MathUtils.degToRad(userLocation.lat)),
-                                data.size * Math.cos(THREE.MathUtils.degToRad(userLocation.lat)) * Math.cos(THREE.MathUtils.degToRad(userLocation.long + 90))
-                            ]}>
-                                <sphereGeometry args={[data.size * 0.03, 16, 16]} />
-                                <meshBasicMaterial color="#ff0000" toneMapped={false} />
-                                <pointLight distance={data.size * 0.5} intensity={5} color="#ff0000" />
-                            </mesh>
-                        )}
-                    </mesh>
+                    {/* SEASONS MODE RENDER PATH (PHYSICS REFACTOR) */}
+                    {data.id === 'earth' && seasonsMode ? (
+                        <>
+                            <TerminatorRing radius={data.size} />
+                            <group ref={tiltRef}>
+                                {/* Visual Axis (Fixed in Tilt Group) */}
+                                <EarthAxis radius={data.size} />
+
+                                <group ref={spinRef}>
+                                    {/* Earth Mesh (Spins) */}
+                                    <mesh
+                                        ref={meshRef}
+                                        name={data.name}
+                                        onClick={(e) => { e.stopPropagation(); onSelect(data.id); }}
+                                        onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }}
+                                        onPointerOut={() => { document.body.style.cursor = 'auto'; }}
+                                    >
+                                        <sphereGeometry args={[data.size, 64, 64, 0, Math.PI * 2]} />
+                                        <meshStandardMaterial
+                                            map={texture}
+                                            metalness={metalness}
+                                            roughness={roughness}
+                                            emissive={isFocused ? "#111111" : "#000000"}
+                                            emissiveIntensity={isFocused ? 0.2 : 0}
+                                            side={THREE.FrontSide}
+                                        />
+                                        {/* City Markers - Spinning with Earth */}
+                                        {CITIES.map((city, i) => (
+                                            <SeasonsCityMarker
+                                                key={i}
+                                                radius={data.size}
+                                                city={city}
+                                                orbitalAngle={overrideOrbitalAngle || 0}
+                                            />
+                                        ))}
+                                        <EarthReferenceLines radius={data.size} />
+                                    </mesh>
+                                </group>
+                            </group>
+                        </>
+                    ) : (
+                        /* STANDARD RENDER PATH */
+                        <mesh
+                            ref={meshRef}
+                            name={data.name}
+                            onClick={(e) => { e.stopPropagation(); onSelect(data.id); }}
+                            onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }}
+                            onPointerOut={() => { document.body.style.cursor = 'auto'; }}
+                        >
+                            <sphereGeometry args={[data.size, 64, 64, 0, (data.id === 'earth' && viewInnerLayers) ? Math.PI * 2 * (240 / 360) : Math.PI * 2]} />
+                            <meshStandardMaterial
+                                map={texture}
+                                metalness={metalness}
+                                roughness={roughness}
+                                emissive={isFocused ? "#111111" : "#000000"}
+                                emissiveIntensity={isFocused ? 0.2 : 0}
+                                side={(data.id === 'earth' && viewInnerLayers) ? THREE.DoubleSide : THREE.FrontSide}
+                            />
+                            {data.id === 'earth' && userLocation && (
+                                <mesh position={[
+                                    data.size * Math.cos(THREE.MathUtils.degToRad(userLocation.lat)) * Math.sin(THREE.MathUtils.degToRad(userLocation.long + 90)),
+                                    data.size * Math.sin(THREE.MathUtils.degToRad(userLocation.lat)),
+                                    data.size * Math.cos(THREE.MathUtils.degToRad(userLocation.lat)) * Math.cos(THREE.MathUtils.degToRad(userLocation.long + 90))
+                                ]}>
+                                    <sphereGeometry args={[data.size * 0.03, 16, 16]} />
+                                    <meshBasicMaterial color="#ff0000" toneMapped={false} />
+                                    <pointLight distance={data.size * 0.5} intensity={5} color="#ff0000" />
+                                </mesh>
+                            )}
+                            {/* City Markers for Day/Night Demo */}
+                            {data.id === 'earth' && dayNightMode && !seasonsMode && (
+                                <>
+                                    {CITIES.map((city, i) => (
+                                        <CityMarker key={i} radius={data.size} city={city} sunPos={new THREE.Vector3(0, 0, 0)} />
+                                    ))}
+                                    <EarthReferenceLines radius={data.size} />
+                                </>
+                            )}
+                        </mesh>
+                    )}
 
                     {/* Inner Layers - rendered as sibling with its own rotation handling */}
                     {data.id === 'earth' && isFocused && viewInnerLayers && (
@@ -861,7 +1324,7 @@ const Planet: React.FC<{ data: PlanetData; isFocused: boolean; onSelect: (id: st
                     ))}
                 </group>
             </group>
-        </group >
+        </group>
     );
 };
 
@@ -943,15 +1406,14 @@ class PlanetErrorBoundary extends React.Component<
     }
 }
 
-const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; useRealSize: boolean; simTimeRef: React.MutableRefObject<number>, viewMoonPhase: boolean, zoomSignal: number }> = ({ focusedId, useRealDist, useRealSize, simTimeRef, viewMoonPhase, zoomSignal }) => {
+// Updated CameraManager signature to accept override options
+const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; useRealSize: boolean; simTimeRef: React.MutableRefObject<number>, viewMoonPhase: boolean, zoomSignal: number, seasonsMode?: boolean, overrideOrbitalAngle?: number }> = ({ focusedId, useRealDist, useRealSize, simTimeRef, viewMoonPhase, zoomSignal, seasonsMode, overrideOrbitalAngle }) => {
     const { camera } = useThree();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const controlsRef = useRef<any>(null);
     const isTransitioning = useRef(false);
     const previousPlanetPos = useRef(new THREE.Vector3());
     const lastSimTime = useRef(simTimeRef.current);
     const prevZoomSignal = useRef(0);
-
     const previousEarthPos = useRef(new THREE.Vector3());
 
     // Handle Zoom Signal
@@ -980,10 +1442,10 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
         }
     }, [zoomSignal, camera]);
 
-    // Trigger transition when focusedId changes OR when viewMoonPhase turns off
+    // Trigger transition when focusedId changes OR when viewMoonPhase turns off OR SEASONS MODE toggles
     useEffect(() => {
         isTransitioning.current = true;
-    }, [focusedId, viewMoonPhase]);
+    }, [focusedId, viewMoonPhase, seasonsMode]);
 
     useFrame(() => {
         if (!controlsRef.current) return;
@@ -1069,7 +1531,14 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
             const planet = basePlanet ? deriveAngularSpeeds(basePlanet) : undefined;
             if (planet) {
                 const dist = useRealDist ? planet.orbitAU * 30 : planet.distance;
-                const angle = (dist * 0.5) + (simTimeRef.current * planet.speed);
+
+                // Calculate Orbital Position (Standard vs Override)
+                let angle = 0;
+                if (seasonsMode && focusedId === 'earth' && overrideOrbitalAngle !== undefined) {
+                    angle = overrideOrbitalAngle;
+                } else {
+                    angle = (dist * 0.5) + (simTimeRef.current * planet.speed);
+                }
 
                 const x = Math.cos(angle) * dist;
                 let z = Math.sin(angle) * dist;
@@ -1080,8 +1549,10 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
                     y = -z * Math.sin(inc);
                     z = z * Math.cos(inc);
                 }
+
                 const planetPos = new THREE.Vector3(x, y, z);
 
+                // --- Camera Follow Logic ---
                 if (isTransitioning.current) {
                     // Fly to planet (Initial Approach)
                     const size = useRealSize ? (SUN_SIZE / 109) * planet.radiusMultiplier : planet.size;
@@ -1105,6 +1576,8 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
                     if (delta.length() < 50) {
                         // Move target with planet - this allows camera to orbit around moving target
                         controlsRef.current.target.add(delta);
+                        // Also move camera to keep relative position!
+                        camera.position.add(delta);
                     } else {
                         // Large jump (loop/reset?), just copy
                         controlsRef.current.target.copy(planetPos);
@@ -1113,6 +1586,7 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
                 }
             }
         } else {
+            // Sun Focus / Reset
             if (isTransitioning.current) {
                 const resetPos = useRealDist ? new THREE.Vector3(0, 1500, 2000) : new THREE.Vector3(0, 60, 80);
                 const resetTarget = new THREE.Vector3(0, 0, 0);
@@ -1121,6 +1595,7 @@ const CameraManager: React.FC<{ focusedId: string | null; useRealDist: boolean; 
                 if (camera.position.distanceTo(resetPos) < 1.0) isTransitioning.current = false;
             }
         }
+
         controlsRef.current.update();
     });
 
@@ -1395,8 +1870,14 @@ const UI: React.FC<{
     onToggleMoonPhase: () => void;
     viewInnerLayers: boolean;
     onToggleInnerLayers: () => void;
+    dayNightMode: boolean;
+    onToggleDayNight: () => void;
+    seasonsMode: boolean;
+    onToggleSeasons: () => void;
+    seasonProgress: number;
+    setSeasonProgress: (val: number) => void;
     isFullscreen: boolean;
-}> = ({ focusedId, onSelect, isPlaying, onTogglePlay, showInfo, onToggleInfo, onToggleFullscreen, useRealDist, onToggleRealDist, useRealSize, onToggleRealSize, showLocation, onToggleLocation, isMusicOn, onToggleMusic, simSpeed, onToggleSpeed, viewMoonPhase, onToggleMoonPhase, viewInnerLayers, onToggleInnerLayers, isFullscreen }) => {
+}> = ({ focusedId, onSelect, isPlaying, onTogglePlay, showInfo, onToggleInfo, onToggleFullscreen, useRealDist, onToggleRealDist, useRealSize, onToggleRealSize, showLocation, onToggleLocation, isMusicOn, onToggleMusic, simSpeed, onToggleSpeed, viewMoonPhase, onToggleMoonPhase, viewInnerLayers, onToggleInnerLayers, dayNightMode, onToggleDayNight, seasonsMode, onToggleSeasons, seasonProgress, setSeasonProgress, isFullscreen }) => {
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [hoveredInfo, setHoveredInfo] = useState<string | null>(null);
     const infoPanelRef = useRef<HTMLDivElement>(null);
@@ -1576,6 +2057,26 @@ const UI: React.FC<{
                                     <span className="text-sm">🌍</span>
                                 </button>
                             )}
+                            {focusedId === 'earth' && (
+                                <button
+                                    onClick={onToggleDayNight}
+                                    onMouseEnter={() => setHoveredInfo("Day & Night Demo - Why it’s day here and night somewhere else")}
+                                    onMouseLeave={() => setHoveredInfo(null)}
+                                    className={`${dayNightMode ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/10 hover:text-white`}
+                                >
+                                    <CloudSun size={16} />
+                                </button>
+                            )}
+                            {focusedId === 'earth' && (
+                                <button
+                                    onClick={onToggleSeasons}
+                                    onMouseEnter={() => setHoveredInfo("Seasons Mode - Why winter days are short")}
+                                    onMouseLeave={() => setHoveredInfo(null)}
+                                    className={`${seasonsMode ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-black/20 border-white/10 text-white'} backdrop-blur-md border px-4 py-3 rounded-xl transition-all duration-300 hover:bg-white/10 hover:text-white`}
+                                >
+                                    <Calendar size={16} />
+                                </button>
+                            )}
                             <button
                                 onClick={() => { audioService.playClick(); onTogglePlay(); }}
                                 onMouseEnter={() => setHoveredInfo("Pause/Resume Time (Space)")}
@@ -1639,6 +2140,30 @@ const UI: React.FC<{
                             </button>
                         )}
                     </div>
+
+                    {/* Desktop Season Slider - Floats near the controls when active */}
+                    {!isMobile && seasonsMode && (
+                        <div className="absolute top-20 right-4 w-64 bg-black/60 backdrop-blur-md rounded-xl p-4 border border-white/10 pointer-events-auto animate-in slide-in-from-right-4 duration-300">
+                            <div className="flex justify-between text-[10px] text-gray-300 mb-2 font-medium tracking-wide">
+                                <span>Dec</span>
+                                <span>Mar</span>
+                                <span>Jun</span>
+                                <span>Sep</span>
+                                <span>Dec</span>
+                            </div>
+                            <input
+                                type="range"
+                                min="0"
+                                max="365"
+                                value={seasonProgress}
+                                onChange={(e) => setSeasonProgress(Number(e.target.value))}
+                                className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-white"
+                            />
+                            <div className="text-center text-white text-xs mt-2 font-mono border-t border-white/10 pt-2">
+                                Day: {Math.floor(seasonProgress)}
+                            </div>
+                        </div>
+                    )}
                     {!isMobile && hoveredInfo && (
                         <div className="pointer-events-none bg-black/80 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-md border border-white/20 shadow-xl tracking-wide font-light animate-in fade-in slide-in-from-top-1 duration-200">
                             {hoveredInfo}
@@ -1717,11 +2242,46 @@ const UI: React.FC<{
                                 )}
 
                                 {/* Earth Inner Layers - Dedicated Button */}
-                                {focusedId === 'earth' && (
-                                    <button onClick={onToggleInnerLayers} className={`w-full py-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${viewInnerLayers ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
-                                        <span className="text-lg">🌍</span>
-                                        <span className="text-sm font-medium">Earth Inner Layers</span>
-                                    </button>
+                                <button onClick={onToggleInnerLayers} className={`w-full py-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${viewInnerLayers ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                                    <span className="text-lg">🌍</span>
+                                    <span className="text-sm font-medium">Earth Inner Layers</span>
+                                </button>
+
+
+                                {/* Day/Night Demo - Dedicated Button */}
+                                <button onClick={onToggleDayNight} className={`w-full py-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${dayNightMode ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                                    <CloudSun size={18} className={dayNightMode ? "fill-current" : ""} />
+                                    <span className="text-sm font-medium">Day & Night Demo</span>
+                                </button>
+
+                                {/* Seasons Mode - Dedicated Button */}
+                                <button onClick={onToggleSeasons} className={`w-full py-3 rounded-xl border flex items-center justify-center gap-2 transition-all ${seasonsMode ? 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)] border-white' : 'bg-white/5 border-white/10 text-gray-300'}`}>
+                                    <Calendar size={18} />
+                                    <span className="text-sm font-medium">Seasons: Winter Days</span>
+                                </button>
+
+                                {/* Season Progress Slider (only when Seasons Mode Active) */}
+                                {seasonsMode && (
+                                    <div className="bg-black/40 backdrop-blur-md rounded-xl p-4 border border-white/10">
+                                        <div className="flex justify-between text-xs text-gray-300 mb-2">
+                                            <span>Dec Solstice</span>
+                                            <span>Mar Eq</span>
+                                            <span>Jun Solstice</span>
+                                            <span>Sep Eq</span>
+                                            <span>Dec</span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="365"
+                                            value={seasonProgress}
+                                            onChange={(e) => setSeasonProgress(Number(e.target.value))}
+                                            className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-white"
+                                        />
+                                        <div className="text-center text-white text-sm mt-1 font-mono">
+                                            Day of Year: {Math.floor(seasonProgress)}
+                                        </div>
+                                    </div>
                                 )}
 
                                 {/* Location & Audio */}
@@ -1819,6 +2379,9 @@ export default function SolarSystem() {
     const [simSpeed, setSimSpeed] = useState(86400); // Default 1 Day/s
     const [viewMoonPhase, setViewMoonPhase] = useState(false);
     const [viewInnerLayers, setViewInnerLayers] = useState(false);
+    const [dayNightMode, setDayNightMode] = useState(false);
+    const [seasonsMode, setSeasonsMode] = useState(false);
+    const [seasonProgress, setSeasonProgress] = useState(0); // 0 to 365
     const [zoomSignal, setZoomSignal] = useState(0);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [hoveredLayer, setHoveredLayer] = useState<InnerLayer | null>(null);
@@ -1859,6 +2422,44 @@ export default function SolarSystem() {
         else audioService.stopDrone();
         return () => audioService.stopDrone();
     }, [isMusicOn]);
+
+    // Sync season slider with simulation time when playing
+    // Also sync simTimeRef when transitioning from slider-controlled to time-controlled
+    const wasPlayingRef = useRef(isPlaying);
+    useEffect(() => {
+        if (!seasonsMode) return;
+
+        // When resuming time, sync simTimeRef to match current slider position
+        if (isPlaying && !wasPlayingRef.current) {
+            const earthData = PLANETS.find(p => p.id === 'earth');
+            if (earthData) {
+                // Convert seasonProgress (day 0-365) to the angle
+                const targetAngle = (seasonProgress / 365) * Math.PI * 2;
+                // Solve for simTime: angle = (dist * 0.5) + (simTime * speed)
+                // simTime = (angle - dist * 0.5) / speed
+                const dist = earthData.distance;
+                const newSimTime = (targetAngle - dist * 0.5) / earthData.speed;
+                simTimeRef.current = newSimTime;
+            }
+        }
+        wasPlayingRef.current = isPlaying;
+
+        if (!isPlaying) return;
+
+        // When playing, sync slider with Earth's position
+        const syncInterval = setInterval(() => {
+            const earthData = PLANETS.find(p => p.id === 'earth');
+            if (earthData) {
+                const dist = earthData.distance;
+                const currentAngle = (dist * 0.5) + (simTimeRef.current * earthData.speed);
+                const normalizedAngle = ((currentAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+                const dayOfYear = Math.floor((normalizedAngle / (Math.PI * 2)) * 365);
+                setSeasonProgress(dayOfYear);
+            }
+        }, 100);
+
+        return () => clearInterval(syncInterval);
+    }, [seasonsMode, isPlaying, seasonProgress]);
 
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -2011,6 +2612,8 @@ export default function SolarSystem() {
 
                     <AsteroidBelt useRealDist={useRealDist} isPlaying={isPlaying} simTimeRef={simTimeRef} />
                     <Sun useRealSize={useRealSize} viewMoonPhase={viewMoonPhase} simTimeRef={simTimeRef} />
+                    {dayNightMode && !seasonsMode && <SunlightBeams />}
+                    {seasonsMode && <SeasonsOrbitMarkers distance={PLANETS.find(p => p.id === 'earth')?.distance || 26} />}
                     {activePlanets.map((planet) => (
                         <PlanetErrorBoundary key={planet.id} data={planet} simTimeRef={simTimeRef} onSelect={setFocusedId}>
                             <Planet
@@ -2021,14 +2624,17 @@ export default function SolarSystem() {
                                 isPlaying={isPlaying}
                                 userLocation={showLocation ? userLocation : null}
                                 viewInnerLayers={viewInnerLayers}
-                        onHoverLayer={setHoveredLayer}
+                                onHoverLayer={setHoveredLayer}
                                 currentHoveredLayerName={hoveredLayer?.name || null}
                                 selectedLayerName={selectedLayer?.name || null}
                                 onSelectLayer={handleLayerSelect}
+                                dayNightMode={dayNightMode}
+                                seasonsMode={seasonsMode}
+                                overrideOrbitalAngle={seasonsMode && planet.id === 'earth' ? THREE.MathUtils.degToRad((seasonProgress / 365.0) * 360) : undefined}
                             />
                         </PlanetErrorBoundary>
                     ))}
-                    <CameraManager focusedId={focusedId} useRealDist={useRealDist} useRealSize={useRealSize} simTimeRef={simTimeRef} viewMoonPhase={viewMoonPhase} zoomSignal={zoomSignal} />
+                    <CameraManager focusedId={focusedId} useRealDist={useRealDist} useRealSize={useRealSize} simTimeRef={simTimeRef} viewMoonPhase={viewMoonPhase} zoomSignal={zoomSignal} seasonsMode={seasonsMode} overrideOrbitalAngle={seasonsMode ? THREE.MathUtils.degToRad((seasonProgress / 365.0) * 360) : undefined} />
                     <Preload all />
                 </Suspense>
             </Canvas>
@@ -2068,6 +2674,42 @@ export default function SolarSystem() {
                     }
                     setViewInnerLayers(!viewInnerLayers);
                 }}
+                dayNightMode={dayNightMode}
+                onToggleDayNight={() => {
+                    if (seasonsMode) setSeasonsMode(false); // Disable seasons if day/night toggled
+                    const newMode = !dayNightMode;
+                    setDayNightMode(newMode);
+                    if (newMode) {
+                        if (focusedId !== 'earth') setFocusedId('earth');
+                    }
+                }}
+                seasonsMode={seasonsMode}
+                onToggleSeasons={() => {
+                    if (dayNightMode) setDayNightMode(false); // Disable day/night if seasons toggled
+                    if (viewMoonPhase) setViewMoonPhase(false);
+                    if (viewInnerLayers) setViewInnerLayers(false);
+                    const newMode = !seasonsMode;
+                    setSeasonsMode(newMode);
+                    if (newMode) {
+                        if (focusedId !== 'earth') setFocusedId('earth');
+                        // Calculate current orbital position and convert to day of year
+                        const earthData = PLANETS.find(p => p.id === 'earth');
+                        if (earthData) {
+                            const dist = earthData.distance;
+                            const currentAngle = (dist * 0.5) + (simTimeRef.current * earthData.speed);
+                            // Normalize angle to 0-2PI and convert to day (0-365)
+                            const normalizedAngle = ((currentAngle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+                            const dayOfYear = Math.floor((normalizedAngle / (Math.PI * 2)) * 365);
+                            setSeasonProgress(dayOfYear);
+                        }
+                        setIsPlaying(false); // Pause time so user can explore with slider
+                        setSimSpeed(3600); // Set to 1h/s for easier observation
+                    } else {
+                        setIsPlaying(true); // Resume time when exiting
+                    }
+                }}
+                seasonProgress={seasonProgress}
+                setSeasonProgress={setSeasonProgress}
                 isFullscreen={isFullscreen}
             />
 
