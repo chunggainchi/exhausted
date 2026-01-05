@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Heart, Star, GraduationCap, Briefcase, Baby, Home, Plane, Trophy } from 'lucide-react';
 import { ThemeConfig, ViewMode } from './types';
 
 interface TimeDotProps {
@@ -13,13 +14,31 @@ interface TimeDotProps {
     size: number;
     progress?: number;
     theme: ThemeConfig;
+    eventColor?: string;
+    isHighlighted?: boolean;
+    isDimmed?: boolean;
+    milestoneLabel?: string;
+    milestoneIcon?: string;
     onMouseEnter?: (event: React.MouseEvent) => void;
 }
 
-const TimeDotComponent: React.FC<TimeDotProps> = ({ status, index, total, viewMode, delay = 0, size, progress = 0, theme, onMouseEnter }) => {
+const TimeDotComponent: React.FC<TimeDotProps> = ({ status, index, total, viewMode, delay = 0, size, progress = 0, theme, eventColor, isHighlighted, isDimmed, milestoneLabel, milestoneIcon, onMouseEnter }) => {
 
     const hue = theme.hue;
     const saturation = theme.saturation;
+
+    const MILESTONE_ICON_MAP: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+        'star': Star,
+        'heart': Heart,
+        'graduation': GraduationCap,
+        'work': Briefcase,
+        'baby': Baby,
+        'home': Home,
+        'travel': Plane,
+        'trophy': Trophy,
+    };
+
+    const MilestoneIcon = milestoneIcon ? (MILESTONE_ICON_MAP[milestoneIcon] || Star) : Star;
 
     // Current Dot Style
     const currentGlow = `hsla(${hue}, ${saturation}%, 60%, 1)`;
@@ -44,7 +63,7 @@ const TimeDotComponent: React.FC<TimeDotProps> = ({ status, index, total, viewMo
                         ease: "easeInOut"
                     }}
                     style={{
-                        backgroundColor: theme.pulseColor,
+                        backgroundColor: eventColor || theme.pulseColor,
                         filter: 'blur(4px)',
                     }}
                 />
@@ -53,9 +72,9 @@ const TimeDotComponent: React.FC<TimeDotProps> = ({ status, index, total, viewMo
                 <div
                     className="relative w-full h-full rounded-full overflow-hidden ring-1 ring-offset-1 ring-offset-black bg-zinc-800/80 transition-transform duration-300"
                     style={{
-                        borderColor: currentGlow,
+                        borderColor: eventColor || currentGlow,
                         transform: 'scale(1.25)',
-                        boxShadow: `0 0 10px ${theme.pulseColor}`
+                        boxShadow: `0 0 10px ${eventColor || theme.pulseColor}`
                     }}
                 >
                     {/* Liquid Fill */}
@@ -63,7 +82,7 @@ const TimeDotComponent: React.FC<TimeDotProps> = ({ status, index, total, viewMo
                         className="absolute bottom-0 left-0 w-full transition-all duration-[1000ms] ease-linear"
                         style={{
                             height: `${progress}%`,
-                            backgroundColor: currentGlow,
+                            backgroundColor: eventColor || currentGlow,
                         }}
                     />
                     {/* Gloss */}
@@ -78,41 +97,41 @@ const TimeDotComponent: React.FC<TimeDotProps> = ({ status, index, total, viewMo
 
     switch (status) {
         case 'passed':
-            // Gradient Logic based on View Mode
-
-            let lightness = 50;
-            let opacity = 1.0;
-            const ratio = index / total;
-
-            if (viewMode === ViewMode.Life) {
-                // Life Mode: Vibrant Start -> Dim End
-                // Age 0: High Lightness/Opacity
-                // Age 80: Low Lightness/Opacity (but visible)
-
-                // Lightness: 60% -> 30%
-                lightness = 60 - (ratio * 30);
-                // Opacity: 1.0 -> 0.4
-                opacity = 1.0 - (ratio * 0.6);
+            if (eventColor) {
+                dynamicStyle = { backgroundColor: eventColor, opacity: 0.9 };
+                statusClasses = "scale-100 hover:opacity-100 shadow-[0_0_8px_rgba(0,0,0,0.5)]";
             } else {
-                // Day/Week Mode: Dim Start -> Vibrant Middle -> Dim End
-                // Bell Curve (Sine Wave)
-                // Start/End: 30% Lightness
-                // Peak: 60% Lightness
+                let lightness = 50;
+                let opacity = 1.0;
+                const ratio = index / total;
 
-                const sine = Math.sin(ratio * Math.PI); // 0 -> 1 -> 0
+                if (viewMode === ViewMode.Life) {
+                    lightness = 60 - (ratio * 30);
+                    opacity = 1.0 - (ratio * 0.6);
+                } else {
+                    const sine = Math.sin(ratio * Math.PI);
+                    lightness = 30 + (sine * 30);
+                    opacity = 0.5 + (sine * 0.5);
+                }
 
-                lightness = 30 + (sine * 30); // 30% -> 60% -> 30%
-                opacity = 0.5 + (sine * 0.5); // 0.5 -> 1.0 -> 0.5
+                const color = `hsla(${hue}, ${saturation}%, ${lightness}%, ${opacity})`;
+                statusClasses = "scale-100 hover:opacity-100";
+                dynamicStyle = { backgroundColor: color };
             }
-
-            const color = `hsla(${hue}, ${saturation}%, ${lightness}%, ${opacity})`;
-
-            statusClasses = "scale-100 hover:opacity-100";
-            dynamicStyle = { backgroundColor: color };
             break;
 
         case 'future':
-            statusClasses = "bg-zinc-800/40 hover:bg-zinc-700 hover:scale-110 transition-colors duration-300";
+            if (eventColor) {
+                // Dimmed event color for future
+                dynamicStyle = {
+                    backgroundColor: eventColor,
+                    opacity: 0.15,
+                    border: `1px solid ${eventColor}33`
+                };
+                statusClasses = "hover:opacity-100 hover:scale-110 transition-all duration-300";
+            } else {
+                statusClasses = "bg-zinc-800/40 hover:bg-zinc-700 hover:scale-110 transition-colors duration-300";
+            }
             break;
     }
 
@@ -123,10 +142,18 @@ const TimeDotComponent: React.FC<TimeDotProps> = ({ status, index, total, viewMo
                 animationDelay: total < 400 ? `${delay}ms` : '0ms',
                 width: `${size}px`,
                 height: `${size}px`,
-                ...dynamicStyle
+                ...dynamicStyle,
+                ...(isHighlighted ? { transform: 'scale(1.5)', zIndex: 30, opacity: 1, boxShadow: `0 0 12px ${eventColor}` } : {}),
+                ...(isDimmed ? { opacity: 0.1, filter: 'grayscale(100%)' } : {})
             }}
             onMouseEnter={onMouseEnter}
-        />
+        >
+            {milestoneLabel && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <MilestoneIcon size={size * 0.7} className="text-white fill-white animate-pulse" />
+                </div>
+            )}
+        </div>
     );
 };
 

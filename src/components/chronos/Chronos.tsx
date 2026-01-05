@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { ViewMode, TimeStats, ThemeConfig } from './types';
+import { ViewMode, TimeStats, ThemeConfig, LifeEvent, LifeMilestone } from './types';
 import { calculateStats } from './utils/dateUtils';
 import { StatsHeader } from './StatsHeader';
 import { TimeGrid } from './TimeGrid';
@@ -25,6 +25,8 @@ export const Chronos: React.FC = () => {
     const [stats, setStats] = useState<TimeStats>(calculateStats(ViewMode.Day));
     const [scrubPercentage, setScrubPercentage] = useState<number | null>(null);
     const [isZenMode, setIsZenMode] = useState(false);
+    const [lifeEvents, setLifeEvents] = useState<LifeEvent[]>([]);
+    const [lifeMilestones, setLifeMilestones] = useState<LifeMilestone[]>([]);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
 
@@ -44,6 +46,35 @@ export const Chronos: React.FC = () => {
         }
         if (savedView) setViewMode(savedView as ViewMode);
 
+        const savedEvents = localStorage.getItem('tempo_lifeEvents');
+        if (savedEvents) {
+            try {
+                const parsed = JSON.parse(savedEvents);
+                const decoded = parsed.map((ev: { startDate: string; endDate?: string; id: string; label: string; color: string }) => ({
+                    ...ev,
+                    startDate: new Date(ev.startDate),
+                    endDate: ev.endDate ? new Date(ev.endDate) : undefined
+                }));
+                setLifeEvents(decoded);
+            } catch (e) {
+                console.error('Failed to parse life events', e);
+            }
+        }
+
+        const savedMilestones = localStorage.getItem('tempo_lifeMilestones');
+        if (savedMilestones) {
+            try {
+                const parsed = JSON.parse(savedMilestones);
+                const decoded = parsed.map((m: { date: string; id: string; label: string; icon?: string }) => ({
+                    ...m,
+                    date: new Date(m.date)
+                }));
+                setLifeMilestones(decoded);
+            } catch (e) {
+                console.error('Failed to parse life milestones', e);
+            }
+        }
+
         setMounted(true);
     }, []);
 
@@ -56,11 +87,14 @@ export const Chronos: React.FC = () => {
     // Main Timer
     useEffect(() => {
         if (scrubPercentage !== null) return;
-        const updateStats = () => setStats(calculateStats(viewMode, birthDate, lifeExpectancy));
+        const updateStats = () => {
+            const baseStats = calculateStats(viewMode, birthDate, lifeExpectancy, lifeEvents, lifeMilestones);
+            setStats(baseStats);
+        };
         updateStats();
         const interval = setInterval(updateStats, 1000);
         return () => clearInterval(interval);
-    }, [viewMode, birthDate, lifeExpectancy, scrubPercentage]);
+    }, [viewMode, birthDate, lifeExpectancy, scrubPercentage, lifeEvents, lifeMilestones]);
 
     // Dynamic Label Calculation for Scrubbing
     const scrubLabel = useMemo(() => {
@@ -108,18 +142,24 @@ export const Chronos: React.FC = () => {
                 currentUnitIndex: fakePassed,
                 percentage: scrubPercentage * 100,
                 daysLeft: total - fakePassed,
-                currentUnitProgress: 50
+                currentUnitProgress: 50,
+                events: lifeEvents
             }));
         } else {
-            setStats(calculateStats(viewMode, birthDate, lifeExpectancy));
+            const baseStats = calculateStats(viewMode, birthDate, lifeExpectancy);
+            setStats({ ...baseStats, events: lifeEvents });
         }
-    }, [scrubPercentage, viewMode, birthDate, lifeExpectancy, stats.totalUnits]);
+    }, [scrubPercentage, viewMode, birthDate, lifeExpectancy, stats.totalUnits, lifeEvents]);
 
-    const handleSaveSettings = (date: Date, expectancy: number) => {
+    const handleSaveSettings = (date: Date, expectancy: number, events: LifeEvent[], milestones: LifeMilestone[]) => {
         setBirthDate(date);
         setLifeExpectancy(expectancy);
+        setLifeEvents(events);
+        setLifeMilestones(milestones);
         localStorage.setItem('tempo_birthDate', date.toISOString());
         localStorage.setItem('tempo_lifeExpectancy', expectancy.toString());
+        localStorage.setItem('tempo_lifeEvents', JSON.stringify(events));
+        localStorage.setItem('tempo_lifeMilestones', JSON.stringify(milestones));
     };
 
     const handleViewModeChange = (mode: ViewMode) => {
@@ -148,6 +188,8 @@ export const Chronos: React.FC = () => {
                 onSave={handleSaveSettings}
                 initialDate={birthDate}
                 initialExpectancy={lifeExpectancy}
+                initialEvents={lifeEvents}
+                initialMilestones={lifeMilestones}
             />
 
             {/* Subtle Static Background Gradient */}
@@ -173,6 +215,7 @@ export const Chronos: React.FC = () => {
                         viewMode={viewMode}
                         stats={stats}
                         theme={THEME}
+                        birthDate={birthDate}
                         onScrub={isZenMode ? undefined : setScrubPercentage}
                     />
                 </main>

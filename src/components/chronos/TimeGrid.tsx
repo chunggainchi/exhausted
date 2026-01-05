@@ -9,6 +9,7 @@ interface TimeGridProps {
     viewMode: ViewMode;
     stats: TimeStats;
     theme: ThemeConfig;
+    birthDate?: Date;
     onScrub?: (percentage: number | null) => void;
 }
 
@@ -20,11 +21,17 @@ interface HoverState {
     y: number;
 }
 
-export const TimeGrid: React.FC<TimeGridProps> = ({ viewMode, stats, theme, onScrub }) => {
+interface LegendHoverState {
+    eventId: string | null;
+}
+
+export const TimeGrid: React.FC<TimeGridProps> = ({ viewMode, stats, theme, birthDate, onScrub }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const [isScrubbing, setIsScrubbing] = useState(false);
     const [hoverState, setHoverState] = useState<HoverState | null>(null);
+    const [legendHover, setLegendHover] = useState<LegendHoverState>({ eventId: null });
+    const [soloEventId, setSoloEventId] = useState<string | null>(null);
     const [mounted, setMounted] = useState(false);
 
     const gap = viewMode === ViewMode.Life ? 3 : 4;
@@ -90,7 +97,13 @@ export const TimeGrid: React.FC<TimeGridProps> = ({ viewMode, stats, theme, onSc
     const handlePointerUp = (e: React.PointerEvent) => {
         setIsScrubbing(false);
         if (onScrub) onScrub(null);
-        if (containerRef.current) containerRef.current.releasePointerCapture(e.pointerId);
+        if (containerRef.current) {
+            try {
+                containerRef.current.releasePointerCapture(e.pointerId);
+            } catch {
+                // Ignore capture release errors
+            }
+        }
     };
 
     // Hover Handlers for Dots (Bubbled up)
@@ -120,8 +133,11 @@ export const TimeGrid: React.FC<TimeGridProps> = ({ viewMode, stats, theme, onSc
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerLeave={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            style={{ touchAction: 'none' }}
         >
             <div
+                onClick={() => setSoloEventId(null)}
                 style={{
                     display: 'grid',
                     gridTemplateColumns: `repeat(${layout.cols}, ${layout.size}px)`,
@@ -130,22 +146,70 @@ export const TimeGrid: React.FC<TimeGridProps> = ({ viewMode, stats, theme, onSc
                     padding: containerPadding,
                     zIndex: 10
                 }}
-                className="transition-opacity duration-300 ease-out"
+                className="transition-opacity duration-300 ease-out relative"
                 onMouseLeave={handleDotLeave}
             >
+
                 {units.map((index) => {
                     let status: 'passed' | 'current' | 'future' = 'future';
                     if (index < stats.currentUnitIndex) status = 'passed';
                     if (index === stats.currentUnitIndex) status = 'current';
 
                     let label = "";
-                    if (viewMode === ViewMode.Week) label = `Week ${index + 1}`;
-                    else if (viewMode === ViewMode.Life) {
+                    let eventColor: string | undefined = undefined;
+                    let eventLabel: string | undefined = undefined;
+                    let isLegendHovered = false;
+                    let milestoneLabel: string | undefined = undefined;
+                    let milestoneIcon: string | undefined = undefined;
+
+                    if (viewMode === ViewMode.Life) {
                         const years = Math.floor(index / 12);
                         const months = index % 12 + 1;
                         label = `Year ${years}, Month ${months}`;
+
+                        const bDate = birthDate || new Date('2000-01-01');
+                        const dotDate = new Date(bDate);
+                        dotDate.setMonth(bDate.getMonth() + index);
+
+                        // Event Detection
+                        if (stats.events && stats.events.length > 0) {
+                            for (const ev of stats.events) {
+                                const start = new Date(ev.startDate);
+                                start.setDate(1);
+                                start.setHours(0, 0, 0, 0);
+
+                                const end = ev.endDate ? new Date(ev.endDate) : new Date();
+                                end.setHours(23, 59, 59, 999);
+
+                                if (dotDate >= start && dotDate <= end) {
+                                    eventColor = ev.color;
+                                    eventLabel = ev.label;
+                                    isLegendHovered = legendHover.eventId === ev.id;
+                                }
+                            }
+                        }
+
+                        if (stats.milestones && stats.milestones.length > 0) {
+                            for (const m of stats.milestones) {
+                                if (m.date.getFullYear() === dotDate.getFullYear() && m.date.getMonth() === dotDate.getMonth()) {
+                                    milestoneLabel = m.label;
+                                    milestoneIcon = m.icon;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (eventLabel) {
+                            label = `${eventLabel} (${label})`;
+                        }
+                        if (milestoneLabel) {
+                            label = `Milestone: ${milestoneLabel} • ${label}`;
+                        }
+                    } else if (viewMode === ViewMode.Week) {
+                        label = `Week ${index + 1}`;
+                    } else {
+                        label = `Day ${index + 1}`;
                     }
-                    else label = `Day ${index + 1}`;
 
                     const progress = status === 'current' ? stats.currentUnitProgress : (status === 'passed' ? 100 : 0);
 
@@ -160,6 +224,11 @@ export const TimeGrid: React.FC<TimeGridProps> = ({ viewMode, stats, theme, onSc
                             size={layout.size}
                             progress={progress}
                             theme={theme}
+                            eventColor={eventColor}
+                            isHighlighted={isLegendHovered || soloEventId === (stats.events?.find(e => e.label === eventLabel)?.id)}
+                            isDimmed={soloEventId !== null && soloEventId !== (stats.events?.find(e => e.label === eventLabel)?.id)}
+                            milestoneLabel={milestoneLabel}
+                            milestoneIcon={milestoneIcon}
                             onMouseEnter={(e) => handleDotHover(index, label, progress, e)}
                         />
                     );
@@ -196,6 +265,39 @@ export const TimeGrid: React.FC<TimeGridProps> = ({ viewMode, stats, theme, onSc
                     <div className="text-3xl sm:text-4xl font-black text-white/20 backdrop-blur-md bg-zinc-900/50 px-6 py-3 sm:px-8 sm:py-4 rounded-3xl border border-white/5">
                         PREVIEW
                     </div>
+                </div>
+            )}
+
+            {/* Event Legend */}
+            {viewMode === ViewMode.Life && stats.events && stats.events.length > 0 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-2xl px-6 flex flex-wrap justify-center gap-x-6 gap-y-2 pointer-events-auto">
+                    {stats.events.map((ev) => (
+                        <div
+                            key={ev.id}
+                            className="flex items-center gap-2 group cursor-pointer transition-all duration-300"
+                            onMouseEnter={() => setLegendHover({ eventId: ev.id })}
+                            onMouseLeave={() => setLegendHover({ eventId: null })}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setSoloEventId(soloEventId === ev.id ? null : ev.id);
+                            }}
+                            style={{
+                                opacity: (legendHover.eventId && legendHover.eventId !== ev.id) || (soloEventId && soloEventId !== ev.id) ? 0.4 : 1,
+                                transform: legendHover.eventId === ev.id || soloEventId === ev.id ? 'translateY(-2px)' : 'none'
+                            }}
+                        >
+                            <div
+                                className="w-2.5 h-2.5 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)] transition-transform group-hover:scale-125"
+                                style={{ backgroundColor: ev.color }}
+                            />
+                            <span className="text-[11px] font-medium text-zinc-400 group-hover:text-zinc-200 transition-colors">
+                                {ev.label}
+                                <span className="ml-1.5 opacity-40 font-normal">
+                                    {((((ev.endDate ? ev.endDate.getTime() : new Date().getTime()) - ev.startDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25)) / stats.lifeExpectancy * 100).toFixed(1)}%
+                                </span>
+                            </span>
+                        </div>
+                    ))}
                 </div>
             )}
         </div>

@@ -198,6 +198,25 @@ export default function HomePage() {
                 WortZug
               </h3>
             </Link>
+
+            {/* Chronos */}
+            <Link
+              href="/chronos"
+              className="flex flex-col items-center group"
+            >
+              <div className="relative w-28 h-28 sm:w-40 sm:h-40 mb-3 group-hover:-translate-y-1 transition-all duration-300">
+                <Image
+                  src="/images/shortcuts/chronos.webp"
+                  alt="Chronos"
+                  fill
+                  className="object-contain"
+                  unoptimized={true}
+                />
+              </div>
+              <h3 className="text-sm sm:text-base font-medium text-slate-600 text-center leading-tight">
+                Chronos
+              </h3>
+            </Link>
           </div>
         </div>
       </section>

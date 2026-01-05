@@ -12,6 +12,21 @@ export interface ThemeConfig {
     pulseColor: string;
 }
 
+export interface LifeEvent {
+    id: string;
+    label: string;
+    startDate: Date;
+    endDate?: Date; // If missing, lasts until now or end of life? Let's say it has an end or is ongoing.
+    color: string;
+}
+
+export interface LifeMilestone {
+    id: string;
+    label: string;
+    date: Date;
+    icon?: string; // e.g. "star", "heart", "graduation"
+}
+
 export interface TimeStats {
     totalUnits: number;
     passedUnits: number;
@@ -20,6 +35,9 @@ export interface TimeStats {
     daysLeft: number; // Semantic meaning changes in Life mode (weeks left)
     currentUnitProgress: number; // 0-100
     label: string; // "Days Remaining" or "Weeks Remaining"
+    events?: LifeEvent[];
+    milestones?: LifeMilestone[];
+    lifeExpectancy: number;
 }
 
 export interface QuoteData {

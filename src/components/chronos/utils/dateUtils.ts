@@ -1,4 +1,4 @@
-import { ViewMode, TimeStats } from '../types';
+import { ViewMode, TimeStats, LifeEvent, LifeMilestone } from '../types';
 
 export const getDaysInYear = (year: number): number => {
     return ((year % 4 === 0 && year % 100 > 0) || year % 400 === 0) ? 366 : 365;
@@ -25,7 +25,7 @@ export const getMonthDiff = (d1: Date, d2: Date): number => {
     return months <= 0 ? 0 : months;
 };
 
-export const calculateStats = (viewMode: ViewMode, birthDate?: Date, lifeExpectancy: number = 80): TimeStats => {
+export const calculateStats = (viewMode: ViewMode, birthDate?: Date, lifeExpectancy: number = 80, events?: LifeEvent[], milestones?: LifeMilestone[]): TimeStats => {
     const now = new Date();
 
     // LIFE MODE - CHANGED TO MONTHS
@@ -55,7 +55,10 @@ export const calculateStats = (viewMode: ViewMode, birthDate?: Date, lifeExpecta
             percentage: percentage,
             daysLeft: Math.max(0, totalMonths - passedMonths),
             currentUnitProgress: progressInMonth,
-            label: 'Months Left'
+            label: 'Months Left',
+            lifeExpectancy: years,
+            events,
+            milestones
         };
     }
 
@@ -75,7 +78,8 @@ export const calculateStats = (viewMode: ViewMode, birthDate?: Date, lifeExpecta
             percentage: ((dayOfYear - 1 + (unitProgress / 100)) / totalDays) * 100,
             daysLeft: totalDays - dayOfYear,
             currentUnitProgress: unitProgress,
-            label: 'Days Left'
+            label: 'Days Left',
+            lifeExpectancy: 1 // Doesn't really apply but required by type
         };
     } else {
         // Week Mode (Yearly context)
@@ -94,7 +98,8 @@ export const calculateStats = (viewMode: ViewMode, birthDate?: Date, lifeExpecta
             percentage: ((currentWeek - 1) / totalWeeks) * 100,
             daysLeft: totalWeeks - (currentWeek - 1),
             currentUnitProgress: unitProgress,
-            label: 'Weeks Left'
+            label: 'Weeks Left',
+            lifeExpectancy: 1 // Doesn't really apply but required by type
         };
     }
 };
