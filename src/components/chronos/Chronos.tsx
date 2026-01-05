@@ -84,16 +84,34 @@ export const Chronos: React.FC = () => {
         localStorage.setItem('tempo_viewMode', viewMode);
     }, [viewMode, mounted]);
 
-    // Main Timer
+    // Unified Stats Management (Timer + Scrubbing)
     useEffect(() => {
-        if (scrubPercentage !== null) return;
         const updateStats = () => {
-            const baseStats = calculateStats(viewMode, birthDate, lifeExpectancy, lifeEvents, lifeMilestones);
-            setStats(baseStats);
+            const realStats = calculateStats(viewMode, birthDate, lifeExpectancy, lifeEvents, lifeMilestones);
+
+            if (scrubPercentage !== null) {
+                const total = realStats.totalUnits;
+                const fakePassed = Math.floor(scrubPercentage * total);
+                setStats({
+                    ...realStats,
+                    passedUnits: fakePassed,
+                    currentUnitIndex: fakePassed,
+                    percentage: scrubPercentage * 100,
+                    daysLeft: total - fakePassed,
+                    currentUnitProgress: 50,
+                });
+            } else {
+                setStats(realStats);
+            }
         };
+
         updateStats();
-        const interval = setInterval(updateStats, 1000);
-        return () => clearInterval(interval);
+
+        // Timer only runs when NOT scrubbing to save cycles and prevent jumpiness
+        if (scrubPercentage === null) {
+            const interval = setInterval(updateStats, 1000);
+            return () => clearInterval(interval);
+        }
     }, [viewMode, birthDate, lifeExpectancy, scrubPercentage, lifeEvents, lifeMilestones]);
 
     // Dynamic Label Calculation for Scrubbing
@@ -131,25 +149,6 @@ export const Chronos: React.FC = () => {
 
     }, [scrubPercentage, viewMode, birthDate, lifeExpectancy]);
 
-    // Scrubbing Effect on Stats
-    useEffect(() => {
-        if (scrubPercentage !== null) {
-            const total = stats.totalUnits;
-            const fakePassed = Math.floor((scrubPercentage) * total);
-            setStats(prev => ({
-                ...prev,
-                passedUnits: fakePassed,
-                currentUnitIndex: fakePassed,
-                percentage: scrubPercentage * 100,
-                daysLeft: total - fakePassed,
-                currentUnitProgress: 50,
-                events: lifeEvents
-            }));
-        } else {
-            const baseStats = calculateStats(viewMode, birthDate, lifeExpectancy);
-            setStats({ ...baseStats, events: lifeEvents });
-        }
-    }, [scrubPercentage, viewMode, birthDate, lifeExpectancy, stats.totalUnits, lifeEvents]);
 
     const handleSaveSettings = (date: Date, expectancy: number, events: LifeEvent[], milestones: LifeMilestone[]) => {
         setBirthDate(date);

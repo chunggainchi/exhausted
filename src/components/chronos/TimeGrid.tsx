@@ -79,19 +79,25 @@ export const TimeGrid: React.FC<TimeGridProps> = ({ viewMode, stats, theme, birt
 
     const units = useMemo(() => Array.from({ length: stats.totalUnits }, (_, i) => i), [stats.totalUnits]);
 
-    // Scrubbing Handlers
+    // Scrubbing Logic
+    const calculateScrub = (clientX: number) => {
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+        const percentage = x / rect.width;
+        if (onScrub) onScrub(percentage);
+    };
+
     const handlePointerDown = (e: React.PointerEvent) => {
+        e.preventDefault(); // Prevent text selection/scrolling
         setIsScrubbing(true);
-        handlePointerMove(e);
+        calculateScrub(e.clientX); // Calculate immediately
         if (containerRef.current) containerRef.current.setPointerCapture(e.pointerId);
     };
 
     const handlePointerMove = (e: React.PointerEvent) => {
-        if (!isScrubbing || !containerRef.current) return;
-        const rect = containerRef.current.getBoundingClientRect();
-        const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-        const percentage = x / rect.width;
-        if (onScrub) onScrub(percentage);
+        if (!isScrubbing) return;
+        calculateScrub(e.clientX);
     };
 
     const handlePointerUp = (e: React.PointerEvent) => {
@@ -101,10 +107,20 @@ export const TimeGrid: React.FC<TimeGridProps> = ({ viewMode, stats, theme, birt
             try {
                 containerRef.current.releasePointerCapture(e.pointerId);
             } catch {
-                // Ignore capture release errors
+                // Ignore errors
             }
         }
     };
+
+    // Global Cursor styling when scrubbing
+    useEffect(() => {
+        if (isScrubbing) {
+            document.body.style.cursor = 'grabbing';
+        } else {
+            document.body.style.cursor = '';
+        }
+        return () => { document.body.style.cursor = ''; };
+    }, [isScrubbing]);
 
     // Hover Handlers for Dots (Bubbled up)
     const handleDotHover = (index: number, label: string, progress: number, event: React.MouseEvent) => {
