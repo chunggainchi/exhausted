@@ -1,7 +1,10 @@
 import type { Config } from 'tailwindcss';
+import chronosPreset from './src/components/chronos/tailwind.preset';
+
 
 
 const config: Config = {
+  presets: [chronosPreset],
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
