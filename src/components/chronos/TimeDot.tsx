@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import { ThemeConfig, ViewMode } from './types';
 
 interface TimeDotProps {
@@ -30,9 +31,18 @@ const TimeDotComponent: React.FC<TimeDotProps> = ({ status, index, total, viewMo
                 style={{ width: `${size}px`, height: `${size}px` }}
                 onMouseEnter={onMouseEnter}
             >
-                {/* Pulsing Aura - FAST PULSE (1s) */}
-                <div
-                    className="absolute inset-0 rounded-full animate-pulse-fast"
+                {/* Pulsing Aura - FAST PULSE (1.5s) */}
+                <motion.div
+                    className="absolute inset-0 rounded-full"
+                    animate={{
+                        scale: [1.1, 1.8, 1.1],
+                        opacity: [0.2, 0.9, 0.2],
+                    }}
+                    transition={{
+                        duration: 1.5,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                    }}
                     style={{
                         backgroundColor: theme.pulseColor,
                         filter: 'blur(4px)',

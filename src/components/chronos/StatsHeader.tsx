@@ -134,7 +134,7 @@ export const StatsHeader: React.FC<StatsHeaderProps> = ({
                         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-800/50 border border-zinc-700/50 backdrop-blur-md">
                             <Sparkles size={14} style={{ color: themeConfig.pulseColor }} />
                             <span className="text-xs font-medium text-zinc-200 whitespace-nowrap">
-                                {stats.daysLeft} {stats.label.toLowerCase()} left
+                                {stats.daysLeft} {stats.label.toLowerCase()}
                             </span>
                         </div>
                         <p className="text-zinc-500 text-[10px] sm:text-xs md:mt-2">
