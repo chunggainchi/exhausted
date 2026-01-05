@@ -15,7 +15,7 @@ interface TimeDotProps {
     onMouseEnter?: (event: React.MouseEvent) => void;
 }
 
-export const TimeDot: React.FC<TimeDotProps> = React.memo(({ status, index, total, viewMode, delay = 0, size, progress = 0, theme, onMouseEnter }) => {
+const TimeDotComponent: React.FC<TimeDotProps> = ({ status, index, total, viewMode, delay = 0, size, progress = 0, theme, onMouseEnter }) => {
 
     const hue = theme.hue;
     const saturation = theme.saturation;
@@ -118,4 +118,7 @@ export const TimeDot: React.FC<TimeDotProps> = React.memo(({ status, index, tota
             onMouseEnter={onMouseEnter}
         />
     );
-});
+};
+
+export const TimeDot = React.memo(TimeDotComponent);
+TimeDot.displayName = 'TimeDot';

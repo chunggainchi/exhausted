@@ -113,7 +113,7 @@ export const Chronos: React.FC = () => {
         } else {
             setStats(calculateStats(viewMode, birthDate, lifeExpectancy));
         }
-    }, [scrubPercentage, viewMode, birthDate, lifeExpectancy]);
+    }, [scrubPercentage, viewMode, birthDate, lifeExpectancy, stats.totalUnits]);
 
     const handleSaveSettings = (date: Date, expectancy: number) => {
         setBirthDate(date);

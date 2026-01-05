@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { ViewState } from '../types';
 
 interface LayoutProps {
@@ -21,12 +22,14 @@ export const Layout: React.FC<LayoutProps> = ({ currentView, setView, children }
 
   const NavContent = () => (
     <div className="flex flex-col h-full bg-slate-900 bg-opacity-40 p-4">
-      <div className="flex items-center justify-center mb-8 mt-4 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.location.href="https://exhaustedrocket.com"}>
-         <img 
-           src="/images/logo.svg" 
-           alt="CantoPlay" 
-           className="h-20 w-auto object-contain"
-         />
+      <div className="flex items-center justify-center mb-8 mt-4 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => window.location.href = "https://exhaustedrocket.com"}>
+        <Image
+          src="/images/logo.svg"
+          alt="CantoPlay"
+          width={80}
+          height={80}
+          className="h-20 w-auto object-contain"
+        />
       </div>
       <nav className="flex-1 space-y-3">
         {NAV_ITEMS.map((item) => {
@@ -38,11 +41,10 @@ export const Layout: React.FC<LayoutProps> = ({ currentView, setView, children }
                 setView(item.id);
                 setMobileMenuOpen(false);
               }}
-              className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
-                isActive
+              className={`w-full flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${isActive
                   ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg'
                   : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-              }`}
+                }`}
             >
               <span className="mr-3 text-xl">{item.emoji}</span>
               <span className="font-medium text-lg">{item.label}</span>
@@ -57,8 +59,8 @@ export const Layout: React.FC<LayoutProps> = ({ currentView, setView, children }
     <div className="relative min-h-screen flex overflow-hidden bg-[#0d1117] text-[#e6ebf2]">
       {/* Background Gradients (CSS replacement for canvas background) */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-         <div className="absolute top-[20%] right-[30%] w-[800px] h-[800px] bg-purple-600/10 rounded-full blur-3xl" />
-         <div className="absolute bottom-[20%] left-[30%] w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-[20%] right-[30%] w-[800px] h-[800px] bg-purple-600/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-[20%] left-[30%] w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-3xl" />
       </div>
 
       {/* Desktop Sidebar */}
@@ -81,12 +83,12 @@ export const Layout: React.FC<LayoutProps> = ({ currentView, setView, children }
       {/* Mobile Drawer */}
       {isMobileMenuOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex">
-          <div 
+          <div
             className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setMobileMenuOpen(false)}
           />
           <div className="relative w-72 h-full bg-slate-900 border-r border-slate-800 shadow-2xl animate-slide-in-left">
-             <NavContent />
+            <NavContent />
           </div>
         </div>
       )}
