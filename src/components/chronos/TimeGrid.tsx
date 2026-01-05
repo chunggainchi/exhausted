@@ -27,6 +27,7 @@ interface LegendHoverState {
 
 export const TimeGrid: React.FC<TimeGridProps> = ({ viewMode, stats, theme, birthDate, onScrub }) => {
     const containerRef = useRef<HTMLDivElement>(null);
+    const gridRef = useRef<HTMLDivElement>(null);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const [isScrubbing, setIsScrubbing] = useState(false);
     const [hoverState, setHoverState] = useState<HoverState | null>(null);
@@ -81,8 +82,9 @@ export const TimeGrid: React.FC<TimeGridProps> = ({ viewMode, stats, theme, birt
 
     // Scrubbing Logic
     const calculateScrub = (clientX: number) => {
-        if (!containerRef.current) return;
-        const rect = containerRef.current.getBoundingClientRect();
+        if (!gridRef.current) return;
+        const rect = gridRef.current.getBoundingClientRect();
+        // Calculate relative to the GRID, not the container
         const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
         const percentage = x / rect.width;
         if (onScrub) onScrub(percentage);
@@ -153,6 +155,7 @@ export const TimeGrid: React.FC<TimeGridProps> = ({ viewMode, stats, theme, birt
             style={{ touchAction: 'none' }}
         >
             <div
+                ref={gridRef}
                 onClick={() => setSoloEventId(null)}
                 style={{
                     display: 'grid',
