@@ -133,8 +133,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         {/* Header */}
                         <div className="p-6 border-b border-zinc-800 flex justify-between items-start flex-none">
                             <div>
-                                <h2 className="text-xl font-semibold text-white mb-1">Journey Settings</h2>
-                                <p className="text-zinc-400 text-sm">Configure your life parameters and key phases.</p>
+                                <h2 className="text-xl font-semibold text-white mb-1">Life Journey Settings</h2>
+                                <p className="text-zinc-400 text-sm">Configure your life parameters and key phases. Data stays on device only.</p>
                             </div>
                             <button
                                 onClick={onClose}

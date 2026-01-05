@@ -46,9 +46,9 @@ export const StatsHeader: React.FC<StatsHeaderProps> = ({
     // Dynamic Title Logic
     const getTitle = () => {
         switch (viewMode) {
-            case ViewMode.Day: return `Days in Year of ${year}`;
-            case ViewMode.Week: return `Weeks in Year of ${year}`;
-            case ViewMode.Life: return `Months in Life Journey`;
+            case ViewMode.Day: return `Days of ${year}`;
+            case ViewMode.Week: return `Weeks of ${year}`;
+            case ViewMode.Life: return `Life in months (est.)`;
             default: return `Year ${year}`;
         }
     };
