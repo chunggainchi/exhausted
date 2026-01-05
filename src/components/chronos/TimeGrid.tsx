@@ -81,25 +81,45 @@ export const TimeGrid: React.FC<TimeGridProps> = ({ viewMode, stats, theme, birt
     const units = useMemo(() => Array.from({ length: stats.totalUnits }, (_, i) => i), [stats.totalUnits]);
 
     // Scrubbing Logic
-    const calculateScrub = (clientX: number) => {
+    const calculateScrub = (clientX: number, clientY: number) => {
         if (!gridRef.current) return;
         const rect = gridRef.current.getBoundingClientRect();
-        // Calculate relative to the GRID, not the container
+
+        // Calculate relative coordinates in grid
         const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-        const percentage = x / rect.width;
+        const y = Math.max(0, Math.min(clientY - rect.top, rect.height));
+
+        // Determine Row and Col
+        const unitSize = layout.size + gap;
+        const col = Math.floor(x / unitSize);
+        const row = Math.floor(y / unitSize);
+
+        // Clamp to grid boundaries
+        const safeCol = Math.min(col, layout.cols - 1);
+        const safeRow = row; // Row can extend if grid is tall, but limited by totalUnits below
+
+        // Calculate Index
+        let index = safeRow * layout.cols + safeCol;
+
+        // Clamp Index
+        index = Math.max(0, Math.min(index, stats.totalUnits - 1));
+
+        // Percentage
+        const percentage = (index + 1) / stats.totalUnits;
+
         if (onScrub) onScrub(percentage);
     };
 
     const handlePointerDown = (e: React.PointerEvent) => {
         e.preventDefault(); // Prevent text selection/scrolling
         setIsScrubbing(true);
-        calculateScrub(e.clientX); // Calculate immediately
+        calculateScrub(e.clientX, e.clientY); // Calculate immediately
         if (containerRef.current) containerRef.current.setPointerCapture(e.pointerId);
     };
 
     const handlePointerMove = (e: React.PointerEvent) => {
         if (!isScrubbing) return;
-        calculateScrub(e.clientX);
+        calculateScrub(e.clientX, e.clientY);
     };
 
     const handlePointerUp = (e: React.PointerEvent) => {
