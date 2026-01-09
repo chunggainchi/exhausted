@@ -309,7 +309,7 @@ export const TimeGrid: React.FC<TimeGridProps> = ({ viewMode, stats, theme, birt
 
             {/* Event Legend */}
             {viewMode === ViewMode.Life && stats.events && stats.events.length > 0 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-full max-w-2xl px-6 flex flex-wrap justify-center gap-x-6 gap-y-2 pointer-events-auto">
+                <div className="absolute bottom-4 z-20 left-1/2 -translate-x-1/2 w-full max-w-2xl px-6 flex flex-wrap justify-center gap-x-6 gap-y-2 pointer-events-auto">
                     {stats.events.map((ev) => (
                         <div
                             key={ev.id}

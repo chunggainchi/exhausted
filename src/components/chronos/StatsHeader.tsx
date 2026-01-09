@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { ViewMode, TimeStats, ThemeConfig } from './types';
 import { getFormattedDate } from './utils/dateUtils';
-import { Share2, Sparkles, Settings, Check } from 'lucide-react';
+import { Share2, Sparkles, Settings, Check, Info } from 'lucide-react';
 import { Tooltip } from './Tooltip';
 
 interface StatsHeaderProps {
@@ -49,12 +49,22 @@ export const StatsHeader: React.FC<StatsHeaderProps> = ({
             case ViewMode.Day: return `Days of ${year}`;
             case ViewMode.Week: return `Weeks of ${year}`;
             case ViewMode.Life: return `Life in months (est.)`;
+            case ViewMode.Child: return `The magical 12 years`;
+            case ViewMode.Parent: return `Remaining time with parents`;
             default: return `Year ${year}`;
         }
     };
 
     // Logic to show custom subtext (scrubbing) or default date
-    const subtext = customSubtext || (viewMode === ViewMode.Life ? `${stats.daysLeft} months remaining` : getFormattedDate());
+    const getSubtext = () => {
+        if (customSubtext) return customSubtext;
+        if (viewMode === ViewMode.Life) return `${stats.daysLeft} months remaining`;
+        if (viewMode === ViewMode.Child) return `75% of your time with them is spent by age 12`;
+        if (viewMode === ViewMode.Parent) return `Remaining face time with parents`;
+        return getFormattedDate();
+    };
+
+    const subtext = getSubtext();
     const isScrubbing = !!customSubtext;
 
     return (
@@ -66,9 +76,25 @@ export const StatsHeader: React.FC<StatsHeaderProps> = ({
                 {/* Row 1: Title (Left) + Utility Buttons (Right) */}
                 <div className="flex items-center justify-between w-full">
                     <div className="text-left">
-                        <h1 className="text-lg sm:text-2xl font-semibold tracking-tight text-white flex items-center gap-2">
-                            {getTitle()}
-                        </h1>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-lg sm:text-2xl font-semibold tracking-tight text-white flex items-center gap-2">
+                                {getTitle()}
+                            </h1>
+                            {viewMode === ViewMode.Child && (
+                                <Tooltip align="left" content="The most famous statistic from Urban’s analysis is that the vast majority of time spent with parents occurs during childhood. By age 12: Roughly 75% of the total in-person time you will ever spend with your children has already passed.">
+                                    <div className="cursor-help bg-zinc-800/50 text-zinc-400 hover:text-white rounded-full p-1 transition-colors">
+                                        <Info size={14} />
+                                    </div>
+                                </Tooltip>
+                            )}
+                            {viewMode === ViewMode.Parent && (
+                                <Tooltip align="left" content="Think about how many times you see your parents per year. Often the total remaining time is less than the total time you spent with them in any single year of your childhood.">
+                                    <div className="cursor-help bg-zinc-800/50 text-zinc-400 hover:text-white rounded-full p-1 transition-colors">
+                                        <Info size={14} />
+                                    </div>
+                                </Tooltip>
+                            )}
+                        </div>
                         <p className={`text-xs sm:text-sm font-medium mt-0.5 transition-colors duration-200 ${isScrubbing ? 'text-white' : 'text-zinc-400'}`}>
                             {subtext}
                         </p>
@@ -86,16 +112,24 @@ export const StatsHeader: React.FC<StatsHeaderProps> = ({
                 {/* Row 2: Segmented Control */}
                 <div className="w-full md:w-auto">
                     <div className="flex p-1 bg-zinc-900 border border-zinc-800 rounded-lg shadow-inner w-full md:w-auto">
-                        <button onClick={() => onViewModeChange(ViewMode.Day)} className={`px-4 py-2 sm:py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${viewMode === ViewMode.Day ? activeTabClass : inactiveTabClass}`}>
+                        <button onClick={() => onViewModeChange(ViewMode.Day)} className={`px-3 py-2 sm:py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${viewMode === ViewMode.Day ? activeTabClass : inactiveTabClass}`}>
                             Days
                         </button>
                         <div className="w-px bg-zinc-800 my-1 mx-1"></div>
-                        <button onClick={() => onViewModeChange(ViewMode.Week)} className={`px-4 py-2 sm:py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${viewMode === ViewMode.Week ? activeTabClass : inactiveTabClass}`}>
+                        <button onClick={() => onViewModeChange(ViewMode.Week)} className={`px-3 py-2 sm:py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${viewMode === ViewMode.Week ? activeTabClass : inactiveTabClass}`}>
                             Weeks
                         </button>
                         <div className="w-px bg-zinc-800 my-1 mx-1"></div>
-                        <button onClick={() => onViewModeChange(ViewMode.Life)} className={`px-4 py-2 sm:py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${viewMode === ViewMode.Life ? activeTabClass : inactiveTabClass}`}>
+                        <button onClick={() => onViewModeChange(ViewMode.Life)} className={`px-3 py-2 sm:py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${viewMode === ViewMode.Life ? activeTabClass : inactiveTabClass}`}>
                             Life
+                        </button>
+                        <div className="w-px bg-zinc-800 my-1 mx-1"></div>
+                        <button onClick={() => onViewModeChange(ViewMode.Child)} className={`px-3 py-2 sm:py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${viewMode === ViewMode.Child ? activeTabClass : inactiveTabClass}`}>
+                            Child
+                        </button>
+                        <div className="w-px bg-zinc-800 my-1 mx-1"></div>
+                        <button onClick={() => onViewModeChange(ViewMode.Parent)} className={`px-3 py-2 sm:py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${viewMode === ViewMode.Parent ? activeTabClass : inactiveTabClass}`}>
+                            Parent
                         </button>
                     </div>
                 </div>
@@ -106,12 +140,12 @@ export const StatsHeader: React.FC<StatsHeaderProps> = ({
                 className="relative overflow-hidden rounded-2xl bg-zinc-900/40 border border-white/5 p-5 sm:p-8 backdrop-blur-xl shadow-2xl transition-all hover:border-white/10 group"
             >
                 {/* Settings Button */}
-                {viewMode === ViewMode.Life && (
+                {(viewMode === ViewMode.Life || viewMode === ViewMode.Child || viewMode === ViewMode.Parent) && (
                     <div className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20">
                         <button
                             onClick={onLifeSettings}
                             className="p-2 rounded-full bg-zinc-800/50 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-colors backdrop-blur-md"
-                            aria-label="Configure Life Settings"
+                            aria-label={viewMode === ViewMode.Child ? "Configure Children" : (viewMode === ViewMode.Parent ? "Configure Parents" : "Configure Life Settings")}
                         >
                             <Settings size={16} />
                         </button>
@@ -121,10 +155,13 @@ export const StatsHeader: React.FC<StatsHeaderProps> = ({
                 <div className="flex flex-col md:flex-row justify-between md:items-end mb-4 sm:mb-6 gap-4">
                     <div className="relative z-10 space-y-1">
                         <h2 className="text-zinc-500 font-medium text-[10px] sm:text-xs uppercase tracking-widest">
-                            {viewMode === ViewMode.Life ? 'Life Consumed' : 'Year Progress'}
+                            {viewMode === ViewMode.Life ? 'Life Consumed' : (viewMode === ViewMode.Child ? 'The Magical 12 Years' : (viewMode === ViewMode.Parent ? 'Life Consumed' : 'Year Progress'))}
                         </h2>
                         <div className="flex items-baseline">
-                            <span className={`text-5xl sm:text-7xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br ${themeConfig.textGradient} leading-none`}>
+                            <span
+                                className={`text-5xl sm:text-7xl font-bold tracking-tighter leading-none ${themeConfig.name === 'ChildTheme' ? '' : 'text-transparent bg-clip-text bg-gradient-to-br ' + themeConfig.textGradient}`}
+                                style={themeConfig.name === 'ChildTheme' ? { color: themeConfig.pulseColor } : {}}
+                            >
                                 {stats.percentage.toFixed(2)}%
                             </span>
                         </div>
@@ -138,7 +175,10 @@ export const StatsHeader: React.FC<StatsHeaderProps> = ({
                             </span>
                         </div>
                         <p className="text-zinc-500 text-[10px] sm:text-xs md:mt-2">
-                            {stats.passedUnits}/{stats.totalUnits} {stats.label.split(' ')[0].toLowerCase()}
+                            {viewMode === ViewMode.Parent
+                                ? `${Math.floor(stats.passedUnits / 12)}/${(stats.totalUnits / 12).toFixed(0)} years`
+                                : `${stats.passedUnits}/${stats.totalUnits} ${stats.label.split(' ')[0].toLowerCase()}`
+                            }
                         </p>
                     </div>
                 </div>
@@ -146,10 +186,11 @@ export const StatsHeader: React.FC<StatsHeaderProps> = ({
                 {/* Progress Bar */}
                 <div className="h-2 w-full bg-zinc-800 rounded-full overflow-hidden shadow-inner">
                     <div
-                        className={`h-full bg-gradient-to-r ${themeConfig.textGradient} transition-all duration-500 ease-out`}
+                        className={`h-full transition-all duration-500 ease-out ${themeConfig.name === 'ChildTheme' ? '' : 'bg-gradient-to-r ' + themeConfig.textGradient}`}
                         style={{
                             width: `${Math.min(100, Math.max(0, stats.percentage))}%`,
-                            boxShadow: `0 0 15px ${themeConfig.pulseColor}60`
+                            boxShadow: `0 0 15px ${themeConfig.pulseColor}60`,
+                            backgroundColor: themeConfig.name === 'ChildTheme' ? themeConfig.pulseColor : undefined
                         }}
                     />
                 </div>

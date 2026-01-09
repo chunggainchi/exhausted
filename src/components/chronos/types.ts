@@ -1,7 +1,9 @@
 export enum ViewMode {
     Day = 'DAY',
     Week = 'WEEK',
-    Life = 'LIFE'
+    Life = 'LIFE',
+    Child = 'CHILD',
+    Parent = 'PARENT'
 }
 
 export interface ThemeConfig {
@@ -10,6 +12,21 @@ export interface ThemeConfig {
     hue: number;
     saturation: number;
     pulseColor: string;
+}
+
+export interface Child {
+    id: string;
+    name: string;
+    birthDate: Date;
+    color: string;
+}
+
+export interface Parent {
+    id: string;
+    name: string;
+    birthDate: Date;
+    color: string;
+    lifeExpectancy: number;
 }
 
 export interface LifeEvent {
